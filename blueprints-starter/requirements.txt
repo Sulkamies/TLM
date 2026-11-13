@@ -1,0 +1,9 @@
+anthropic>=0.40
+fastapi
+uvicorn
+pydantic
+pdfplumber
+pypdfium2
+pillow
+ifcopenshell
+modal

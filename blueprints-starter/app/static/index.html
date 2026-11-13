@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Make Blueprints Talk</title>
+<style>
+  body{margin:0;font:14px system-ui,sans-serif;display:grid;grid-template-columns:380px 1fr;height:100vh}
+  aside{padding:16px;border-right:1px solid #ddd;overflow:auto}
+  main{position:relative;overflow:hidden;background:#fafafa}
+  #view{width:100%;height:100%}
+  select,textarea,button{width:100%;box-sizing:border-box;margin:4px 0;font:inherit}
+  textarea{height:70px}
+  .answer{font-size:28px;font-weight:600;margin:12px 0 4px}
+  .meta{color:#666;font-size:12px}
+  .hl{fill:rgba(255,80,0,.25);stroke:#ff5000;stroke-width:2;vector-effect:non-scaling-stroke}
+  [data-hl],[data-hl] *{fill:rgba(255,80,0,.35)!important;stroke:#ff5000!important}
+  ol{padding-left:18px} li{margin:2px 0;font-family:monospace;font-size:12px}
+</style></head>
+<body>
+<aside>
+  <h3>Make Blueprints Talk</h3>
+  <select id="file"></select>
+  <textarea id="q" placeholder="Ask in any language, e.g. How many windows are shown on this floor plan?"></textarea>
+  <button id="go">Ask</button>
+  <div id="out"></div>
+</aside>
+<main><div id="view"></div></main>
+<script>
+const $ = s => document.querySelector(s);
+let current = null;   // {kind, ...} from /api/view
+
+async function loadFiles(){
+  const fs = await (await fetch('/api/files')).json();
+  $('#file').innerHTML = fs.map(f => `<option>${f}</option>`).join('');
+  $('#file').onchange = () => showFile($('#file').value);
+  showFile(fs[0]);
+}
+
+async function showFile(path){
+  current = await (await fetch('/api/view?path=' + encodeURIComponent(path))).json();
+  const v = $('#view');
+  if (current.kind === 'svg'){
+    v.innerHTML = current.svg;
+  } else if (current.kind === 'image'){
+    v.innerHTML = `<svg viewBox="0 0 ${current.width} ${current.height}" style="width:100%;height:100%">
+      <image href="${current.url}" width="${current.width}" height="${current.height}"/>
+      <g id="world" transform="scale(${current.scale})"></g></svg>`;
+  } else v.innerHTML = '<p style="padding:20px">No 2D view for this file (IFC model). Answers list element GUIDs.</p>';
+  const svg = v.querySelector('svg');
+  if (svg){ svg.setAttribute('width','100%'); svg.setAttribute('height','100%'); }
+}
+
+function highlight(evidence){
+  const world = document.querySelector('#world') || document.querySelector('#view svg');
+  document.querySelectorAll('.hl').forEach(e => e.remove());
+  document.querySelectorAll('[data-hl]').forEach(e => e.removeAttribute('data-hl'));
+  const NS = 'http://www.w3.org/2000/svg';
+  for (const e of evidence){
+    let el = null;
+    if (e.guid){ document.querySelectorAll(`[data-guid="${e.guid}"]`).forEach(x => x.setAttribute('data-hl','1')); continue; }
+    const pts = e.polygon || e.poly;
+    const box = e.box || e.bbox || e.pdf_bbox;
+    if (pts){ el = document.createElementNS(NS,'polygon'); el.setAttribute('points', pts.map(p => p.join(',')).join(' ')); }
+    else if (box){ el = document.createElementNS(NS,'rect');
+      el.setAttribute('x',box[0]); el.setAttribute('y',box[1]);
+      el.setAttribute('width',box[2]-box[0]); el.setAttribute('height',box[3]-box[1]); }
+    if (el && world){ el.setAttribute('class','hl');
+      if (e.label){ const t = document.createElementNS(NS,'title'); t.textContent = e.label; el.appendChild(t); }
+      world.appendChild(el); }
+  }
+}
+
+$('#go').onclick = async () => {
+  $('#out').innerHTML = 'Thinking…';
+  const r = await (await fetch('/api/ask', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({path: $('#file').value, question: $('#q').value})})).json();
+  $('#out').innerHTML = `<div class="answer">${r.answer ?? '—'} ${r.unit && r.unit!=='count' ? r.unit : ''}</div>
+    <div>${r.explanation ?? ''}</div>
+    <p class="meta">${r.evidence.length} highlighted items · ${r.seconds}s · $${r.cost_usd} · ${r.model}</p>
+    <details><summary>Tool calls</summary><ol>${(r.trace||[]).map(t => `<li>${t.tool} ${JSON.stringify(t.input)}</li>`).join('')}</ol></details>`;
+  highlight(r.evidence || []);
+};
+loadFiles();
+</script>
+</body></html>
