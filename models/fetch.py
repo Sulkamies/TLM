@@ -34,13 +34,12 @@ class ModelFile:
 
 FILES: tuple[ModelFile, ...] = (
     # CubiCasa detector v2 (models/cubicasa_v2/MODEL_CARD.md).
-    # PLACEHOLDER: the hosting URL does not exist yet. Until it does, copy best.pt here by hand
-    # (A3 / SS has it) and run `python models/fetch.py --check`.
+    # Hosted as a GitHub Release asset on Sulkamies/TLM (tag models-cubicasa-v2), CC BY-NC-SA 4.0.
     ModelFile(
         path="cubicasa_v2/best.pt",
         sha256="2093bef2b2322dbc23c402d7e7beafe00245d6e9144905b1cd54ed0eaef3337d",
         size=40_587_180,
-        url=None,
+        url="https://github.com/Sulkamies/TLM/releases/download/models-cubicasa-v2/best.pt",
     ),
     # EasyOCR (Apache-2.0) text detector and English recogniser, from the official releases.
     ModelFile(

@@ -229,3 +229,15 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   torch or network.
 - **Not done:** no live run with real weights (this environment has no weights, torch or package index), so no timing
   is reported. `--debug-overlay` not implemented (D5). No contract, config, prompt or shared-file change.
+
+### 2026-11-14 · A3 · SS · Host the cubicasa_v2 weights; `models/fetch.py` URL set
+- Hosting choice (SS): **GitHub Release** on the public repo, tag `models-cubicasa-v2`, asset `best.pt`:
+  https://github.com/Sulkamies/TLM/releases/download/models-cubicasa-v2/best.pt. Release notes state the licence
+  (derived from CubiCasa5K, **CC BY-NC-SA 4.0**: attribution, non-commercial, share-alike), the version
+  `cubicasa-yolo11m-v2+rules-v2` and point to `models/cubicasa_v2/MODEL_CARD.md`. Published by SS (this session may not
+  create releases); the uploaded file was checked first: sha256 `2093bef2…3337d`, 40,587,180 bytes.
+- `models/fetch.py`: URL set for `cubicasa_v2/best.pt` (sha256 and size unchanged); placeholder comment replaced.
+  Model card links the release.
+- Proof: in a fresh temporary copy, `python models/fetch.py` fetched all three files in 3.5 s, and
+  `python models/fetch.py --check` exited 0 (all verified). In a repo checkout the fetched files are git-ignored.
+- Test: every entry in `FILES` has an https URL; the best.pt entry has the expected sha256 and size (no download in tests).
