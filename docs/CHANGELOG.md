@@ -126,3 +126,10 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   front door. It covers the invalid-picture message ry asked for, interim answers without numbers, contract checks, tests and a live demo.
   A3 (unfinished), A4 (not implemented), the architecture decision and proposals 001/004 are explicitly out of scope.
 - Baseline verified on `main` `c8e8127`: all checks pass, 278 tests.
+
+### 2026-11-14 · A0 · ry · Integration plan v2 (A3 included)
+- `docs/MERGE_PLAN.md` rewritten as v2: phases 1 (orchestrator + CLI for A1→A2), 2 (contracts 1.1.0: fixtures 001 +
+  storey levels 004, `analysis:` config, `vision` extra), 2b (A2 synonyms), 3 (A3 adapter), 4 (A2 ∥ A3 in the pipeline).
+  Gates G1–G5. A4 out of scope. Architecture basis: AGENTS.md (A3 question-agnostic), pending ry's confirmation (Q8).
+- New `docs/requests/A3-analysis-adapter.md` (answers A3's questions, acceptance criteria).
+- Proposal 001 revision 2: final fixture diff, awaiting approval. A3's source-file passthrough goes to proposal 005 (team decision, not in this integration).

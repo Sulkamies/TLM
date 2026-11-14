@@ -1,191 +1,146 @@
-# Merge plan: integrating A0, A1 and A2
+# Integration plan v2: A0 + A1 + A2 + A3
 
-- **Written by:** A0 (session launched by ry), 2026-11-14
-- **Binding for:** the A0 session that performs the integration ("merging agent"). Follow it step by step.
+- **Written by:** A0 (session launched by ry), 2026-11-14. **Supersedes v1** (A1 + A2 only; see git history).
+- **Binding for:** the A0 session that performs the integration ("integration agent"). Follow it phase by phase.
   If a step cannot be done as written, stop and ask ry. Do not improvise around this plan.
-- **Baseline:** `main` at `c8e8127` (PR #4). Verified on 2026-11-14: ruff, `mypy --strict`, the schema check
-  and 278 tests pass (98 % coverage).
+- **A4 is out of scope** (not implemented). The pipeline ends at a marked A4 slot and returns interim answers without numbers.
+- **Baseline:** `main` at `c8e8127`. Verified 2026-11-14: all checks pass, 278 tests.
 
 ---
 
-## 1. What "merging" means here
+## 1. Architecture basis
 
-The Git merges of A0, A1 and A2 are **already done**:
+This plan follows **AGENTS.md as written**, which is also what the A3 team designed for:
 
-| PR | Branch | Content |
+```
+upload + question ─► A1 validate ─ invalid ─► "This picture is invalid for our program"
+                         │ valid
+              ┌──────────┴──────────┐   concurrently
+              ▼                     ▼
+      A2 interpret(question)   A3 analyze(ValidationResult)    ← A3 never sees the question
+              │ ParsedQuestion      │ BlueprintAnalysis         ← everything found in the plan
+              └──────────┬──────────┘
+                         ▼
+                 [ A4 slot: empty ]  ─► interim Answer (no number)
+```
+
+- A3 is **question-agnostic**: its tuned counting rules become *which elements it outputs* (see
+  `docs/requests/A3-analysis-adapter.md`). A4 will later do the counting, e.g. "how many WC rooms" → count the rooms
+  with `room_type=TOILET`.
+- This replaces ry's earlier description, where A3 received the question. ry must confirm this basis before phase 4
+  (OPEN_QUESTIONS Q8). If the team chooses the other architecture instead, stop: it is a breaking contract change.
+
+## 2. Component status
+
+| Role | Status | Where |
 |---|---|---|
-| #1 | `a0/ry/scaffolding-gemini-wrapper` | Contracts v1.0.1, `common/` (config, log, Gemini wrapper), CI, docs |
-| #2 | `a2/ry/question-interpreter` | A2 Question Interpreter + terminal REPL |
-| #3 | `a1/ot/validator-gemini` | A1 Input Validator (Gemini image classification) |
-| #4 | `a0/ot/validation-config-deps` | A1's dependencies and config, `gemini-3.5-flash-lite` for validation (D-009) |
+| A0 | Contracts v1.0.1, `common/`, config, CI: **merged** | `main` |
+| A1 | Input Validator: **merged** (Gemini image check, approved in EXTERNAL_SERVICES) | `main`, `validation/` |
+| A2 | Question Interpreter: **merged** | `main`, `question/` |
+| A3 | **Not mergeable yet.** Prototype code only, in `blueprints-starter/` (detector, counting rules, tuned thresholds v2: 84.5 % on the CubiCasa test split). Branch base is the very first commit. No `analysis/` package, no `analyze()`, no unit tests. Needs torch/ultralytics/easyocr and weights that are not in git | `a3/SS/cubicasa-detector` |
+| Orchestrator / CLI | **Not started.** v1 steps 1 and 3 done (task claim, TASKS housekeeping) | `a0/ry/integration-a1-a2` |
 
-What is missing is the **integration**: one program that runs the components in order. That is A0's
-orchestrator (`src/blueprint_qa/orchestrator/`) and front door (`src/blueprint_qa/api/`). Neither exists yet.
-This plan builds them for **A1 → A2** only (part of task #3 in `docs/TASKS.md`).
+## 3. Decisions (gates)
 
-## 2. Scope
+| Gate | Decision | Needed for | Status |
+|---|---|---|---|
+| G1 | **Contract change 001, fixtures** (final diff in `docs/contract-changes/001-fixture-entities.md`, revision 2). Additive → v1.1.0. Needs A0 + 1 human | Phase 2 | Awaiting ry's approval |
+| G2 | **Contract change 004, storey levels**, lighter option (already chosen by ry). Needs A0 approval | Phase 2 | A0 approves when applying |
+| G3 | **Heavy A3 libraries** as an optional `vision` extra in `pyproject.toml`; CI installs the base package only | Phase 2 | A0 + 1 human (shared file) |
+| G4 | **`--debug-overlay` not required** for this integration: ry said to disregard visualisation (§6 A3 requires it, so record a deviation) | Phase 3 | Integration agent records it in `docs/DEVIATIONS.md` |
+| G5 | **Original file passthrough** (A3's second proposal: give A3 the original PDF/path for DXF/SVG/IFC companion files). **Not part of this integration.** It conflicts with §6 A0 ("pass A1's normalized outputs to A3, never the raw upload"), and real uploads have no companion files next to them. Record it as proposal **005** for a team decision | Later | Team decision |
 
-**In scope:** A0 (orchestrator, front door, docs), and the integration of A1 and A2 through their public entry points.
+## 4. Phases and who does what
 
-**Out of scope. Do not touch:**
+Each phase is its own branch and pull request. Merge with "Create a merge commit". A teammate other than the
+launcher approves each one (§9). Delete branches after merging.
 
-- **A3 (Blueprint Analyzer).** Not finished. Do not merge, rebase or edit `a3/SS/cubicasa-detector`, and do not
-  touch `blueprints-starter/`. A3's visualisation features are disregarded too (not deleted, just not part of this work).
-- **A4.** Not implemented.
-- **The architecture decision** (see §3.3). The team decides it later. Do not pick one.
-- **Proposals 001 (fixtures) and 004 (storey levels).** Leave them as they are. 004 matters only once A3/A4 exist.
-- **A1's provisional edge cases** (OPEN_QUESTIONS Q7) and **A2's interim storey vocabulary** (DEVIATIONS). Leave them.
+### Phase 1: orchestrator and CLI for A1 → A2 (integration agent, A0)
 
-## 3. Behaviour to build
+Branch: continue on `a0/ry/integration-a1-a2`. Build what v1 §3–§5 described, unchanged:
 
-### 3.1 Flow (as described by ry, 2026-11-14)
+- `orchestrator/pipeline.py :: run(request) -> Answer | ErrorEnvelope`: A1 first; on `is_valid=False` return the
+  interim answer with exactly **"This picture is invalid for our program"** and do **not** call A2 (R5.2); otherwise A2.
+- Contract-check every component output (`INVALID_INPUT`, `details.producer`), check that `request_id` comes back
+  unchanged, never let an exception escape (R5.1), log one event per stage, never produce a number.
+- Interim answers (fixed texts in one module-level mapping): A1 invalid → `CANNOT_ANSWER` + the invalid-picture text
+  (`language="en"`); `UNSUPPORTED` → `UNSUPPORTED_QUESTION`; `clarification_needed` → `NEEDS_CLARIFICATION` with
+  A2's text; otherwise `CANNOT_ANSWER`, "Plan analysis is not available yet.". `unit="count"` as a placeholder, and
+  record the gap as OPEN_QUESTIONS Q9 (`Answer.unit` when `value` is None).
+- Structure the flow as an ordered list of stage steps with **a marked A3 step slot and an A4 slot**. Phase 4 fills A3.
+- CLI `python -m blueprint_qa.api <file> "<question>" [--format] [--locale] [--json] [--debug]`. `--json` hides
+  `details`; `--debug` prints the stage outputs (no image bytes) to stderr.
+- Tests in `tests/unit/orchestrator/` and `tests/unit/api/` with fake A1/A2; coverage ≥ 80 %. Live demo with A1's
+  test images (`house_plan_fi.png` asked in fi/en/de; `bar_chart.png` must give the invalid text with no A2 call).
+- Docs: OPEN_QUESTIONS Q8 (architecture basis, §1) and Q9; README; CHANGELOG.
 
-```
-upload + question
-   │
-   ▼
-A1 validate(request) ──── ErrorEnvelope ───────────────► user-safe error message
-   │
-   ├── is_valid = False ──────────────────────────────► "This picture is invalid for our program"
-   │
-   ▼ is_valid = True
-A2 interpret(request_id, question, locale_hint) ─ ErrorEnvelope ─► user-safe error message
-   │
-   ▼ ParsedQuestion
-[ A3 + A4: not available yet ] ─────────────────────► interim Answer (see 3.2)
-```
+### Phase 2: contracts, config and dependencies for A3 (integration agent, A0)
 
-R5.2: when A1 says invalid, A2 MUST NOT be called.
+Branch: `a0/ry/contracts-fixtures` from `main` (after phase 1 is merged, or from `main` in parallel; the two touch
+different files). **Only after G1 is approved** (G2 and G3 go in the same branch):
 
-### 3.2 What `run()` returns (contract-conformant, no fabricated numbers)
+1. Apply **001 revision 2** (fixtures) and **004** (lighter option: `StoreyLevel` + `Storey.level`, `EntityRef.storey`
+   stays `str`): `vocabulary.py` (+ `DESCRIPTIONS`), `analysis.py`, `question.py`. Contract version **1.1.0**.
+   Regenerate the schemas, update AGENTS.md §4.2, add tests (vocabulary coverage, round trips).
+2. `config/default.yaml`: new `analysis:` section with the detector thresholds and strategies from A3's request
+   (`docs/requests/A0-detector-thresholds.md`; values from `eval/thresholds_vision_v2.json` on the A3 branch) and the
+   detector options (`conf`, `imgsz`, weights path or env name). No secrets.
+3. `pyproject.toml`: optional extra `vision = ["torch…", "ultralytics…", "easyocr…"]`, pinned to minor ranges (R3.4).
+   Base install and CI stay light. CI must not install the extra.
+4. **R4.5: merge together with A2's adaptation.** After step 1, A2's tests fail on purpose: every vocabulary value
+   needs synonyms in en/de/fi, and cassettes miss because the rendered prompt changed. Write
+   `docs/requests/A2-fixture-vocabulary.md` (the work items in phase 2b). Phase 2 and 2b merge as one unit: either
+   A2 bases its branch on `a0/ry/contracts-fixtures` and both PRs are merged back to back, or A2's commits are
+   added to the phase 2 PR.
 
-Entry point per AGENTS.md §6 A0: `orchestrator/pipeline.py :: run(request: PipelineRequest) -> Answer | ErrorEnvelope`.
+### Phase 2b: A2 adapts to v1.1.0 (A2 session, launched by any human)
 
-| Situation | Return |
-|---|---|
-| A1 or A2 returns an `ErrorEnvelope` | That envelope (after contract validation, §3.4) |
-| A1: `is_valid=False` | `Answer(status=CANNOT_ANSWER, value=None, explanation="This picture is invalid for our program", language="en", evidence=[], confidence=<A1 confidence>, unit="count")`. This is the exact text ry asked for. English, because A2 has not run and the question's language is unknown |
-| A2: `intent=UNSUPPORTED` | `Answer(status=UNSUPPORTED_QUESTION, value=None, ...)` |
-| A2: `clarification_needed` set | `Answer(status=NEEDS_CLARIFICATION, value=None, explanation=<clarification_needed>, language=<ParsedQuestion.language>)` (A2 already wrote it in the user's language) |
-| Otherwise | `Answer(status=CANNOT_ANSWER, value=None, explanation="Plan analysis is not available yet.", language="en")` |
+Branch: `a2/<initials>/fixture-vocabulary` from `a0/ry/contracts-fixtures`.
+- Synonyms and few-shot examples for `FixtureType` in en/de/fi (e.g. "toilet bowl" / "WC-Schüssel" / "wc-istuin";
+  "How many showers and bathtubs?" → `COUNT`, `SUM`, two `FIXTURE` targets: `SHOWER` and `BATHTUB`).
+  Keep the distinction: a TOILET **room** vs a TOILET **fixture**.
+- Storeys: delete the interim `values:` block in `question/interim_vocabulary.yaml` (004 is now in the contracts)
+  and close the deviation entry.
+- Re-record the cassettes. All A2 tests and the live test pass.
 
-- `value` is always `None` in this phase. Never produce a number (R5.3, principle 3).
-- **Contract gap:** `Answer.unit` is required even when `value` is `None`. Use `"count"` as a placeholder in
-  these interim answers, and record the gap in `docs/OPEN_QUESTIONS.md` (proposal: make `unit` optional when
-  `value` is `None`). Do **not** change the contract in this task.
-- Keep the fixed texts above in **one** module-level mapping in `pipeline.py` (no hard-coding scattered around),
-  so they are easy to change or translate later.
+### Phase 3: A3 adapter (A3 session, SS)
 
-### 3.3 Keep the A3/A4 slot open (architecture undecided)
+Brief: **`docs/requests/A3-analysis-adapter.md`** (acceptance criteria; hand this to the A3 agent).
+Branch: `a3/SS/analysis-adapter` from `main` **after phase 2(+2b) is merged** (it needs `Fixture`, `StoreyLevel` and
+the `analysis:` config). A3 can start porting earlier from `main` and rebase later.
+The old branch `a3/SS/cubicasa-detector` is **not merged**. Keep it as an archive; do not delete it.
 
-AGENTS.md says A2 and A3 run in parallel and A4 computes the answer. ry's description sends A2's output into A3
-and has A4 phrase the answer. The team will decide later (record this as an open question, step 6). So:
+### Phase 4: wire A3 into the pipeline (integration agent, A0)
 
-- Build the flow as **one ordered list of stage steps** in `pipeline.py`, with a clearly marked place where the
-  A3 (and later A4) step goes. Do not implement or stub A3/A4 calls, and do not add concurrency yet.
-- The orchestrator never contains image processing, NLP, IFC parsing or calculations (§6 A0).
+Branch: `a0/ry/integration-a3` from `main` after phase 3 is merged.
+1. Validity check of the merged A3 code, the same way as for A2: ownership, entry point, no vendor LLM SDK,
+   vocabulary only from contracts, no exceptions across the boundary, lazy heavy imports, CI green without weights.
+2. Fill the A3 slot: after A1 says valid, run **A2 and A3 concurrently** (§6 A0), passing A3 the `ValidationResult`
+   (never the raw upload). Contract-check both outputs. The A4 slot stays empty: the interim answer is unchanged, and
+   `--debug` additionally prints a `BlueprintAnalysis` summary (JSON, no image bytes).
+3. A failure in A3 returns its `ErrorEnvelope` (user-safe message), even if A2 succeeded.
+4. Live demo on ry's machine with the real weights (`models/fetch.py`): a CubiCasa plan plus "Montako makuuhuonetta?",
+   "How many toilet bowls are there?", "Wie viele Fenster gibt es?". Report A1's verdict, A2's `ParsedQuestion`, A3's
+   rooms/fixtures/openings by type and the timings. Also an IFC file, if A3 delivered the IFC path; otherwise check that
+   A3 returns a clean `ErrorEnvelope`.
 
-### 3.4 Mandatory orchestrator duties (AGENTS.md §6 A0)
+## 5. Rules for the integration agent
 
-- The front door creates `request_id` (UUID4) and `received_at` (UTC), and `run()` passes them through unchanged.
-- **Validate every component output against its contract** before using it (re-validate the returned model).
-  On a violation, return `ErrorEnvelope(code="INVALID_INPUT", stage=ORCHESTRATOR, details={"producer": "<stage>"})`.
-  Also check that `request_id` came back unchanged.
-- **No exception escapes `run()`** (R5.1). A component that raises gives `INTERNAL_ERROR` with a debug detail.
-- `details` never reach the end user. The front door shows only `message` or `explanation`.
-- Log one structured event per stage via `common/log.py` (`request_id`, `stage`, outcome, latency). Never log file
-  bytes or the question text at INFO level or above.
-- Import components **only** through their public entry points: `from blueprint_qa.validation import validate`
-  and `from blueprint_qa.question import interpret`.
+- Write only in A0 paths: `orchestrator/`, `api/`, `common/`, `contracts/`, `config/`, `tests/unit/{orchestrator,api,common,contracts}/`,
+  `pyproject.toml`, `.github/`, and A0 docs. Shared docs are append-only.
+- Never edit `validation/`, `question/` or `analysis/`, `models/`, or anything on A3's branches, and never touch
+  `blueprints-starter/`. Write `docs/requests/<role>-<title>.md` instead.
+- Apply contract changes only with the recorded approvals (§3). Never implement proposal 005.
+- Never print or log `GEMINI_API_KEY`. Never commit model weights.
+- Run the check sequence before every commit that changes code:
+  `ruff format --check src tests` · `ruff check src tests` · `python -m mypy` ·
+  `python -m blueprint_qa.contracts.generate_schema --check` · `pytest --cov=blueprint_qa --cov-fail-under=80`
+- Never claim something works without running it (R10.4). Commit with `[A0] …`. **Do not push**; ry pushes and opens the pull requests.
 
-### 3.5 Front door (`api/`)
+## 6. Definition of done
 
-A command line is enough for this phase (an HTTP API can come later):
-
-```
-python -m blueprint_qa.api <file> "<question>" [--format PNG|JPEG|PDF|IFC] [--locale fi-FI] [--json] [--debug]
-```
-
-- Format: from `--format`, otherwise from the file extension. A1 verifies it against the bytes anyway.
-- Default output: one readable line (the answer text or the user-safe message). `--json` prints the `Answer` /
-  `ErrorEnvelope` JSON without `details`.
-- `--debug` additionally prints the intermediate stage outputs (A1 verdict without image bytes, A2's
-  `ParsedQuestion`) to stderr. This is a developer aid; make `run()`'s internals expose them through a private helper.
-  Do not add a second public entry point.
-- Optional: an interactive mode (`--interactive`) that asks for questions repeatedly about one file. Each question
-  is a full `run()` (A1 runs again). Do not cache A1 results between questions: components are stateless (R3.7).
-
-## 4. Files (A0-owned paths only)
-
-```
-src/blueprint_qa/orchestrator/__init__.py   exports run only
-src/blueprint_qa/orchestrator/pipeline.py   run(): stage steps, contract checks, interim answers, fixed texts
-src/blueprint_qa/api/__init__.py            (no public logic)
-src/blueprint_qa/api/__main__.py            CLI front door (builds PipelineRequest, prints result)
-tests/unit/orchestrator/                    unit tests with fake A1/A2 entry points (monkeypatch)
-tests/unit/api/                             CLI tests (fake run())
-```
-
-Any new config keys go in `config/default.yaml` (A0) if needed. No hard-coded limits (R3.9).
-
-## 5. Steps
-
-1. **Start.** New Claude Code session in role **A0**. Run `git fetch`, then create branch `a0/ry/integration-a1-a2`
-   from `a0/ry/merge-plan` (this plan lives there). If `a0/ry/merge-plan` has already been merged, create it from an
-   up-to-date `main` instead. Check that `origin/main` has not moved past `c8e8127`; if it has, stop and ask ry. Append a claim to `docs/TASKS.md` (task #3, partial: "orchestrator + CLI for A1→A2", A0, ry, date).
-2. **Baseline.** Run the check sequence (step 8) on the fresh branch. It must match §0 (278 tests passing). If not, stop and report.
-3. **Housekeeping (append-only).** In `docs/TASKS.md`, append status lines saying that tasks 7–10 were merged
-   (PRs #3, #4), since their rows still say "not merged". Never rewrite existing rows.
-4. **Orchestrator.** Implement §3.1–3.4 in `orchestrator/pipeline.py`.
-5. **Front door.** Implement §3.5 in `api/__main__.py`.
-6. **Docs.**
-   - `docs/OPEN_QUESTIONS.md`: Q8 (architecture: AGENTS.md vs ry's description, see §3.3; the team decides),
-     Q9 (`Answer.unit` when `value` is None).
-   - `README.md`: how to run the CLI, and the updated layout status table.
-   - `docs/CHANGELOG.md`: entry for this task.
-7. **Tests** in `tests/unit/orchestrator/` and `tests/unit/api/`, offline, with fakes for A1 and A2:
-   - valid → A2 called → interim answer; invalid → **A2 not called** and the exact invalid-picture text;
-   - A1 error and A2 error pass through; a component that raises gives `INTERNAL_ERROR`; a component returning a
-     changed `request_id` or a contract-invalid object gives `INVALID_INPUT` with `details.producer`;
-   - `UNSUPPORTED` → `UNSUPPORTED_QUESTION`; clarification → `NEEDS_CLARIFICATION` with the A2 text;
-   - CLI: format detection, `--json` hides `details`, a missing file gives a clear message and a non-zero exit code;
-   - coverage ≥ 80 % for `orchestrator` and `api`.
-8. **Check sequence** (must all pass):
-   ```
-   ruff format --check src tests
-   ruff check src tests
-   python -m mypy
-   python -m blueprint_qa.contracts.generate_schema --check
-   pytest --cov=blueprint_qa --cov-fail-under=80
-   ```
-9. **Live demo** with the real Gemini API (key in `GEMINI_API_KEY`, never print it), using A1's test images:
-   - `tests/unit/validation/data/house_plan_fi.png` with "Montako makuuhuonetta talossa on?",
-     "How many bedrooms are there?" and "Wie viele Schlafzimmer gibt es?" → valid, interim answer, `--debug` shows the
-     same `ParsedQuestion` for all three;
-   - `tests/unit/validation/data/bar_chart.png` → exactly "This picture is invalid for our program", and the log shows
-     no A2 call;
-   - `tests/unit/validation/data/prompt_injection.png` → behaves safely.
-   Report the actual outputs and timings to ry.
-10. **Finish.** Commit with `[A0] ...` messages. **Do not push.** ry reviews, then pushes and opens the pull request.
-    A teammate other than ry approves it (§9).
-
-## 6. Rules for the merging agent
-
-- Write only in A0 paths (§4). If A1 or A2 needs a change, write `docs/requests/A1-…md` / `A2-…md` and continue.
-  Do not edit `validation/` or `question/`, even for a one-line fix.
-- Do not change contracts or AGENTS.md in this task. Gaps go to `docs/OPEN_QUESTIONS.md`.
-- Shared docs are append-only. In a conflict, keep both entries, ordered by date.
-- Never claim something works without running it (R10.4). Report failures as they are.
-- If anything in this plan conflicts with AGENTS.md, stop and ask ry. A human instruction that overrides
-  AGENTS.md is recorded in `docs/DEVIATIONS.md`.
-
-## 7. Definition of done
-
-- [ ] `run()` and the CLI implement §3 for A1 → A2; the A3/A4 slot is marked but empty
-- [ ] Invalid picture → exactly "This picture is invalid for our program"; A2 not called
-- [ ] No exception escapes; every component output contract-checked; no numbers produced
-- [ ] Only A0 paths changed; contracts and AGENTS.md unchanged
-- [ ] Check sequence passes; coverage ≥ 80 % for `orchestrator` and `api`
-- [ ] Live demo done and reported
-- [ ] TASKS, OPEN_QUESTIONS (Q8, Q9), README and CHANGELOG updated
-- [ ] Committed on `a0/ry/integration-a1-a2`, not pushed
+- [ ] Phase 1 merged: CLI runs A1 → A2; the invalid picture gives exactly the required text; no numbers produced
+- [ ] Phase 2 + 2b merged together: contracts v1.1.0 (fixtures, storey levels), `analysis:` config, `vision` extra; A2 green
+- [ ] Phase 3 merged: `analysis.analyze()` meets `docs/requests/A3-analysis-adapter.md`
+- [ ] Phase 4 merged: A2 ∥ A3 in the pipeline, contract-checked, live demo reported
+- [ ] OPEN_QUESTIONS Q8/Q9, proposal 005, the G4 deviation, README and CHANGELOG recorded
