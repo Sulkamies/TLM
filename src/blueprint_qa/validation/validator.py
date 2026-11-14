@@ -24,11 +24,20 @@ from blueprint_qa.validation.providers.base import (
     FloorPlanLabel,
 )
 from blueprint_qa.validation.raster import UnreadableImageError, normalize_raster
+from blueprint_qa.validation.receipt import (
+    ReceiptContext,
+    Rejected,
+    issue_receipt,
+    load_receipt_settings,
+    receipt_key,
+    verify_receipt,
+)
 from blueprint_qa.validation.settings import ValidationSettings, load_settings
 
 _STAGE = Stage.VALIDATION
 _LOCAL_PROVIDER = "local:checks"
 _IFC_PROVIDER = "local:ifc"
+_RECEIPT_PROVIDER_PREFIX = "receipt:"
 # Facts established by deterministic local checks are certain.
 _CERTAIN = 1.0
 
@@ -42,7 +51,11 @@ def validate(request: PipelineRequest) -> ValidationResult | ErrorEnvelope:
     """
     try:
         settings = load_settings()
-        return run_validation(request, settings, build_classifier(settings))
+        receipt_settings = load_receipt_settings()
+        receipts = ReceiptContext(
+            key=receipt_key(receipt_settings.key_env), ttl_s=receipt_settings.ttl_s
+        )
+        return run_validation(request, settings, build_classifier(settings), receipts)
     except Exception as exc:
         log_event(
             _logger,
@@ -66,8 +79,10 @@ def run_validation(
     request: PipelineRequest,
     settings: ValidationSettings,
     classifier: FloorPlanClassifier,
+    receipts: ReceiptContext | None = None,
 ) -> ValidationResult | ErrorEnvelope:
-    result = _run(request, settings, classifier)
+    """Run the checks. ``receipts=None`` disables validation receipts (no issue, no verify)."""
+    result = _run(request, settings, classifier, receipts)
     if isinstance(result, ValidationResult):
         log_event(
             _logger,
@@ -87,6 +102,7 @@ def _run(
     request: PipelineRequest,
     settings: ValidationSettings,
     classifier: FloorPlanClassifier,
+    receipts: ReceiptContext | None,
 ) -> ValidationResult | ErrorEnvelope:
     data = request.input_bytes
     detected = sniff_format(data)
@@ -111,10 +127,69 @@ def _run(
     except (UnreadablePdfError, UnreadableImageError):
         return _rejected(request, ValidationReason.UNREADABLE, detected)
 
+    if receipts is not None and request.validation_token is not None:
+        receipted = _from_receipt(
+            request,
+            request.validation_token,
+            detected,
+            plan_image,
+            classifier,
+            settings.min_confidence,
+            receipts,
+        )
+        if receipted is not None:
+            return receipted
+
     verdict = classifier.classify(request.request_id, plan_image.image_png)
     if isinstance(verdict, ErrorEnvelope):
         return verdict
-    return _classified(request, detected, plan_image, verdict, settings.min_confidence)
+    result = _classified(request, detected, plan_image, verdict, settings.min_confidence)
+    if receipts is not None and result.is_valid:
+        token = issue_receipt(
+            receipts, data, detected, verdict.provider, verdict.classification.confidence
+        )
+        result = result.model_copy(update={"validation_token": token})
+    return result
+
+
+def _from_receipt(
+    request: PipelineRequest,
+    token: str,
+    input_format: InputFormat,
+    plan_image: PlanImage,
+    classifier: FloorPlanClassifier,
+    min_confidence: float,
+    receipts: ReceiptContext,
+) -> ValidationResult | None:
+    """A valid result from the request's receipt, or ``None`` to validate normally.
+
+    A rejected receipt is never an error: it is logged (without the token) and ignored.
+    """
+    check = verify_receipt(
+        receipts, token, request.input_bytes, input_format, classifier.provider, min_confidence
+    )
+    if isinstance(check, Rejected):
+        log_event(
+            _logger,
+            "receipt_rejected",
+            request_id=request.request_id,
+            stage=_STAGE,
+            reason=check.reason.value,
+        )
+        return None
+    log_event(_logger, "receipt_used", request_id=request.request_id, stage=_STAGE)
+    return ValidationResult(
+        request_id=request.request_id,
+        is_valid=True,
+        reason=ValidationReason.OK,
+        confidence=float(check.claims.c),
+        input_format=input_format,
+        provider=_RECEIPT_PROVIDER_PREFIX + check.claims.p,
+        plan_image=plan_image,
+        ifc_bytes=None,
+        ifc_schema=None,
+        validation_token=token,
+    )
 
 
 def _validate_ifc(request: PipelineRequest, settings: ValidationSettings) -> ValidationResult:

@@ -222,6 +222,8 @@ def _patch_config(monkeypatch: pytest.MonkeyPatch, **overrides: object) -> None:
     section = make_settings(**overrides).model_dump()
 
     def load_section(name: str) -> dict[str, object]:
+        if name == "validation_receipt":
+            return {"ttl_s": 3600, "key_env": "BP_VALIDATION_RECEIPT_KEY"}
         assert name == "validation"
         return dict(section)
 

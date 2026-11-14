@@ -37,6 +37,14 @@ class ClassifierVerdict:
 
 
 class FloorPlanClassifier(Protocol):
+    @property
+    def provider(self) -> str:
+        """The provider string ``classify`` would report now, without calling it.
+
+        Used to invalidate validation receipts after a model or prompt change.
+        """
+        ...
+
     def classify(self, request_id: str, image_png: bytes) -> ClassifierVerdict | ErrorEnvelope:
         """Decide whether the PNG image is a house floor plan."""
         ...

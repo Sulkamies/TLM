@@ -11,7 +11,12 @@ from blueprint_qa.common import config
 def _isolated_env(
     request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
 ) -> Iterator[None]:
-    names = ["BP_CONFIG_DIR", "BP_LLM_PROVIDER", "BP_LLM_CASSETTE_DIR"]
+    names = [
+        "BP_CONFIG_DIR",
+        "BP_LLM_PROVIDER",
+        "BP_LLM_CASSETTE_DIR",
+        "BP_VALIDATION_RECEIPT_KEY",
+    ]
     if request.node.get_closest_marker("live") is None:
         names += ["GEMINI_API_KEY", "GOOGLE_API_KEY"]
     for var in names:
