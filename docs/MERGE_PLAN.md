@@ -130,8 +130,9 @@ Any new config keys go in `config/default.yaml` (A0) if needed. No hard-coded li
 
 ## 5. Steps
 
-1. **Start.** New Claude Code session in role **A0**. `git checkout main && git pull`, then create branch
-   `a0/ry/integration-a1-a2`. Append a claim to `docs/TASKS.md` (task #3, partial: "orchestrator + CLI for A1→A2", A0, ry, date).
+1. **Start.** New Claude Code session in role **A0**. Run `git fetch`, then create branch `a0/ry/integration-a1-a2`
+   from `a0/ry/merge-plan` (this plan lives there). If `a0/ry/merge-plan` has already been merged, create it from an
+   up-to-date `main` instead. Check that `origin/main` has not moved past `c8e8127`; if it has, stop and ask ry. Append a claim to `docs/TASKS.md` (task #3, partial: "orchestrator + CLI for A1→A2", A0, ry, date).
 2. **Baseline.** Run the check sequence (step 8) on the fresh branch. It must match §0 (278 tests passing). If not, stop and report.
 3. **Housekeeping (append-only).** In `docs/TASKS.md`, append status lines saying that tasks 7–10 were merged
    (PRs #3, #4), since their rows still say "not merged". Never rewrite existing rows.
