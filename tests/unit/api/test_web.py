@@ -128,6 +128,47 @@ def test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer() -
         and 'id="camera"' not in body
         and 'capture="environment"' not in body
     )
-    assert ".num{font-size:34px;" in body
+    assert (
+        ".num{font-size:28px;" in body and ".text{font-size:14px}" in body
+    )  # answers a bit smaller
     assert 'id="choose"' in body  # choosing a picture still works (plus drag and drop, paste)
     assert "sample" not in body.lower() and "/samples/" not in body  # no sample plans either
+
+
+def _phone_css() -> str:
+    start = PAGE.index("@media (max-width:900px){")
+    depth, j = 1, start + len("@media (max-width:900px){")
+    while depth:
+        depth += {"{": 1, "}": -1}.get(PAGE[j], 0)
+        j += 1
+    return PAGE[start:j]
+
+
+def test_phone_layout_is_phone_only() -> None:
+    # ry, 2026-11-14: at's phone layout and touch handling (d0256e2); laptop view unchanged.
+    phone = _phone_css()
+    for rule in (
+        "body.working{",
+        ".fsbtn{display:inline-block}",
+        "body.fs .stage{",
+        "scale(var(--inv,1))",
+    ):
+        assert rule in phone, rule  # phone-only CSS lives in the phone block
+    laptop = PAGE.replace(phone, "")
+    assert ".fsbtn{display:none}" in laptop  # the full-screen button is hidden on laptops
+    assert "body.working{" not in laptop and "body.fs" not in laptop and "var(--inv" not in laptop
+    js = PAGE.split("<script>", 1)[1]
+    assert "if (isTap && e.pointerType !== 'mouse')" in js  # taps and double-taps: touch only
+    assert "e.pointerType !== 'mouse' && scale > 1" in js  # momentum glide: touch only
+    assert "e.deltaY < 0 ? 1.15 : 1 / 1.15" in js  # laptop wheel zoom unchanged
+
+
+def test_landing_title_and_no_explanation_on_any_screen() -> None:
+    # ry, 2026-11-14: same title on laptop and phone; no "how it was counted" text anywhere.
+    body = PAGE.split("-->", 1)[1]
+    assert "<h2>Chat with your <em>blueprint</em></h2>" in body
+    assert '<p class="lead">Ask anything, the blueprint talks!</p>' in body
+    assert "Ask any floor plan" not in body
+    phone = _phone_css()
+    for text in ("How it was counted", "How this count", "j.working", "Counted on"):
+        assert text not in body and text not in phone, text
