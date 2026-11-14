@@ -359,3 +359,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   three version-literal tests (pending `docs/requests/A3-contract-version-literal.md`). Live through
   `python -m blueprint_qa.api.server`: three questions about one picture → one validation `llm_call`, then two
   `receipt_used`.
+
+### 2026-11-14 · A0 · ry · Browser UI: landing page tweaks
+- `src/blueprint_qa/api/web/index.html` (ry): removed the "Every answer shows where it came from" badge and the
+  "Take a photo" button (with its hidden camera input); the answer number or yes/no word is smaller (34px instead of
+  46px). The sample plans are no longer offered on the landing page (with their footer credit); the `/samples/`
+  endpoint and files stay unchanged. Choosing, dragging and pasting a picture work as before. No API, server or
+  Android app change.
+- Test `test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer`. README wording.

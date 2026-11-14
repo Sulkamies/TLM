@@ -83,7 +83,7 @@ def test_the_page_is_self_contained() -> None:
 
 def test_sample_plans_are_served_with_their_licence(client: TestClient) -> None:
     for name in ("colorful-11397.png", "colorful-12200.png", "colorful-2002.png"):
-        assert f'"{name}"' in PAGE
+        assert name not in PAGE  # no longer offered on the landing page (ry, 2026-11-14)
         r = client.get(f"/samples/{name}")
         assert r.status_code == 200 and r.headers["content-type"] == "image/png"
         assert r.content[:8] == b"\x89PNG\r\n\x1a\n"
@@ -126,3 +126,17 @@ def test_the_page_sends_the_receipt_back_for_the_same_picture_only() -> None:
         PAGE.count("receipt = null") >= 3
     )  # declared, reset on a new picture, reset on "New drawing"
     assert "it.file === file" in PAGE  # a late answer for an old picture never sets the new receipt
+
+def test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer() -> None:
+    # ry, 2026-11-14: no "Every answer shows where it came from" badge, no "Take a photo" button,
+    # and the answer (number or yes/no word) at 34px instead of 46px.
+    body = PAGE.split("-->", 1)[1]
+    assert "Every answer shows" not in body and "pill" not in body
+    assert (
+        "Take a photo" not in body
+        and 'id="camera"' not in body
+        and 'capture="environment"' not in body
+    )
+    assert ".num{font-size:34px;" in body
+    assert 'id="choose"' in body  # choosing a picture still works (plus drag and drop, paste)
+    assert "sample" not in body.lower() and "/samples/" not in body  # no sample plans either

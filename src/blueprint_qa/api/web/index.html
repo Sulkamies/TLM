@@ -10,9 +10,10 @@
      (1) pictures that are not PNG/JPEG (WebP, HEIC, ...) are converted to JPEG before upload, because the
      pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint;
      (3) no explanation of how an answer was reached: neither "How it was counted" (the API's `working`)
-     nor the "Counted on the drawing" legend; (4) no suggested questions (ry, 2026-11-14);
-     (5) the validation receipt from the first answer is sent back with later questions about the same
-     picture, so A1 checks the picture with its LLM only once per picture (change 006). -->
+     nor the "Counted on the drawing" legend; (4) no suggested questions; (5) no "Every answer shows where
+     it came from" badge, no "Take a photo" button, no sample plans, and a smaller answer (34px instead of 46px)
+     (ry, 2026-11-14); (6) the validation receipt from the first answer is sent back with later questions about
+     the same picture, so A1 checks the picture with its LLM only once per picture (change 006). -->
 <style>
 :root{
   --bg:#f4f6fb; --panel:rgba(255,255,255,.80); --solid:#ffffff; --ink:#0e1522; --muted:#5b6578;
@@ -67,9 +68,6 @@ header h1 span{color:var(--muted);font-weight:500}
   background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
   background-size:36px 36px;-webkit-mask-image:radial-gradient(ellipse 60% 55% at 50% 30%,#000,transparent 75%);mask-image:radial-gradient(ellipse 60% 55% at 50% 30%,#000,transparent 75%)}
 .hero{position:relative;width:100%;max-width:720px;text-align:center;animation:rise .6s cubic-bezier(.2,.7,.2,1) both}
-.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 14px;border-radius:999px;font-size:13px;color:var(--muted);
-  background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(8px)}
-.pill i{width:7px;height:7px;border-radius:50%;background:#2ecc71;box-shadow:0 0 0 4px rgba(46,204,113,.18)}
 .hero h2{font-size:clamp(34px,6vw,56px);line-height:1.05;letter-spacing:-.035em;margin:18px 0 14px;font-weight:750}
 .hero h2 em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero p.lead{color:var(--muted);font-size:17px;max-width:560px;margin:0 auto 26px}
@@ -78,15 +76,6 @@ header h1 span{color:var(--muted);font-weight:500}
   background:var(--panel);backdrop-filter:blur(8px);transition:.2s}
 .drop svg{width:26px;height:26px;display:block;margin:0 auto 6px;opacity:.7}
 .drop.over{border-color:var(--accent);background:var(--soft);transform:scale(1.01)}
-.sampleshead{margin:34px 0 12px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.samples{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.samples button{padding:0;border:1px solid var(--line);background:var(--solid);border-radius:16px;overflow:hidden;text-align:left;
-  box-shadow:var(--shadow);transition:transform .2s,border-color .2s}
-.samples button:hover{transform:translateY(-4px);border-color:var(--accent)}
-.samples .thumb{height:130px;background:#fff;display:grid;place-items:center}
-.samples img{max-width:100%;max-height:100%;display:block}
-.samples span{display:block;padding:10px 12px;font-weight:600;font-size:13px}
-.samples small{display:block;color:var(--muted);font-weight:500;font-size:12px}
 .steps{list-style:none;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:0;margin:34px 0 8px;color:var(--muted);font-size:13px}
 .steps li{display:flex;align-items:center;gap:8px}
 .steps b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--accent);font-size:12px}
@@ -134,7 +123,7 @@ header h1 span{color:var(--muted);font-weight:500}
 .a{align-self:flex-start;width:100%;background:var(--solid);border:1px solid var(--line);padding:14px 16px;border-radius:18px 18px 18px 4px}
 .enter{animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
 .big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.num{font-size:46px;line-height:1;font-weight:750;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
+.num{font-size:34px;line-height:1;font-weight:750;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
   background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .unit{font-size:13px;font-weight:650;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--accent)}
 .text{font-size:15px}
@@ -171,7 +160,6 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
 @media (max-width:900px){
   body{overflow:auto}
   #welcome{padding-top:4vh}
-  .samples{gap:8px}.samples .thumb{height:96px}
   #work{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(240px,44vh) minmax(380px,1fr);gap:10px;padding:10px;height:auto;min-height:0}
   .chat{min-height:380px}
   .hint,header h1 span{display:none}
@@ -189,19 +177,15 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
 <!-- ============ welcome ============ -->
 <section id="welcome">
   <div class="hero">
-    <span class="pill"><i></i>Every answer shows where it came from</span>
     <h2>Ask any floor plan <em>anything.</em></h2>
     <p class="lead">Add a picture of a floor plan, ask how many toilets, rooms, windows or doors it has, and check the answer on the drawing in seconds.</p>
     <div class="actions">
       <button class="btn" id="choose">Choose a picture</button>
-      <button class="btn ghost" id="camera">Take a photo</button>
     </div>
     <div class="drop" id="drop">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
       Drag a picture here, or paste one with Ctrl+V
     </div>
-    <div class="sampleshead">Or try a sample</div>
-    <div class="samples" id="samples"></div>
     <ol class="steps"><li><b>1</b>Add a drawing</li><li><b>2</b>Ask in plain words</li><li><b>3</b>Check the red boxes</li></ol>
     <div class="tip">Pictures are sent to the server and to Google Gemini to be read. Don't upload anything confidential.</div>
   </div>
@@ -239,14 +223,12 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
   </div>
 </section>
 
-<footer>AI can misread drawings: always check the red boxes. Sample plans: CubiCasa5K, CC BY-NC-SA 4.0.</footer>
+<footer>AI can misread drawings: always check the red boxes.</footer>
 
 <input type="file" id="file" accept="image/png,image/jpeg,image/webp" hidden>
-<input type="file" id="cam" accept="image/*" capture="environment" hidden>
 
 <script>
 const $ = s => document.querySelector(s);
-const SAMPLES = [["colorful-11397.png", "Two-floor home", "Finnish row house"], ["colorful-12200.png", "Apartment", "Single floor"], ["colorful-2002.png", "With sauna", "Compact flat"]];
 
 let file = null, imgUrl = null, items = [], nextId = 1, hi = null, overlayKey = '';
 let receipt = null;   // A1's validation receipt for the current picture (docs/API.md, validation_token)
@@ -256,9 +238,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 
 /* ---------- picking a picture ---------- */
 $('#choose').onclick = () => $('#file').click();
-$('#camera').onclick = () => $('#cam').click();
 $('#file').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
-$('#cam').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
 $('#restart').onclick = () => { $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; receipt = null; };
 
 ['dragenter','dragover'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.add('over'); }));
@@ -266,13 +246,6 @@ $('#restart').onclick = () => { $('#work').hidden = true; $('#welcome').hidden =
 document.addEventListener('drop', e => { const f = [...(e.dataTransfer?.files || [])].find(f => f.type.startsWith('image/')); if (f) setImage(f); });
 document.addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith('image/')); if (f) setImage(f); });
 
-$('#samples').innerHTML = SAMPLES.map(([f, label, sub]) =>
-  `<button data-f="${f}"><div class="thumb"><img src="/samples/${f}" alt="${esc(label)}"></div><span>${esc(label)}<small>${esc(sub)}</small></span></button>`).join('');
-$('#samples').onclick = async e => {
-  const b = e.target.closest('button'); if (!b) return;
-  const r = await fetch('/samples/' + b.dataset.f); const blob = await r.blob();
-  setImage(new File([blob], b.dataset.f, {type: blob.type || 'image/png'}));
-};
 
 function setImage(f) {
   if (imgUrl) URL.revokeObjectURL(imgUrl);

@@ -97,3 +97,9 @@ Answers now carry `validation_token` (`docs/API.md`, "Validating a picture once"
 sends it back as the form field `validation_token` with later questions about the same picture, the server checks the
 picture with the LLM only once per chat (faster answers, fewer API calls). Forget it when the user picks another
 picture. Without it the app keeps working exactly as now.
+
+## 8. Update: landing page tweaks on the served page (ry, 2026-11-14)
+
+Removed on ry's request: the "Every answer shows where it came from" badge and the "Take a photo" button; the answer
+is shown smaller (34px instead of 46px); the sample plans are no longer offered on the landing page. A test checks
+the served page. The Android app is not affected.
