@@ -330,3 +330,15 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   endpoint and files stay unchanged. Choosing, dragging and pasting a picture work as before. No API, server or
   Android app change.
 - Test `test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer`. README wording.
+
+### 2026-11-14 · A0 · ry · Browser UI on phones: at's phone layout and touch handling
+- `src/blueprint_qa/api/web/index.html` (ry: "change the phone version, not the laptop version"): the phone parts of
+  at's commit `d0256e2` on `ui/at/webpage`. Phone layout (drawing on top, questions below, sized from the real window
+  height), full-screen drawing button, double-tap zoom, pinch that follows the fingers, momentum glide for finger drags,
+  outlines and badges that keep their size when zooming, no keyboard pop-up when a drawing opens, a fading
+  "Pinch or double-tap to zoom" hint. All new CSS is inside the phone block (≤ 900px) or only hides the new button; all
+  new behaviour is touch-only or phone-width-only.
+- Left out because they would change the laptop view: the new mouse-wheel/trackpad zoom and zoom-button steps, and
+  the "preview" fallback for opening the page as a file. The sample-card fix does not apply (no samples).
+- Verified: CSS rules outside the phone block are unchanged except `.fsbtn{display:none}`; test
+  `test_phone_layout_is_phone_only`. No API, server or Android app change.
