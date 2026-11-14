@@ -56,3 +56,9 @@ analysis:                      # A3. Values from A3's eval/thresholds_vision_v2.
     bathtub: 1.0
   sauna_cluster_grow: 0.5      # bench boxes grown by this x their size before grouping
   bounds_tolerance_px: 1.0     # clamp boxes this far outside the image; drop anything further
+
+api:                           # A0: HTTP front door for the Android app (src/blueprint_qa/api/server.py)
+  host: 127.0.0.1              # localhost only; use --host 0.0.0.0 to serve a phone on the same network
+  port: 8000
+  max_upload_bytes: null       # reject larger uploads with 413; null = no limit (R3.9)
+  evidence_point_size: 0.04    # box side for point evidence (doors, windows, fixtures), fraction of the shorter image side
