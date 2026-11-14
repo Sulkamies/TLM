@@ -11,7 +11,8 @@
      pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint;
      (3) no explanation of how an answer was reached: neither "How it was counted" (the API's `working`)
      nor the "Counted on the drawing" legend; (4) no suggested questions; (5) no "Every answer shows where
-     it came from" badge, no "Take a photo" button, no sample plans, and a smaller answer (34px instead of 46px)
+     it came from" badge, no "Take a photo" button, no sample plans, a smaller answer (28px numbers, 14px sentences),
+     the title "Chat with your blueprint" and the line "Ask anything, the blueprint talks!"
      (ry, 2026-11-14); (6) the phone layout and touch handling of at's commit d0256e2 (ui/at/webpage), limited to
      phones: phone-width CSS, touch-only gestures; the laptop view is unchanged (ry, 2026-11-14); (7) the
      validation receipt from the first answer is sent back with later questions about the same picture, so A1
@@ -126,10 +127,10 @@ header h1 span{color:var(--muted);font-weight:500}
 .a{align-self:flex-start;width:100%;background:var(--solid);border:1px solid var(--line);padding:14px 16px;border-radius:18px 18px 18px 4px}
 .enter{animation:rise .35s cubic-bezier(.2,.7,.2,1) both}
 .big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.num{font-size:34px;line-height:1;font-weight:750;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
+.num{font-size:28px;line-height:1;font-weight:750;letter-spacing:-.04em;font-variant-numeric:tabular-nums;
   background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .unit{font-size:13px;font-weight:650;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--accent)}
-.text{font-size:15px}
+.text{font-size:14px}
 .evrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .ev{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid var(--line);background:transparent;font-size:12px;color:var(--muted);transition:.15s}
 .ev b{flex:none;min-width:18px;height:18px;border-radius:9px;background:var(--mark);color:#fff;font-size:10px;line-height:18px;text-align:center}
@@ -209,8 +210,8 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
 <!-- ============ welcome ============ -->
 <section id="welcome">
   <div class="hero">
-    <h2>Ask any floor plan <em>anything.</em></h2>
-    <p class="lead">Add a picture of a floor plan, ask how many toilets, rooms, windows or doors it has, and check the answer on the drawing in seconds.</p>
+    <h2>Chat with your <em>blueprint</em></h2>
+    <p class="lead">Ask anything, the blueprint talks!</p>
     <div class="actions">
       <button class="btn" id="choose">Choose a picture</button>
     </div>
