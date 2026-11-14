@@ -164,7 +164,7 @@ def test_phone_layout_is_phone_only() -> None:
 
 
 def test_landing_title_and_no_explanation_on_any_screen() -> None:
-    # ry, 2026-11-14: one title and line for laptop and phone; no "how it was counted" text on either.
+    # ry, 2026-11-14: same title on laptop and phone; no "how it was counted" text anywhere.
     body = PAGE.split("-->", 1)[1]
     assert "<h2>Chat with your <em>blueprint</em></h2>" in body
     assert '<p class="lead">Ask anything, the blueprint talks!</p>' in body
