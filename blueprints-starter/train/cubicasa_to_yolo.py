@@ -34,6 +34,7 @@ CLASS_RULES = [
     ("room_bedroom", ["space bedroom"]),
     ("room_bath", ["space bath"]),
     ("room_sauna", ["space sauna"]),
+    ("opening", []),                           # 'Door None ...' = doorway without a door leaf (never counted)
 ]
 # Outdoor spaces the questions do NOT count as balconies
 NOT_BALCONY = {"garden", "porch", "patio", "terrace", "veranda", "pergola", "coveredarea", "kitchen"}
@@ -103,7 +104,7 @@ def classify(cls_attr):
     Token-based, so 'Space Outdoor' never matches 'door'. Special cases from the
     CubiCasa label list:
       - 'Doors' is a container around all doors -> ignored
-      - 'Door None ...' is a doorway without a door leaf -> ignored (questions don't count it)
+      - 'Door None ...' is a doorway without a door leaf -> 'opening' (learnt, never counted)
       - 'Floor' is one storey; 'FloorsCompose' / 'Floorplan ...' wrap several -> only 'Floor'
     """
     tokens = [t for t in re.split(r"[\s_\-]+", cls_attr.lower()) if t]
@@ -113,7 +114,7 @@ def classify(cls_attr):
         return "floor"
     if tokens[0] in ("door", "window"):
         if tokens[0] == "door" and len(tokens) > 1 and tokens[1] == "none":
-            return None
+            return "opening"   # learnt separately so the model stops counting doorways as doors
         return tokens[0]
     is_space = tokens[0] == "space"
     for name, keys in CLASS_RULES:

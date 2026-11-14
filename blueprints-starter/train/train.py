@@ -3,7 +3,7 @@
     python train/train.py --data ~/yolo/data.yaml --epochs 1 --name smoke      # quick check
     python train/train.py --data ~/yolo/data.yaml --name cubicasa_v1           # full run
     python train/train.py --data ~/yolo/data.yaml --model yolo11l.pt --imgsz 1600 \
-        --device 0,1,2,3 --batch 32 --cache ram --name cubicasa_v3                 # 4-GPU quality run
+        --device 0,1 --batch 16 --cache ram --epochs 100 --patience 30 --cos-lr --name cubicasa_v3
 
 Results go to ~/runs/<name>/ (weights/best.pt, results.png, train_batch0.jpg, ...).
 """
@@ -25,13 +25,16 @@ def main():
     ap.add_argument("--name", default="cubicasa_v1")
     ap.add_argument("--device", default="0",
                     help="GPU(s): '0', or '0,1,2,3' to spread one run over 4 GPUs (batch is the total)")
+    ap.add_argument("--patience", type=int, default=20, help="stop after N epochs without improvement")
+    ap.add_argument("--cos-lr", action="store_true", help="cosine learning-rate schedule")
     ap.add_argument("--cache", default="false", choices=["false", "ram", "disk"],
                     help="ram: keep decoded images in memory (faster; needs ~30-60 GB RAM at imgsz 1600)")
     a = ap.parse_args()
 
     YOLO(a.model).train(
         data=os.path.expanduser(a.data), epochs=a.epochs, imgsz=a.imgsz, batch=a.batch,
-        workers=a.workers, project=a.project, name=a.name, exist_ok=True, patience=20,
+        workers=a.workers, project=a.project, name=a.name, exist_ok=True, patience=a.patience,
+        cos_lr=a.cos_lr,
         device=a.device, cache=False if a.cache == "false" else a.cache,
         # drawings: flips/rotations are valid, colour jitter mostly is not
         fliplr=0.5, flipud=0.5, degrees=5.0, mosaic=1.0, hsv_h=0.0, hsv_s=0.2, hsv_v=0.3,
