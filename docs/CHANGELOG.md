@@ -34,3 +34,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - `tests/unit/common/conftest.py`: opt-in `live` tests now keep `GEMINI_API_KEY`. Before this, the live test was always skipped.
 - **Live test `pytest -m live` passed** against the real Gemini API through `common/llm.py`.
 - Offline suite unchanged: 60 passing.
+
+### 2026-11-14 · A0 · ry · Wrapper ready for A1 (images)
+- Live check: a synthetic PNG through `common/llm.py` (`get_llm_client("validation")`, `images_png=[...]`) on `gemini-3.8-flash` gave a
+  validated verdict in about 6 s, about 1.2k input tokens. No user data sent.
+- `config/llm.yaml`: explicit `components.validation` slot (same model as default).
+- New `tests/unit/common/test_llm_boundary.py`: CI fails if any module outside `common/` imports a vendor LLM SDK (R7.5).
+- Brief and merge checklist for A1: `docs/requests/A1-use-shared-llm-wrapper.md`. Plan images still need R7.4 approval.
+- Tests: 63 passing.

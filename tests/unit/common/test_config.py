@@ -16,9 +16,14 @@ def test_repo_config_question_uses_gemini_flash() -> None:
     assert s.runtime.max_validation_retries == 2
 
 
-def test_unknown_component_falls_back_to_defaults() -> None:
+def test_validation_component_has_its_own_slot() -> None:
     s = config.llm_settings("validation")
-    assert s.component == "validation"
+    assert (s.component, s.model.model) == ("validation", "gemini-3.8-flash")
+
+
+def test_unknown_component_falls_back_to_defaults() -> None:
+    s = config.llm_settings("not_configured")
+    assert s.component == "not_configured"
     assert s.model.model == "gemini-3.8-flash"
 
 

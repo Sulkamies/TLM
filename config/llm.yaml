@@ -14,3 +14,5 @@ defaults:
 components:
   question:                    # A2 Question Interpreter
     model: gemini-3.8-flash
+  validation:                  # A1 Input Validator (image classification; images need EXTERNAL_SERVICES approval)
+    model: gemini-3.8-flash
