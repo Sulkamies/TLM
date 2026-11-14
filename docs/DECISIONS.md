@@ -84,11 +84,15 @@ A4 may give a COUNT of 0 or an EXISTENCE of 0.0 only if the analysis declares, t
 otherwise `CANNOT_ANSWER`. A convention in `warnings`, not a contract field, so no contract change is needed now
 (A3 spec §I). A contract field is the cleaner long-term option (OPEN_QUESTIONS Q13).
 
-### D-013 · 2026-11-14 · A0 · requested by ry · HTTP API for the Android app; A0 approves `android-app/`
+### D-013 · 2026-11-14 · A0 · requested by ry · One HTTP API for all user interfaces; A0 approves `android-app/`
 The Android app (`android-app/`, branch `ui/at/android-app`, author at) is a **client of the HTTP front door**, not a
 pipeline component, so R3.3 (stack variation for components) does not apply: it never sees the contracts, only the
 JSON of `POST /ask`. A0 serves that endpoint in `src/blueprint_qa/api/server.py` to the app's existing contract
-(`android-app/README.md`), presented by `api/mobile.py`: numbers with display units, yes/no as words in the question's
+(`android-app/README.md`), presented by `api/ask.py`: numbers with display units, yes/no as words in the question's
 language, non-answers as text, user-safe errors, evidence boxes from A3's analysis. Server libraries are the optional
 `server` extra (FastAPI, uvicorn, python-multipart), installed in CI. **A0 approves `android-app/` as a new top-level
 directory (R2.4)**; one human must still approve before it is merged, and not its author (§9).
+**Browser UI (ry chose "shared API, add web page"):** the same server serves a self-contained web page at `/`
+(`api/web/index.html`) that uses the same `POST /ask`. The contract is written once: `docs/API.md`, backed by the
+Pydantic models in `api/ask.py`; a unit test checks that both clients read only those fields and that the spec lists
+them all. Changes stay additive; breaking ones need a new endpoint. The Android app is unchanged.

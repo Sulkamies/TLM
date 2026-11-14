@@ -1,10 +1,11 @@
-"""HTTP front door for the Android app (AGENTS.md §2.1 ``api/``). Custodian: A0.
+"""HTTP front door for all user interfaces (AGENTS.md §2.1 ``api/``). Custodian: A0.
 
     python -m blueprint_qa.api.server [--host 127.0.0.1] [--port 8000]
 
 * ``POST /ask`` (multipart/form-data): ``image`` (PNG, JPEG, PDF or IFC file), ``question``
   (text), optional ``locale`` (BCP-47; else the first ``Accept-Language`` tag). Response format:
-  :mod:`blueprint_qa.api.mobile`.
+  :mod:`blueprint_qa.api.ask`; spec ``docs/API.md``. Used by the Android app and the web page.
+* ``GET /``: the browser UI (``api/web/index.html``), a client of ``POST /ask`` like the app.
 * ``GET /health``: ``{"status": "ok"}``, to check the address from a browser or the phone.
 
 It only builds a ``PipelineRequest`` and calls the orchestrator; it has no pipeline logic.
@@ -21,9 +22,9 @@ from typing import Annotated, Any
 
 from fastapi import FastAPI, File, Form, Header, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
-from blueprint_qa.api import mobile
+from blueprint_qa.api import ask as ask_format
 from blueprint_qa.api.cli import EXTENSIONS
 from blueprint_qa.common.config import load_section
 from blueprint_qa.common.log import configure_logging
@@ -37,6 +38,7 @@ CONTENT_TYPES: dict[str, InputFormat] = {
     "image/jpg": InputFormat.JPEG,
     "application/pdf": InputFormat.PDF,
 }
+WEB_PAGE = Path(__file__).resolve().parent / "web" / "index.html"
 
 
 def create_app() -> FastAPI:
@@ -54,6 +56,11 @@ def create_app() -> FastAPI:
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/", response_class=HTMLResponse)
+    def web_page() -> HTMLResponse:
+        # The browser client; read per request so an edited page shows without a restart.
+        return HTMLResponse(WEB_PAGE.read_text(encoding="utf-8"))
 
     @app.post("/ask")
     def ask(
@@ -81,7 +88,7 @@ def create_app() -> FastAPI:
             filename=image.filename,
             locale_hint=locale or first_language(accept_language),
         )
-        status, body = mobile.present(run_traced(request), point_size)
+        status, body = ask_format.present(run_traced(request), point_size)
         return JSONResponse(body, status_code=status)
 
     return app

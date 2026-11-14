@@ -284,11 +284,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   A3 13.5 s on the first call (model load) then 3–5 s, A4 < 1 ms; 5–7 s per question end to end.
 - README: setup for raster plans, real CLI output. No contract, config or prompt change.
 
-### 2026-11-14 · A0 · ry · HTTP server for the Android app
+### 2026-11-14 · A0 · ry · HTTP server for the Android app and the browser
 - `src/blueprint_qa/api/server.py`: `python -m blueprint_qa.api.server [--host] [--port]`. `POST /ask` (multipart
   `image`, `question`, optional `locale`; else `Accept-Language`) builds a `PipelineRequest` and runs the orchestrator;
   `GET /health`. Bad uploads → 400/413/415 with `{"error"}`, also for missing fields.
-- `src/blueprint_qa/api/mobile.py`: presents a pipeline result in the app's format (`android-app/README.md`): numbers
+- `src/blueprint_qa/api/ask.py` (Pydantic models `AskAnswer`, `AskError`, `EvidenceBox`): presents a pipeline result in the app's format (`android-app/README.md`): numbers
   with display units, yes/no as words in the answer's language, non-answers as text (HTTP 200), errors as
   `{"error", "code"}` without `details` (503 if retryable, else 500), evidence ids → boxes in image fractions from A3's
   analysis (rooms: bounding box; doors/windows/fixtures: squares of `api.evidence_point_size`).
@@ -297,4 +297,8 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Tests `tests/unit/api/test_server.py` (19). Live test with the real model over HTTP: correct counts, "Kyllä" / "No",
   text answers, 400/415 bodies; evidence boxes drawn onto the picture land on the right bedrooms, doors and sinks.
   First request 16 s (model load), then 5–11 s.
-- D-013 (app = HTTP client; A0 approves `android-app/`, one human still needed). Request `docs/requests/UI-android-app.md`.
+- **Browser UI** `src/blueprint_qa/api/web/index.html`, served at `GET /`: choose or drop a picture, ask, "Show on the
+  drawing"; self-contained (no CDN), server text inserted as text only. Same `POST /ask` as the app.
+- **One written contract** for all clients: `docs/API.md`; `tests/unit/api/test_web.py` checks that the page and the
+  Android app read only contract fields and that the spec lists every field.
+- D-013 (one API for all UIs; A0 approves `android-app/`, one human still needed). Request `docs/requests/UI-android-app.md`.

@@ -7,7 +7,11 @@
 
 `python -m blueprint_qa.api.server --host 0.0.0.0 --port 8000` serves exactly the contract in `android-app/README.md`, so
 **the app needs no code change**. It runs the full pipeline: A1 checks the picture, A2 ∥ A3 read the question and the
-plan, A4 computes the number. The response format lives in `src/blueprint_qa/api/mobile.py`:
+plan, A4 computes the number.
+
+The contract is now written down once for all clients in **`docs/API.md`** (the browser page the server shows at `/`
+uses the same one); please treat that file as the reference from now on. The response models live in
+`src/blueprint_qa/api/ask.py`. In short:
 
 | Pipeline result | JSON sent to the app |
 |---|---|

@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from blueprint_qa.api import mobile, server
+from blueprint_qa.api import ask, server
 from blueprint_qa.contracts import (
     Answer,
     AnswerStatus,
@@ -250,10 +250,10 @@ def test_declared_format_and_language_helpers() -> None:
 
 def test_point_evidence_is_a_square_around_the_position() -> None:
     door = next(o for o in ANALYSIS.openings if o.id == DOORS[0])
-    (box,) = mobile.evidence_boxes([door.id], trace(answer()), point_size=0.04)
+    (box,) = ask.evidence_boxes([door.id], trace(answer()), point_size=0.04)
     side = 0.04 * 745  # px: 4 % of the shorter image side; door_1 lies well inside the image
     cx, cy = door.position
-    assert box == pytest.approx(
+    assert box.model_dump() == pytest.approx(
         {
             "label": "Door",
             "x": (cx - side / 2) / 855,
@@ -269,14 +269,14 @@ def test_boxes_are_clamped_to_the_image() -> None:
         update={"openings": [ANALYSIS.openings[0].model_copy(update={"position": (0.0, 745.0)})]}
     )
     t = PipelineTrace(result=answer(), stages=[(Stage.VALIDATION, PLAN), (Stage.ANALYSIS, edge)])
-    (box,) = mobile.evidence_boxes([edge.openings[0].id], t, 0.04)
-    assert box["x"] == 0.0 and box["y"] + box["h"] == pytest.approx(1.0)
-    assert 0 < box["w"] < 0.04 and 0 < box["h"] < 0.04  # only the part inside the image
+    (box,) = ask.evidence_boxes([edge.openings[0].id], t, 0.04)
+    assert box.x == 0.0 and box.y + box.h == pytest.approx(1.0)
+    assert 0 < box.w < 0.04 and 0 < box.h < 0.04  # only the part inside the image
 
 
 def test_no_boxes_without_a_raster_analysis() -> None:
-    assert mobile.evidence_boxes(BEDROOMS, trace(answer(), with_analysis=False), 0.04) == []
+    assert ask.evidence_boxes(BEDROOMS, trace(answer(), with_analysis=False), 0.04) == []
     metric = ANALYSIS.model_copy(update={"coordinate_space": "METRIC"})
     t = PipelineTrace(result=answer(), stages=[(Stage.VALIDATION, PLAN), (Stage.ANALYSIS, metric)])
-    assert mobile.evidence_boxes(BEDROOMS, t, 0.04) == []
-    assert mobile.evidence_boxes(["unknown_1"], trace(answer()), 0.04) == []
+    assert ask.evidence_boxes(BEDROOMS, t, 0.04) == []
+    assert ask.evidence_boxes(["unknown_1"], trace(answer()), 0.04) == []
