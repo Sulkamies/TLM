@@ -305,3 +305,12 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - **One written contract** for all clients: `docs/API.md`; `tests/unit/api/test_web.py` checks that the page and the
   Android app read only contract fields and that the spec lists every field.
 - D-013 (one API for all UIs; A0 approves `android-app/`, one human still needed). Request `docs/requests/UI-android-app.md`.
+
+### 2026-11-14 · A0 · ry · Browser UI: at's redesign
+- `src/blueprint_qa/api/web/index.html` now follows at's redesigned page (`web-app/index.html`, commit `85524c9` on
+  `ui/at/webpage`): new look (dark/light), evidence chips under each answer, hover or tap a red box to see what it marks,
+  collapsible "How it was counted", animated answers, better phone layout. Same two adaptations as before (other
+  picture formats converted to JPEG in the browser; locale sent). Samples unchanged.
+- No change to the API (`docs/API.md`), the server or the Android app. `tests/unit/api/test_web.py` adapted to the new
+  page structure (box labels now read in the tooltip; `.length` reads are not text). 601 passed; live check of page,
+  samples and answers.

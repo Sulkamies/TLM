@@ -79,8 +79,9 @@ python -m blueprint_qa.api.server --host 0.0.0.0 --port 8000
 
 **Browser (laptop):** open `http://localhost:8000/` on the PC running the server, or `http://<PC-IP>:8000/` from
 another computer or a phone browser on the network. Choose, drop, paste or photograph a plan (or try one of the three
-sample plans), ask or tap a suggestion, and use "Show on the drawing"; zoom with the wheel, the buttons or a pinch.
-Design by at (`web-app/` on branch `ui/at/android-app`); the served copy is `src/blueprint_qa/api/web/`.
+sample plans), ask or tap a suggestion, and use "Show on the drawing"; hover or tap a red box to see what it marks;
+zoom with the wheel, the buttons or a pinch. Design by at (`web-app/` on branch `ui/at/webpage`, commit `85524c9`);
+the served copy is `src/blueprint_qa/api/web/`.
 
 **Android app** (`android-app/`, branch `ui/at/android-app`):
 
