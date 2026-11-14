@@ -174,3 +174,5 @@ pytest --cov=blueprint_qa --cov-fail-under=80
 - **Status (A0 · ry · 2026-11-14, later):** phase 3 merged (PR #10, A3 adapter; PR #12, weights hosted as GitHub
   Release `models-cubicasa-v2`) and phase 3b merged (PR #9, A4). Both were validated by A0 before their PRs. Next:
   phases 4 and 5 (A2 ∥ A3, then A4, in the orchestrator).
+- **Phases 4 and 5 (A0 · ry · 2026-11-14):** done together on `a0/ry/integration-a3-a4` (one PR, ry agreed). Live demo
+  with the real model on the three CubiCasa plans: 27/27 answers equal A3's tuned counts (see CHANGELOG).

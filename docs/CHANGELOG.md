@@ -265,3 +265,21 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - DECISIONS D-011 (A4 in scope) and D-012 (coverage warnings); OPEN_QUESTIONS Q9 answered (c), new Q11–Q13 (Q10 is A4's).
 - MERGE_PLAN update v3.1 (actual merge order, phase 3b for A4, phase 5 for wiring A4). README: contracts v1.1.0, A4 status.
 - Docs only; no contract, prompt or code change.
+
+### 2026-11-14 · A0 · ry · Phases 4 + 5: A2 ∥ A3, then A4, in the pipeline
+- `orchestrator/pipeline.py`: after A1 says valid, A2 and A3 run **concurrently** (A3 gets the `ValidationResult`, never
+  the raw upload); then A4 computes the answer. Defaults are the real entry points (`analysis.analyze`,
+  `reasoning.answer`); `None` skips a stage (interim answer). Every output is contract-checked, plus the §4.2 invariant
+  "`value` non-null iff `status == ANSWERED`" on A4's `Answer` (violation → `INVALID_INPUT`, producer REASONING).
+  An A3 error is returned even if A2 succeeded; without an analysis, UNSUPPORTED and clarification are still answered.
+  The orchestrator itself still never produces a number.
+- CLI: `--debug` shows a compact `BlueprintAnalysis` summary; answers print as `4 count` (display only, never rounded).
+- Tests: `tests/unit/orchestrator/test_pipeline_a3_a4.py` (23 tests: real concurrency via a barrier, error priority,
+  A4 checks, the full chain with the real A4 on snapshots of A3's real output in `tests/unit/orchestrator/data/`).
+  Check sequence: 577 passed, `pipeline.py` 100 %.
+- **Live demo with the real model** (CPU torch 2.15, ultralytics 8.4.212, easyocr 1.7.2; weights via `models/fetch.py`),
+  the three CubiCasa plans sent as received JPEGs (two of them downscaled), 9 questions each in fi/en/de:
+  **27/27 answers equal A3's tuned counts** on the original PNGs (bedrooms, toilet bowls, windows, doors, sauna yes/no,
+  showers + bathtubs, balconies; living rooms and kitchen area → CANNOT_ANSWER). Timings: A1 1.2–2.6 s, A2 3–6 s,
+  A3 13.5 s on the first call (model load) then 3–5 s, A4 < 1 ms; 5–7 s per question end to end.
+- README: setup for raster plans, real CLI output. No contract, config or prompt change.

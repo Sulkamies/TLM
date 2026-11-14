@@ -4,15 +4,16 @@
 
 Stage order (``STAGE_ORDER``)::
 
-    1. VALIDATION  A1 validate()          is_valid=False -> stop (R5.2), A2 is not called
-    2. QUESTION    A2 interpret()      ┐  run concurrently once A3 exists
-       ANALYSIS    A3 analyze()        ┘  <- A3 SLOT, empty until MERGE_PLAN phase 4
-    3. REASONING   A4 answer()            <- A4 SLOT, empty (A4 not implemented)
+    1. VALIDATION  A1 validate()          is_valid=False -> stop (R5.2); A2/A3 are not called
+    2. QUESTION    A2 interpret()      ┐  run concurrently (MERGE_PLAN phase 4);
+       ANALYSIS    A3 analyze()        ┘  A3 gets the ValidationResult, never the raw upload
+    3. REASONING   A4 answer()            computes the number (phase 5)
 
-Until A3 and A4 exist the pipeline returns *interim answers* without a number
-(``INTERIM_TEXTS``). This module contains no image, NLP, IFC or calculation logic:
-it only calls the component entry points, checks their outputs against the
-contracts, and never lets an exception escape (R5.1).
+The orchestrator never produces a number itself: only A4 does. It returns an
+*interim answer* without a number (``INTERIM_TEXTS``) only when a stage stops the
+pipeline early. This module contains no image, NLP, IFC or calculation logic: it
+calls the component entry points, checks their outputs against the contracts, and
+never lets an exception escape (R5.1).
 """
 
 from __future__ import annotations
@@ -21,12 +22,14 @@ import logging
 import time
 import uuid
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from blueprint_qa.analysis import analyze
 from blueprint_qa.common.log import get_logger, log_event
 from blueprint_qa.contracts import (
     Answer,
@@ -41,6 +44,7 @@ from blueprint_qa.contracts import (
     ValidationResult,
 )
 from blueprint_qa.question import interpret
+from blueprint_qa.reasoning import answer
 from blueprint_qa.validation import validate
 
 ValidateFn = Callable[[PipelineRequest], ValidationResult | ErrorEnvelope]
@@ -51,18 +55,20 @@ ReasonFn = Callable[[ParsedQuestion, BlueprintAnalysis], Answer | ErrorEnvelope]
 # The stage steps in order. Stages in one tuple run concurrently.
 STAGE_ORDER: tuple[tuple[Stage, ...], ...] = (
     (Stage.VALIDATION,),
-    (Stage.QUESTION, Stage.ANALYSIS),  # ANALYSIS = A3 slot (phase 4)
-    (Stage.REASONING,),  # A4 slot (not implemented)
+    (Stage.QUESTION, Stage.ANALYSIS),
+    (Stage.REASONING,),
 )
 
-# Fixed texts of the interim answers (MERGE_PLAN phase 1). All in English.
+# Fixed texts of the interim answers (used only when a stage stops the pipeline early). English.
 INTERIM_TEXTS: dict[str, str] = {
     "invalid_input": "This picture is invalid for our program",
     "unsupported_question": "This question cannot be answered with a number.",
     "analysis_unavailable": "Plan analysis is not available yet.",
+    "reasoning_unavailable": "Answer computation is not available yet.",
 }
 INTERIM_LANGUAGE = "en"
-# Answer.unit is required even when value is None; placeholder until OPEN_QUESTIONS Q9 is decided.
+# Answer.unit is required even when value is None. A4 sets the intent's unit (OPEN_QUESTIONS Q9,
+# option c); the orchestrator's own interim answers keep this placeholder.
 PLACEHOLDER_UNIT = "count"
 
 _logger = get_logger(__name__)
@@ -75,8 +81,8 @@ class Components:
 
     validate: ValidateFn = validate
     interpret: InterpretFn = interpret
-    analyze: AnalyzeFn | None = None  # A3 SLOT: empty until MERGE_PLAN phase 4
-    reason: ReasonFn | None = None  # A4 SLOT: empty (A4 not implemented)
+    analyze: AnalyzeFn | None = analyze  # None = stage skipped (interim answer)
+    reason: ReasonFn | None = answer  # None = stage skipped (interim answer)
 
 
 @dataclass
@@ -148,30 +154,55 @@ def _run(
     if not validation.is_valid:  # R5.2: an invalid input is not an error, and A2 is not called
         return _interim(rid, AnswerStatus.CANNOT_ANSWER, INTERIM_TEXTS["invalid_input"])
 
-    # 2. QUESTION (A2) || ANALYSIS (A3 slot: phase 4 runs comps.analyze(validation) concurrently)
-    question = _call(
-        Stage.QUESTION,
-        rid,
-        ParsedQuestion,
-        trace,
-        lambda: comps.interpret(rid, request.question, request.locale_hint),
-    )
+    # 2. QUESTION (A2) || ANALYSIS (A3), concurrently. Recorded in a fixed order for --debug.
+    def ask() -> ParsedQuestion | ErrorEnvelope:
+        return _invoke(
+            Stage.QUESTION,
+            rid,
+            ParsedQuestion,
+            lambda: comps.interpret(rid, request.question, request.locale_hint),
+        )
+
+    analyze_fn = comps.analyze
+    analysis: BlueprintAnalysis | ErrorEnvelope | None = None
+    if analyze_fn is None:
+        question = ask()
+    else:
+        with ThreadPoolExecutor(max_workers=2, thread_name_prefix=f"bp-{rid[:8]}") as pool:
+            q_future = pool.submit(ask)
+            a_future = pool.submit(
+                _invoke, Stage.ANALYSIS, rid, BlueprintAnalysis, lambda: analyze_fn(validation)
+            )
+            question, analysis = q_future.result(), a_future.result()
+    trace.stages.append((Stage.QUESTION, question))
+    if analysis is not None:
+        trace.stages.append((Stage.ANALYSIS, analysis))
     if isinstance(question, ErrorEnvelope):
         return question
 
-    # 3. REASONING (A4 slot): until it exists, return an interim answer without a number.
-    if question.intent is Intent.UNSUPPORTED:
-        return _interim(
-            rid, AnswerStatus.UNSUPPORTED_QUESTION, INTERIM_TEXTS["unsupported_question"]
-        )
-    if question.clarification_needed:
-        return _interim(
-            rid,
-            AnswerStatus.NEEDS_CLARIFICATION,
-            question.clarification_needed,
-            language=question.language,
-        )
-    return _interim(rid, AnswerStatus.CANNOT_ANSWER, INTERIM_TEXTS["analysis_unavailable"])
+    # Without a usable analysis, questions that need no plan are still answered.
+    if not isinstance(analysis, BlueprintAnalysis):
+        if question.intent is Intent.UNSUPPORTED:
+            return _interim(
+                rid, AnswerStatus.UNSUPPORTED_QUESTION, INTERIM_TEXTS["unsupported_question"]
+            )
+        if question.clarification_needed:
+            return _interim(
+                rid,
+                AnswerStatus.NEEDS_CLARIFICATION,
+                question.clarification_needed,
+                language=question.language,
+            )
+        if isinstance(analysis, ErrorEnvelope):  # an A3 error is returned even if A2 succeeded
+            return analysis
+        return _interim(rid, AnswerStatus.CANNOT_ANSWER, INTERIM_TEXTS["analysis_unavailable"])
+
+    # 3. REASONING (A4): the only place a number is produced.
+    reason_fn = comps.reason
+    if reason_fn is None:
+        return _interim(rid, AnswerStatus.CANNOT_ANSWER, INTERIM_TEXTS["reasoning_unavailable"])
+    plan = analysis
+    return _call(Stage.REASONING, rid, Answer, trace, lambda: reason_fn(question, plan))
 
 
 def _call(
@@ -181,19 +212,27 @@ def _call(
     trace: PipelineTrace,
     fn: Callable[[], object],
 ) -> _T | ErrorEnvelope:
-    """Call one component, contract-check its output, log one event, never raise."""
+    """:func:`_invoke` plus recording the output in the trace."""
+    result = _invoke(stage, rid, expected, fn)
+    trace.stages.append((stage, result))
+    return result
+
+
+def _invoke(
+    stage: Stage, rid: str, expected: type[_T], fn: Callable[[], object]
+) -> _T | ErrorEnvelope:
+    """Call one component, contract-check its output, log one event, never raise.
+
+    Thread-safe: it touches no shared state, so A2 and A3 can run it concurrently.
+    """
     start = time.perf_counter()
     try:
         raw = fn()
     except Exception as exc:  # R5.1: components must not raise; contain it if one does
-        result: BaseModel = _envelope(rid, "INTERNAL_ERROR", stage, exc)
+        result: _T | ErrorEnvelope = _envelope(rid, "INTERNAL_ERROR", stage, exc)
     else:
         result = _checked(raw, expected, stage, rid)
-    trace.stages.append((stage, result))
     _log(rid, stage, "stage_done", result, (time.perf_counter() - start) * 1000)
-    if isinstance(result, expected):
-        return result
-    assert isinstance(result, ErrorEnvelope)
     return result
 
 
@@ -210,6 +249,10 @@ def _checked(raw: object, expected: type[_T], stage: Stage, rid: str) -> _T | Er
         return _violation(rid, stage, exc)
     if getattr(checked, "request_id", None) != rid:
         return _violation(rid, stage, ValueError("request_id changed"))
+    if isinstance(checked, Answer) and (checked.value is None) == (
+        checked.status is AnswerStatus.ANSWERED
+    ):  # §4.2 invariant: value is non-null iff status == ANSWERED
+        return _violation(rid, stage, ValueError("value/status mismatch"))
     if isinstance(checked, ErrorEnvelope):
         return checked
     assert isinstance(checked, expected)
@@ -261,6 +304,14 @@ def _log(rid: str, stage: Stage, event: str, result: BaseModel, latency_ms: floa
         fields.update(outcome="valid" if result.is_valid else "invalid", reason=result.reason.value)
     elif isinstance(result, ParsedQuestion):
         fields.update(outcome="parsed", intent=result.intent.value, language=result.language)
+    elif isinstance(result, BlueprintAnalysis):
+        fields.update(
+            outcome="analysed",
+            storeys=len(result.storeys),
+            rooms=len(result.rooms),
+            openings=len(result.openings),
+            fixtures=len(result.fixtures),
+        )
     elif isinstance(result, Answer):
         fields.update(outcome=result.status.value)
     level = logging.WARNING if isinstance(result, ErrorEnvelope) else logging.INFO
