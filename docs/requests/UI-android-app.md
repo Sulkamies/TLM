@@ -102,5 +102,7 @@ the served page. The Android app is not affected.
 ry asked to take over your phone improvements without changing the laptop view. Ported: the phone layout, full-screen
 button, double-tap zoom, midpoint-following pinch, momentum glide (fingers only), constant-size boxes and badges (phone
 CSS only), no keyboard pop-up, the fading hint. Not ported: the new wheel/trackpad zoom and button steps (laptop
-behaviour) and the file-preview fallback. Your `web-app/` copy can now be dropped (see §4); please also remove it and
+behaviour) and the file-preview fallback. Also on ry's request, for laptop and phone: smaller answers (28px/14px), the
+title "Chat with your blueprint" and the line "Ask anything, the blueprint talks!". Your `web-app/` copy can now be
+dropped (see §4); please also remove it and
 merge `main` so the Android app can be merged.

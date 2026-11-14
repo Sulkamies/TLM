@@ -342,3 +342,7 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   the "preview" fallback for opening the page as a file. The sample-card fix does not apply (no samples).
 - Verified: CSS rules outside the phone block are unchanged except `.fsbtn{display:none}`; test
   `test_phone_layout_is_phone_only`. No API, server or Android app change.
+- Also (ry, laptop and phone): answers a bit smaller (28px numbers and yes/no words instead of 34px, 14px sentences
+  instead of 15px); landing title "Chat with your blueprint" and the line below it "Ask anything, the blueprint
+  talks!". Checked: no "how it was counted" text on either screen. Test
+  `test_landing_title_and_no_explanation_on_any_screen`.

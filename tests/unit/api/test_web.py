@@ -128,7 +128,9 @@ def test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer() -
         and 'id="camera"' not in body
         and 'capture="environment"' not in body
     )
-    assert ".num{font-size:34px;" in body
+    assert (
+        ".num{font-size:28px;" in body and ".text{font-size:14px}" in body
+    )  # answers a bit smaller
     assert 'id="choose"' in body  # choosing a picture still works (plus drag and drop, paste)
     assert "sample" not in body.lower() and "/samples/" not in body  # no sample plans either
 
@@ -159,3 +161,14 @@ def test_phone_layout_is_phone_only() -> None:
     assert "if (isTap && e.pointerType !== 'mouse')" in js  # taps and double-taps: touch only
     assert "e.pointerType !== 'mouse' && scale > 1" in js  # momentum glide: touch only
     assert "e.deltaY < 0 ? 1.15 : 1 / 1.15" in js  # laptop wheel zoom unchanged
+
+
+def test_landing_title_and_no_explanation_on_any_screen() -> None:
+    # ry, 2026-11-14: one title and line for laptop and phone; no "how it was counted" text on either.
+    body = PAGE.split("-->", 1)[1]
+    assert "<h2>Chat with your <em>blueprint</em></h2>" in body
+    assert '<p class="lead">Ask anything, the blueprint talks!</p>' in body
+    assert "Ask any floor plan" not in body
+    phone = _phone_css()
+    for text in ("How it was counted", "How this count", "j.working", "Counted on"):
+        assert text not in body and text not in phone, text
