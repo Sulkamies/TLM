@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=75,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blueprint-qa"
+version = "0.1.0"
+description = "Answer numeric questions about house floor plans (PNG, JPEG, PDF, IFC)."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.14,<2.15",
+    "pyyaml>=6.0,<6.1",
+    "google-genai>=3.3,<3.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.17,<0.18",
+    "mypy>=2.4,<2.5",
+    "pytest>=9.2,<9.3",
+    "pytest-cov>=7.1,<7.2",
+    "types-PyYAML>=6.0,<6.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+blueprint_qa = ["py.typed", "contracts/schema/*.json", "*/prompts/*.md", "*/synonyms/*.yaml", "*/labels/*.yaml"]
+
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src", "tests"]
+extend-exclude = ["blueprints-starter"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "UP042",   # contracts use `class X(str, Enum)` exactly as written in AGENTS.md §4.2
+]
+
+# ---------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = ["google.*"]
+follow_untyped_imports = true
+
+# ---------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not live'"
+markers = [
+    "live: calls real external APIs; opt-in with `pytest -m live` (needs API keys)",
+]

@@ -1,0 +1,66 @@
+# 001: Fixture entities (toilet, sink, bathtub, shower, sauna bench)
+
+- **Proposed by:** A0 (session launched by ry), 2026-11-14
+- **Status:** PROPOSED. Not applied. Needs A0 + 1 human approval (R4.3, MINOR).
+- **Affected roles:** A2 (can emit the new category), A3 (produces fixtures), A4 (counts/existence), A5 (fixtures/tests)
+- **Breaking:** no (additive, optional). Version 1.0.0 → **1.1.0**.
+
+## Motivation
+
+The first raster analyzer (CubiCasa detector, `docs/requests/A3-cubicasa-detector-adapter.md`) detects
+sanitary fixtures: `toilet, sink, bathtub, shower, sauna_bench`. Users ask "How many sinks are there?",
+"Gibt es eine Badewanne?" and "Onko saunassa lauteet?". v1.0.0 cannot express these:
+`EntityRef.category` has no fixture value and `BlueprintAnalysis` has no list to carry the detections.
+Today such questions would be wrongly mapped to rooms (`TOILET` room ≠ toilet bowl) or be `UNSUPPORTED`.
+
+## Exact diff
+
+```python
+# src/blueprint_qa/contracts/analysis.py
++class FixtureType(str, Enum):
++    TOILET = "TOILET"; SINK = "SINK"; BATHTUB = "BATHTUB"; SHOWER = "SHOWER"
++    SAUNA_BENCH = "SAUNA_BENCH"; OTHER = "OTHER"
++
++class Fixture(BaseModel):
++    id: str                              # "fixture_<n>"
++    storey_id: str | None
++    room_id: str | None                  # containing room if determined, else None
++    fixture_type: FixtureType
++    position: tuple[float, float]        # centre, in coordinate_space
++    source_ref: str | None
++    confidence: float
+
+ class BlueprintAnalysis(BaseModel):
+-    schema_version: str = "1.0.0"
++    schema_version: str = "1.1.0"
+     ...
++    fixtures: list[Fixture] = []
+
+# src/blueprint_qa/contracts/question.py
+ class EntityRef(BaseModel):
+-    category: Literal["ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN"]
++    category: Literal["ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN", "FIXTURE"]
+     room_type: RoomType | None = None
++    fixture_type: FixtureType | None = None   # set iff category == "FIXTURE"
+```
+
+`schema_version` of `ParsedQuestion` also becomes `"1.1.0"`.
+
+## Compatibility note
+
+Adding an enum/Literal value is classed as additive by R4.3. However, a consumer still pinned to v1.0.0
+would reject a `ParsedQuestion` with `category="FIXTURE"`. Because all components live in one repo and
+R4.5 merges the change together with the adapting code, this is safe in practice.
+
+## On approval
+
+A0 applies the diff, regenerates `schema/*.json`, updates AGENTS.md §4.2 and merges everything together (R4.5).
+
+---
+_Note (A0 · ry · 2026-11-14):_ contracts are now at 1.0.1 (change 002), so this proposal would take them from
+**1.0.1 → 1.1.0**. The `schema_version` lines in the diff above should read `"1.0.1"` → `"1.1.0"`.
+
+_Note (A0 · ry · 2026-11-14):_ **ON HOLD** until the Blueprint Analyzer's output is final (decided by ry).
+After change 003, `FixtureType` and the `"FIXTURE"` category go into `contracts/vocabulary.py` (with `DESCRIPTIONS`
+entries). The `Fixture` model and `fixture_type` field stay in `analysis.py`/`question.py`. The diff above will be
+revised to match the analyzer's final output before approval.

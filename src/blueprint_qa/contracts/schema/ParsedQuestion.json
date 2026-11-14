@@ -1,0 +1,266 @@
+{
+  "$defs": {
+    "Aggregation": {
+      "enum": [
+        "SINGLE",
+        "SUM",
+        "MAX",
+        "MIN",
+        "MEAN"
+      ],
+      "title": "Aggregation",
+      "type": "string"
+    },
+    "Comparison": {
+      "properties": {
+        "measure": {
+          "enum": [
+            "COUNT",
+            "AREA",
+            "LENGTH",
+            "PERIMETER",
+            "HEIGHT",
+            "VOLUME"
+          ],
+          "title": "Measure",
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "GT",
+            "GE",
+            "LT",
+            "LE",
+            "EQ"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Threshold"
+        }
+      },
+      "required": [
+        "measure",
+        "operator",
+        "threshold"
+      ],
+      "title": "Comparison",
+      "type": "object"
+    },
+    "EntityRef": {
+      "properties": {
+        "category": {
+          "enum": [
+            "ROOM",
+            "DOOR",
+            "WINDOW",
+            "WALL",
+            "STAIR",
+            "STOREY",
+            "WHOLE_PLAN"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "ordinal": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ordinal"
+        },
+        "room_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoomType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "storey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Storey"
+        }
+      },
+      "required": [
+        "category"
+      ],
+      "title": "EntityRef",
+      "type": "object"
+    },
+    "Intent": {
+      "enum": [
+        "COUNT",
+        "AREA",
+        "LENGTH",
+        "PERIMETER",
+        "HEIGHT",
+        "VOLUME",
+        "DISTANCE",
+        "RATIO",
+        "EXISTENCE",
+        "COMPARISON",
+        "UNSUPPORTED"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "RoomType": {
+      "enum": [
+        "BEDROOM",
+        "BATHROOM",
+        "TOILET",
+        "KITCHEN",
+        "LIVING_ROOM",
+        "DINING_ROOM",
+        "HALLWAY",
+        "GARAGE",
+        "STORAGE",
+        "CLOSET",
+        "LAUNDRY",
+        "SAUNA",
+        "BALCONY",
+        "OFFICE",
+        "TECHNICAL",
+        "OTHER",
+        "UNKNOWN"
+      ],
+      "title": "RoomType",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "aggregation": {
+      "$ref": "#/$defs/Aggregation"
+    },
+    "clarification_needed": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Clarification Needed"
+    },
+    "comparison": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Comparison"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "intent": {
+      "$ref": "#/$defs/Intent"
+    },
+    "language": {
+      "title": "Language",
+      "type": "string"
+    },
+    "original_question": {
+      "title": "Original Question",
+      "type": "string"
+    },
+    "provider": {
+      "title": "Provider",
+      "type": "string"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "requested_unit": {
+      "anyOf": [
+        {
+          "enum": [
+            "m",
+            "m2",
+            "m3",
+            "ft",
+            "ft2",
+            "ft3"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Requested Unit"
+    },
+    "schema_version": {
+      "default": "1.0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "targets": {
+      "items": {
+        "$ref": "#/$defs/EntityRef"
+      },
+      "title": "Targets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "request_id",
+    "original_question",
+    "language",
+    "intent",
+    "aggregation",
+    "targets",
+    "comparison",
+    "requested_unit",
+    "confidence",
+    "provider",
+    "clarification_needed"
+  ],
+  "title": "ParsedQuestion",
+  "type": "object"
+}

@@ -1,0 +1,22 @@
+# secrets
+.env
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# model weights and caches (fetched via models/fetch.py, never committed)
+*.pt
+*.onnx
+*.safetensors
+models/**/weights/
+cache/

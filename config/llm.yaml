@@ -1,0 +1,16 @@
+# LLM provider and model per component (AGENTS.md R7.6). Custodian: A0.
+# Switching model or provider is an edit to this file only.
+#
+# provider: "gemini" = Google Gemini API (docs/EXTERNAL_SERVICES.md)
+#           "mock"   = recorded responses ("cassettes", R7.12) from BP_LLM_CASSETTE_DIR
+# Env override for all components: BP_LLM_PROVIDER=mock|gemini
+
+defaults:
+  provider: gemini
+  model: gemini-3.8-flash
+  temperature: 0.0             # R7.9: lowest randomness for classification/extraction
+  thinking_budget: 0           # 0 disables Gemini "thinking"; null = model default
+
+components:
+  question:                    # A2 Question Interpreter
+    model: gemini-3.8-flash

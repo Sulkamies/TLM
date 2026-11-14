@@ -1,0 +1,13 @@
+# Thresholds, timeouts and retries (AGENTS.md §3.9). Custodian: A0.
+# Nothing limit-like may be hard-coded in src/; add the key here instead.
+
+llm:
+  timeout_s: 60.0              # per-call timeout for any LLM request
+  max_transport_retries: 3     # retries on retryable transport errors (timeout, 5xx, 429)
+  backoff_initial_s: 1.0       # exponential backoff: initial * 2**attempt, capped below
+  backoff_max_s: 16.0
+  max_validation_retries: 2    # re-asks after schema-invalid output (R7.8) [ASSUMPTION]
+
+validation:                    # A1
+  min_confidence: 0.7          # [ASSUMPTION]
+  pdf_render_dpi: 200          # [ASSUMPTION]

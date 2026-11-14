@@ -144,7 +144,7 @@ Each component directory exposes its public entry point (§6) through its `__ini
 
 ## 4. Contracts are law
 
-`src/blueprint_qa/contracts/` is the single source of truth for inter-component data. The schemas below are the authoritative **v1.0.0** specification. The code MUST match this document exactly.
+`src/blueprint_qa/contracts/` is the single source of truth for inter-component data. The schemas below are the authoritative **v1.0.1** specification. The code MUST match this document exactly.
 
 ### 4.1 Global conventions
 
@@ -160,10 +160,11 @@ Each component directory exposes its public entry point (§6) through its `__ini
 | Time | ISO 8601 UTC |
 | Versioning | Every top-level contract carries `schema_version: str` (semver) |
 
-### 4.2 Contract definitions (v1.0.0)
+### 4.2 Contract definitions (v1.0.1)
 
 ```python
 # src/blueprint_qa/contracts/common.py
+Confidence = Annotated[float, Field(ge=0.0, le=1.0)]   # type of every `confidence` field (§4.1); since v1.0.1
 class Stage(str, Enum):
     ORCHESTRATOR = "ORCHESTRATOR"; VALIDATION = "VALIDATION"; QUESTION = "QUESTION"
     ANALYSIS = "ANALYSIS"; REASONING = "REASONING"
@@ -172,7 +173,7 @@ class InputFormat(str, Enum):
     PNG = "PNG"; JPEG = "JPEG"; PDF = "PDF"; IFC = "IFC"
 
 class ErrorEnvelope(BaseModel):
-    schema_version: str = "1.0.0"
+    schema_version: str = "1.0.1"
     request_id: str
     stage: Stage
     code: str                       # from the registry in §5
@@ -180,9 +181,25 @@ class ErrorEnvelope(BaseModel):
     retryable: bool
     details: dict[str, str] = {}    # internal debug info; never user data or secrets
 
+# src/blueprint_qa/contracts/vocabulary.py
+# THE single place defining what a plan can contain (A3 emits only these, A2 asks only
+# about these). Each value also has a one-line meaning in DESCRIPTIONS; VOCABULARIES
+# maps name -> values. A unit test enforces 1:1 coverage. Change via §4.3 only.
+class RoomType(str, Enum):
+    BEDROOM = "BEDROOM"; BATHROOM = "BATHROOM"; TOILET = "TOILET"; KITCHEN = "KITCHEN"
+    LIVING_ROOM = "LIVING_ROOM"; DINING_ROOM = "DINING_ROOM"; HALLWAY = "HALLWAY"
+    GARAGE = "GARAGE"; STORAGE = "STORAGE"; CLOSET = "CLOSET"; LAUNDRY = "LAUNDRY"
+    SAUNA = "SAUNA"; BALCONY = "BALCONY"; OFFICE = "OFFICE"; TECHNICAL = "TECHNICAL"
+    OTHER = "OTHER"; UNKNOWN = "UNKNOWN"
+
+EntityCategory = Literal["ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN"]
+OpeningKind = Literal["DOOR", "WINDOW", "OPENING"]
+DESCRIPTIONS: Mapping[str, Mapping[str, str]]   # vocabulary name -> value -> meaning
+VOCABULARIES: Mapping[str, tuple[str, ...]]     # vocabulary name -> values, in order
+
 # src/blueprint_qa/contracts/request.py
 class PipelineRequest(BaseModel):
-    schema_version: str = "1.0.0"
+    schema_version: str = "1.0.1"
     request_id: str
     input_bytes: bytes
     input_format: InputFormat       # declared by the caller; A1 verifies it
@@ -204,11 +221,11 @@ class PlanImage(BaseModel):
     height_px: int
 
 class ValidationResult(BaseModel):
-    schema_version: str = "1.0.0"
+    schema_version: str = "1.0.1"
     request_id: str
     is_valid: bool
     reason: ValidationReason
-    confidence: float
+    confidence: Confidence
     input_format: InputFormat       # verified format (from magic bytes / header)
     provider: str                   # e.g. "llm:<model-id>:prompt@v3", "local:ifc", "mock"
     plan_image: PlanImage | None    # PNG/JPEG/PDF only; None for IFC or when invalid
@@ -238,14 +255,14 @@ class Comparison(BaseModel):
     threshold: float | None             # in SI units (A2 converts); None = compare targets[0] vs targets[1]
 
 class EntityRef(BaseModel):
-    category: Literal["ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN"]
-    room_type: RoomType | None = None   # shared enum, see analysis.py
+    category: EntityCategory            # see vocabulary.py
+    room_type: RoomType | None = None   # shared enum, see vocabulary.py
     label: str | None = None            # literal text, e.g. "Bedroom 2"
     ordinal: int | None = None          # "the second bedroom"
     storey: str | None = None           # "ground floor", "2nd floor"
 
 class ParsedQuestion(BaseModel):
-    schema_version: str = "1.0.0"
+    schema_version: str = "1.0.1"
     request_id: str
     original_question: str
     language: str                       # detected BCP-47 code, e.g. "en", "de", "fi"
@@ -254,22 +271,15 @@ class ParsedQuestion(BaseModel):
     targets: list[EntityRef]            # ≥1; exactly 2 for DISTANCE; numerator+denominator for RATIO
     comparison: Comparison | None       # required iff intent == COMPARISON
     requested_unit: Literal["m", "m2", "m3", "ft", "ft2", "ft3"] | None
-    confidence: float
+    confidence: Confidence
     provider: str                       # "llm:<model-id>:prompt@vN", "local:rules", "mock"
     clarification_needed: str | None
 
-# src/blueprint_qa/contracts/analysis.py
-class RoomType(str, Enum):
-    BEDROOM = "BEDROOM"; BATHROOM = "BATHROOM"; TOILET = "TOILET"; KITCHEN = "KITCHEN"
-    LIVING_ROOM = "LIVING_ROOM"; DINING_ROOM = "DINING_ROOM"; HALLWAY = "HALLWAY"
-    GARAGE = "GARAGE"; STORAGE = "STORAGE"; CLOSET = "CLOSET"; LAUNDRY = "LAUNDRY"
-    SAUNA = "SAUNA"; BALCONY = "BALCONY"; OFFICE = "OFFICE"; TECHNICAL = "TECHNICAL"
-    OTHER = "OTHER"; UNKNOWN = "UNKNOWN"
-
+# src/blueprint_qa/contracts/analysis.py   (re-exports RoomType from vocabulary.py)
 class Scale(BaseModel):
     pixels_per_meter: float | None      # None for METRIC space or unknown scale
     source: Literal["SCALE_BAR", "DIMENSION_TEXT", "KNOWN_OBJECT", "IFC_MODEL", "NONE"]
-    confidence: float
+    confidence: Confidence
 
 class Storey(BaseModel):
     id: str; name: str | None; elevation_m: float | None
@@ -283,24 +293,24 @@ class Room(BaseModel):
     area_source: Literal["COMPUTED", "LABEL_TEXT", "IFC_PROPERTY"] | None
     height_m: float | None
     source_ref: str | None              # IFC GlobalId, if any
-    confidence: float
+    confidence: Confidence
 
 class Opening(BaseModel):
     id: str; storey_id: str | None
-    kind: Literal["DOOR", "WINDOW", "OPENING"]
+    kind: OpeningKind                   # see vocabulary.py
     position: tuple[float, float]
     width_m: float | None
     connects: list[str]                 # room ids; "EXTERIOR" allowed
     source_ref: str | None
-    confidence: float
+    confidence: Confidence
 
 class TextAnnotation(BaseModel):
     text: str
     bbox: tuple[float, float, float, float]   # x_min, y_min, x_max, y_max
-    confidence: float
+    confidence: Confidence
 
 class BlueprintAnalysis(BaseModel):
-    schema_version: str = "1.0.0"
+    schema_version: str = "1.0.1"
     request_id: str
     source_format: InputFormat
     coordinate_space: Literal["PIXEL", "METRIC"]
@@ -320,12 +330,12 @@ class AnswerStatus(str, Enum):
     NEEDS_CLARIFICATION = "NEEDS_CLARIFICATION"; UNSUPPORTED_QUESTION = "UNSUPPORTED_QUESTION"
 
 class Answer(BaseModel):
-    schema_version: str = "1.0.0"
+    schema_version: str = "1.0.1"
     request_id: str
     status: AnswerStatus
     value: float | None                 # THE answer; non-null iff status == ANSWERED
     unit: Literal["count", "ratio", "boolean", "m", "m2", "m3", "ft", "ft2", "ft3"]
-    confidence: float
+    confidence: Confidence
     evidence: list[str]                 # element ids from BlueprintAnalysis used
     explanation: str                    # short reasoning / reason for no value, in ParsedQuestion.language
     language: str                       # language of `explanation`
@@ -520,4 +530,4 @@ class Answer(BaseModel):
 
 ---
 
-*Document version 1.2.0. Custodian: A0. Changes require approval as in §4.3.*
+*Document version 1.2.2. Custodian: A0. Changes require approval as in §4.3.*

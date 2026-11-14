@@ -1,0 +1,463 @@
+{
+  "$defs": {
+    "InputFormat": {
+      "enum": [
+        "PNG",
+        "JPEG",
+        "PDF",
+        "IFC"
+      ],
+      "title": "InputFormat",
+      "type": "string"
+    },
+    "Opening": {
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "connects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Connects",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "DOOR",
+            "WINDOW",
+            "OPENING"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "position": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Ref"
+        },
+        "storey_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Storey Id"
+        },
+        "width_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Width M"
+        }
+      },
+      "required": [
+        "id",
+        "storey_id",
+        "kind",
+        "position",
+        "width_m",
+        "connects",
+        "source_ref",
+        "confidence"
+      ],
+      "title": "Opening",
+      "type": "object"
+    },
+    "Room": {
+      "properties": {
+        "area_m2": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Area M2"
+        },
+        "area_source": {
+          "anyOf": [
+            {
+              "enum": [
+                "COMPUTED",
+                "LABEL_TEXT",
+                "IFC_PROPERTY"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Area Source"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "height_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Height M"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label Text"
+        },
+        "polygon": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Polygon",
+          "type": "array"
+        },
+        "room_type": {
+          "$ref": "#/$defs/RoomType"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Ref"
+        },
+        "storey_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Storey Id"
+        }
+      },
+      "required": [
+        "id",
+        "storey_id",
+        "room_type",
+        "label_text",
+        "polygon",
+        "area_m2",
+        "area_source",
+        "height_m",
+        "source_ref",
+        "confidence"
+      ],
+      "title": "Room",
+      "type": "object"
+    },
+    "RoomType": {
+      "enum": [
+        "BEDROOM",
+        "BATHROOM",
+        "TOILET",
+        "KITCHEN",
+        "LIVING_ROOM",
+        "DINING_ROOM",
+        "HALLWAY",
+        "GARAGE",
+        "STORAGE",
+        "CLOSET",
+        "LAUNDRY",
+        "SAUNA",
+        "BALCONY",
+        "OFFICE",
+        "TECHNICAL",
+        "OTHER",
+        "UNKNOWN"
+      ],
+      "title": "RoomType",
+      "type": "string"
+    },
+    "Scale": {
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "pixels_per_meter": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Pixels Per Meter"
+        },
+        "source": {
+          "enum": [
+            "SCALE_BAR",
+            "DIMENSION_TEXT",
+            "KNOWN_OBJECT",
+            "IFC_MODEL",
+            "NONE"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pixels_per_meter",
+        "source",
+        "confidence"
+      ],
+      "title": "Scale",
+      "type": "object"
+    },
+    "Storey": {
+      "properties": {
+        "elevation_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Elevation M"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Name"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "elevation_m"
+      ],
+      "title": "Storey",
+      "type": "object"
+    },
+    "TextAnnotation": {
+      "properties": {
+        "bbox": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Bbox",
+          "type": "array"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "bbox",
+        "confidence"
+      ],
+      "title": "TextAnnotation",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "adjacency": {
+      "items": {
+        "maxItems": 2,
+        "minItems": 2,
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "type": "array"
+      },
+      "title": "Adjacency",
+      "type": "array"
+    },
+    "analyzer_version": {
+      "title": "Analyzer Version",
+      "type": "string"
+    },
+    "coordinate_space": {
+      "enum": [
+        "PIXEL",
+        "METRIC"
+      ],
+      "title": "Coordinate Space",
+      "type": "string"
+    },
+    "metric_available": {
+      "title": "Metric Available",
+      "type": "boolean"
+    },
+    "openings": {
+      "items": {
+        "$ref": "#/$defs/Opening"
+      },
+      "title": "Openings",
+      "type": "array"
+    },
+    "request_id": {
+      "title": "Request Id",
+      "type": "string"
+    },
+    "rooms": {
+      "items": {
+        "$ref": "#/$defs/Room"
+      },
+      "title": "Rooms",
+      "type": "array"
+    },
+    "scale": {
+      "$ref": "#/$defs/Scale"
+    },
+    "schema_version": {
+      "default": "1.0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_format": {
+      "$ref": "#/$defs/InputFormat"
+    },
+    "storeys": {
+      "items": {
+        "$ref": "#/$defs/Storey"
+      },
+      "title": "Storeys",
+      "type": "array"
+    },
+    "texts": {
+      "items": {
+        "$ref": "#/$defs/TextAnnotation"
+      },
+      "title": "Texts",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "request_id",
+    "source_format",
+    "coordinate_space",
+    "metric_available",
+    "scale",
+    "storeys",
+    "rooms",
+    "openings",
+    "adjacency",
+    "texts",
+    "analyzer_version",
+    "warnings"
+  ],
+  "title": "BlueprintAnalysis",
+  "type": "object"
+}
