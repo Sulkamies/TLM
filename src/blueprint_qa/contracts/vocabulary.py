@@ -1,4 +1,4 @@
-"""Plan-element vocabulary (AGENTS.md §4.2, v1.1.0). Custodian: A0.
+"""Plan-element vocabulary (AGENTS.md §4.2, v1.2.0). Custodian: A0.
 
 THE SINGLE PLACE that defines what a floor plan can contain, as seen by both sides
 of the pipeline:

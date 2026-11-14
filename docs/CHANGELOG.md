@@ -320,3 +320,16 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   the answer, the evidence chips and the boxes on the drawing. Sentence answers (e.g. why a question cannot be answered)
   still show, since they are the answer itself. No change to the API: `working` is still sent (`docs/API.md`), so the
   Android app is unaffected. Test `test_the_page_does_not_show_the_explanation`.
+
+### 2026-11-14 · A0 · ry · Contract change 006: validation receipt (A0 part)
+- **Contracts 1.1.0 → 1.2.0** (MINOR, approved by ry and A0): optional `PipelineRequest.validation_token` and
+  `ValidationResult.validation_token`. Schemas regenerated, AGENTS.md §4.2 updated (document 1.4.0). Proposal
+  `docs/contract-changes/006-validation-receipt.md`, D-014.
+- Pass-through: `orchestrator.new_request(validation_token=...)`; server form field `validation_token`; response field
+  `AskAnswer.validation_token` (only for valid pictures); `docs/API.md` section "Validating a picture once".
+- Web page keeps the receipt per picture and sends it back (adaptation 4); reset on a new picture.
+- Config `validation_receipt: {ttl_s, key_env}` (own section: A1's `validation:` settings forbid extra keys);
+  `BP_VALIDATION_RECEIPT_KEY` in `.env.example`.
+- Requests: `docs/requests/A1-validation-receipt.md` (implementation), `docs/requests/A3-contract-version-literal.md`
+  (one test line), UI request §7 (optional for the app). Until A1 implements it, behaviour is unchanged.
+- Stacked on `a0/ry/web-hide-working` (merge that first).

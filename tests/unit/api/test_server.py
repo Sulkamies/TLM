@@ -280,3 +280,30 @@ def test_no_boxes_without_a_raster_analysis() -> None:
     t = PipelineTrace(result=answer(), stages=[(Stage.VALIDATION, PLAN), (Stage.ANALYSIS, metric)])
     assert ask.evidence_boxes(BEDROOMS, t, 0.04) == []
     assert ask.evidence_boxes(["unknown_1"], trace(answer()), 0.04) == []
+
+
+# --------------------------------------------------------------------------- receipt (change 006)
+
+
+def test_receipt_is_passed_in_and_returned(client: TestClient, fake: FakeRun) -> None:
+    fake.trace = PipelineTrace(
+        result=answer(),
+        stages=[
+            (Stage.VALIDATION, PLAN.model_copy(update={"validation_token": "v1.receipt"})),
+            (Stage.ANALYSIS, ANALYSIS),
+        ],
+    )
+    body = post(client).json()
+    assert body["validation_token"] == "v1.receipt"  # the client sends it back next time
+    assert fake.requests[0].validation_token is None
+    post(client, form={"validation_token": "v1.receipt"})
+    assert fake.requests[1].validation_token == "v1.receipt"  # passed to A1 unchanged
+    post(client, form={"validation_token": ""})
+    assert fake.requests[2].validation_token is None
+
+
+def test_no_receipt_without_a_valid_picture(client: TestClient, fake: FakeRun) -> None:
+    assert post(client).json()["validation_token"] is None  # A1 issued none
+    invalid = PLAN.model_copy(update={"is_valid": False, "validation_token": "v1.x"})
+    fake.trace = PipelineTrace(result=answer(), stages=[(Stage.VALIDATION, invalid)])
+    assert post(client).json()["validation_token"] is None

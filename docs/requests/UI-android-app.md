@@ -88,3 +88,10 @@ ry asked A0 to remove the collapsible "How it was counted" explanation from the 
 answer and the boxes, not explain the choice in detail. Adaptation (3) in the page's top comment. The API still sends
 `working`, so the Android app is unaffected; whether the app keeps showing it is your and ry's call. Please leave it
 out of future web designs too (a test checks the served page).
+
+## 7. Optional for the Android app: send the validation receipt back (change 006)
+
+Answers now carry `validation_token` (`docs/API.md`, "Validating a picture once"). If the app keeps it per picture and
+sends it back as the form field `validation_token` with later questions about the same picture, the server checks the
+picture with the LLM only once per chat (faster answers, fewer API calls). Forget it when the user picks another
+picture. Without it the app keeps working exactly as now.

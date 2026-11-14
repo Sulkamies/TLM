@@ -237,7 +237,7 @@ def test_fixtures_and_storey_level_round_trip() -> None:
         ],
     )
     data = json.loads(ba.model_dump_json())
-    assert data["schema_version"] == CONTRACT_VERSION == "1.1.0"
+    assert data["schema_version"] == CONTRACT_VERSION == "1.2.0"
     assert data["fixtures"][0]["fixture_type"] == "SAUNA_BENCH"
     assert data["storeys"][0]["level"] == "GROUND"
     assert BlueprintAnalysis.model_validate(data) == ba
@@ -268,3 +268,32 @@ def test_rejects_unknown_fixture_type_and_level() -> None:
                 "confidence": 1.5,
             }
         )
+
+
+def test_validation_token_is_optional_and_round_trips() -> None:
+    # v1.2.0: contract change 006 (validation receipt), additive and optional
+    req = PipelineRequest(
+        request_id="r1",
+        input_bytes=b"x",
+        input_format=InputFormat.PNG,
+        question="q?",
+        received_at=datetime(2026, 11, 14, tzinfo=UTC),
+    )
+    assert req.validation_token is None
+    with_token = req.model_copy(update={"validation_token": "v1.abc.def"})
+    back = PipelineRequest.model_validate_json(with_token.model_dump_json())
+    assert back.validation_token == "v1.abc.def"
+    vr = ValidationResult.model_validate(
+        {
+            "request_id": "r1",
+            "is_valid": False,
+            "reason": "NOT_A_BLUEPRINT",
+            "confidence": 0.9,
+            "input_format": "PNG",
+            "provider": "mock",
+            "plan_image": None,
+            "ifc_bytes": None,
+            "ifc_schema": None,
+        }
+    )
+    assert vr.validation_token is None and vr.schema_version == CONTRACT_VERSION == "1.2.0"

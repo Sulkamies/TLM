@@ -1,4 +1,4 @@
-"""Inter-component data contracts, v1.1.0 (AGENTS.md §4). Custodian: A0.
+"""Inter-component data contracts, v1.2.0 (AGENTS.md §4). Custodian: A0.
 
 These Pydantic models are the only way data crosses a component boundary (R3.2).
 The JSON Schemas in ``schema/`` are generated from them by ``generate_schema.py``;
@@ -35,7 +35,7 @@ from blueprint_qa.contracts.vocabulary import (
     StoreyLevel,
 )
 
-CONTRACT_VERSION = "1.1.0"
+CONTRACT_VERSION = "1.2.0"
 
 __all__ = [
     "CONTRACT_VERSION",

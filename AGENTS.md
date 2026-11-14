@@ -144,7 +144,7 @@ Each component directory exposes its public entry point (§6) through its `__ini
 
 ## 4. Contracts are law
 
-`src/blueprint_qa/contracts/` is the single source of truth for inter-component data. The schemas below are the authoritative **v1.1.0** specification. The code MUST match this document exactly.
+`src/blueprint_qa/contracts/` is the single source of truth for inter-component data. The schemas below are the authoritative **v1.2.0** specification. The code MUST match this document exactly.
 
 ### 4.1 Global conventions
 
@@ -160,7 +160,7 @@ Each component directory exposes its public entry point (§6) through its `__ini
 | Time | ISO 8601 UTC |
 | Versioning | Every top-level contract carries `schema_version: str` (semver) |
 
-### 4.2 Contract definitions (v1.1.0)
+### 4.2 Contract definitions (v1.2.0)
 
 ```python
 # src/blueprint_qa/contracts/common.py
@@ -173,7 +173,7 @@ class InputFormat(str, Enum):
     PNG = "PNG"; JPEG = "JPEG"; PDF = "PDF"; IFC = "IFC"
 
 class ErrorEnvelope(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     stage: Stage
     code: str                       # from the registry in §5
@@ -207,7 +207,7 @@ VOCABULARIES: Mapping[str, tuple[str, ...]]     # vocabulary name -> values, in 
 
 # src/blueprint_qa/contracts/request.py
 class PipelineRequest(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     input_bytes: bytes
     input_format: InputFormat       # declared by the caller; A1 verifies it
@@ -215,6 +215,7 @@ class PipelineRequest(BaseModel):
     question: str = Field(min_length=1)
     locale_hint: str | None = None  # BCP-47 UI locale if known; A2 detects the real language
     received_at: datetime
+    validation_token: str | None = None   # since v1.2.0 (change 006): receipt from an earlier ValidationResult; only A1 reads it
 
 # src/blueprint_qa/contracts/validation.py
 class ValidationReason(str, Enum):
@@ -229,7 +230,7 @@ class PlanImage(BaseModel):
     height_px: int
 
 class ValidationResult(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     is_valid: bool
     reason: ValidationReason
@@ -239,6 +240,7 @@ class ValidationResult(BaseModel):
     plan_image: PlanImage | None    # PNG/JPEG/PDF only; None for IFC or when invalid
     ifc_bytes: bytes | None         # IFC only, passed through unchanged
     ifc_schema: str | None          # e.g. "IFC2X3", "IFC4", "IFC4X3"
+    validation_token: str | None = None   # since v1.2.0 (change 006): signed receipt issued by A1 when is_valid; opaque to others
 
 # src/blueprint_qa/contracts/question.py
 class Intent(str, Enum):
@@ -271,7 +273,7 @@ class EntityRef(BaseModel):
     fixture_type: FixtureType | None = None   # set iff category == "FIXTURE"; since v1.1.0
 
 class ParsedQuestion(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     original_question: str
     language: str                       # detected BCP-47 code, e.g. "en", "de", "fi"
@@ -329,7 +331,7 @@ class TextAnnotation(BaseModel):
     confidence: Confidence
 
 class BlueprintAnalysis(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     source_format: InputFormat
     coordinate_space: Literal["PIXEL", "METRIC"]
@@ -350,7 +352,7 @@ class AnswerStatus(str, Enum):
     NEEDS_CLARIFICATION = "NEEDS_CLARIFICATION"; UNSUPPORTED_QUESTION = "UNSUPPORTED_QUESTION"
 
 class Answer(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     status: AnswerStatus
     value: float | None                 # THE answer; non-null iff status == ANSWERED
@@ -550,4 +552,4 @@ class Answer(BaseModel):
 
 ---
 
-*Document version 1.3.0. Custodian: A0. Changes require approval as in §4.3.*
+*Document version 1.4.0. Custodian: A0. Changes require approval as in §4.3.*

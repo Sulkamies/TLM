@@ -16,6 +16,11 @@ validation:                    # A1
   llm_image_max_bytes: 7500000 # LLM copy only: larger PNGs are shrunk until they fit; null = no limit
   supported_ifc_schemas: [IFC2X3, IFC4, IFC4X3]   # as reported by ifcopenshell (IFC4X3_ADD2 -> IFC4X3)
 
+validation_receipt:            # A1, contract change 006 (docs/requests/A1-validation-receipt.md). Own section, so
+                               # A1's strict `validation:` settings are not affected before A1 implements it.
+  ttl_s: 3600                  # receipt lifetime; later questions about the same picture skip the LLM check [ASSUMPTION]
+  key_env: BP_VALIDATION_RECEIPT_KEY   # env var holding the HMAC key; unset = random key per process
+
 analysis:                      # A3. Values from A3's eval/thresholds_vision_v2.json at 35597e2
                                # (spec: docs/requests/A3-analysis-adapter.md, phase 0 §D; confirmed A3-Q22)
   detector:

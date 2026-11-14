@@ -31,6 +31,7 @@ must ignore fields they do not know. Renaming or removing a field, or changing i
 | `image` | yes | The plan: PNG, JPEG, single-page PDF or IFC. The format is taken from the file name's extension, else the part's content type. The server checks the real format from the bytes. |
 | `question` | yes | The question in natural language (English, German and Finnish are tested). |
 | `locale` | no | BCP-47 locale of the user interface, e.g. `fi-FI`. If missing, the first tag of the `Accept-Language` header is used. A hint only: the question's language is detected. |
+| `validation_token` | no | The receipt from an earlier answer **for the same picture** (see below). With it, the picture is not checked again by the LLM. |
 
 ## `POST /ask` responses
 
@@ -49,6 +50,7 @@ the answer text, so clients show them as answers, not as failures.
 | `language` | string | Language of `answer` (when text) and `working`, e.g. `fi` |
 | `confidence` | number | 0..1 |
 | `request_id` | string | Id of this request, for support and logs |
+| `validation_token` | string or null | Receipt that this picture was checked and is a valid floor plan. Null if none was issued |
 
 Evidence box (`EvidenceBox`): `{"label", "x", "y", "w", "h"}`. `x`, `y` are the top-left corner and `w`, `h` the size,
 as **fractions (0..1) of the picture's width and height after EXIF rotation** (as browsers and Android display it).
@@ -64,6 +66,22 @@ short English name, with the plan's own room label in brackets when it was read,
 | 415 | Not PNG, JPEG, PDF or IFC (e.g. HEIC, GIF) |
 | 500 | Internal error that will not go away by retrying |
 | 503 | Temporary problem (e.g. an external service timed out); retrying may help |
+
+## Validating a picture once (`validation_token`)
+
+The first question about a picture makes the server check the picture with an LLM (A1). If the picture is a valid
+floor plan, the answer carries a `validation_token`: a receipt signed by the server, tied to the exact picture bytes and
+valid for a limited time (`config/default.yaml -> validation_receipt.ttl_s`). Clients keep it **per picture** and send
+it back with every later question about the same picture; the server then skips the LLM check (the picture is still
+decoded locally). Rules for clients:
+
+- Forget the receipt when the user chooses another picture. A receipt never transfers to a different picture: the
+  server checks the picture's hash and simply validates again if it does not match.
+- If a later answer carries a new receipt, keep the new one.
+- The receipt is opaque: do not parse or show it. Sending none, or an expired or invalid one, is never an error; the
+  picture is just checked again.
+
+The server stores nothing between requests (AGENTS.md R3.7); the client holds the receipt (contract change 006).
 
 ## Examples
 

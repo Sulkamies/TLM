@@ -1,4 +1,4 @@
-"""Blueprint analysis contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
+"""Blueprint analysis contract (AGENTS.md §4.2, v1.2.0). Custodian: A0."""
 
 from typing import Literal
 
@@ -75,7 +75,7 @@ class TextAnnotation(BaseModel):
 
 
 class BlueprintAnalysis(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     source_format: InputFormat
     coordinate_space: Literal["PIXEL", "METRIC"]

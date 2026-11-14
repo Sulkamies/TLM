@@ -1,4 +1,4 @@
-"""Input validation contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
+"""Input validation contract (AGENTS.md §4.2, v1.2.0). Custodian: A0."""
 
 from enum import Enum
 
@@ -28,7 +28,7 @@ class PlanImage(BaseModel):
 class ValidationResult(BaseModel):
     model_config = ConfigDict(ser_json_bytes="base64", val_json_bytes="base64")
 
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     is_valid: bool
     reason: ValidationReason
@@ -38,3 +38,6 @@ class ValidationResult(BaseModel):
     plan_image: PlanImage | None  # PNG/JPEG/PDF only; None for IFC or when invalid
     ifc_bytes: bytes | None  # IFC only, passed through unchanged
     ifc_schema: str | None  # e.g. "IFC2X3", "IFC4", "IFC4X3"
+    # Signed receipt issued by A1 when is_valid (change 006, since v1.2.0); opaque to other
+    # components. Clients send it back with later questions about the same picture.
+    validation_token: str | None = None

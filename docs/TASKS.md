@@ -45,3 +45,6 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 20 | HTTP server `POST /ask` for all UIs (`api/server.py`, `api/ask.py`), browser UI at `/` (`api/web/index.html`), API spec `docs/API.md`, `server` extra, `api:` config, live test; request `docs/requests/UI-android-app.md` | A0 | ry | 2026-11-14 | Done (branch `a0/ry/http-api`, awaiting review) |
 | 21 | Served browser page follows at's redesign (`ui/at/webpage`, `85524c9`), same two adaptations; no API/server/app change | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-ui-v2`, awaiting review) |
 | 22 | Browser UI: remove "How it was counted" (ry); API and Android app unchanged | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-hide-working`, awaiting review) |
+| 23 | Contract change 006 (validation receipt): contracts 1.2.0, API/server/web pass-through, config `validation_receipt`, requests to A1 and A3 | A0 | ry | 2026-11-14 | Done (branch `a0/ry/validation-receipt`, waiting for A1 and A3) |
+| 24 | Issue and verify the validation receipt per `docs/requests/A1-validation-receipt.md` | A1 | (unclaimed) | 2026-11-14 | Open (added by A0 · ry) |
+| 25 | `test_analyzer.py`: compare with `CONTRACT_VERSION` per `docs/requests/A3-contract-version-literal.md` | A3 | (unclaimed) | 2026-11-14 | Open (added by A0 · ry) |

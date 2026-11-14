@@ -1,4 +1,4 @@
-"""Parsed question contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
+"""Parsed question contract (AGENTS.md §4.2, v1.2.0). Custodian: A0."""
 
 from enum import Enum
 from typing import Literal
@@ -47,7 +47,7 @@ class EntityRef(BaseModel):
 
 
 class ParsedQuestion(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     original_question: str
     language: str  # detected BCP-47 code, e.g. "en", "de", "fi"

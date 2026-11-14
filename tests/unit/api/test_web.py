@@ -109,3 +109,13 @@ def test_the_page_does_not_show_the_explanation() -> None:
     body = PAGE.split("-->", 1)[1]  # skip the provenance comment, which mentions the removal
     assert "j.working" not in PAGE and "it.a.working" not in PAGE
     assert "How it was counted" not in body
+
+
+def test_the_page_sends_the_receipt_back_for_the_same_picture_only() -> None:
+    # change 006: A1 checks a picture with its LLM once; later questions carry the receipt.
+    assert "fd.append('validation_token', receipt)" in PAGE
+    assert "receipt = j.validation_token" in PAGE
+    assert (
+        PAGE.count("receipt = null") >= 3
+    )  # declared, reset on a new picture, reset on "New drawing"
+    assert "it.file === file" in PAGE  # a late answer for an old picture never sets the new receipt

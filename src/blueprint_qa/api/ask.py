@@ -47,6 +47,9 @@ class AskAnswer(BaseModel):
     language: str
     confidence: float
     request_id: str
+    # Receipt that the picture was validated (change 006). Send it back as `validation_token` with
+    # later questions about the same picture; A1 then skips its LLM check. Null if none was issued.
+    validation_token: str | None = None
 
 
 class AskError(BaseModel):
@@ -94,6 +97,7 @@ def to_answer(a: Answer, trace: PipelineTrace, point_size: float) -> AskAnswer:
         "language": a.language,
         "confidence": a.confidence,
         "request_id": a.request_id,
+        "validation_token": receipt(trace),
     }
     if a.status is not AnswerStatus.ANSWERED or a.value is None:
         # Not answerable / needs clarification / unsupported: the reason is the answer text.
@@ -114,6 +118,12 @@ def to_answer(a: Answer, trace: PipelineTrace, point_size: float) -> AskAnswer:
         evidence=evidence_boxes(a.evidence, trace, point_size),
         **common,
     )
+
+
+def receipt(trace: PipelineTrace) -> str | None:
+    """A1's validation receipt for this picture, if A1 issued one (only for valid pictures)."""
+    plan = next((o for _, o in trace.stages if isinstance(o, ValidationResult)), None)
+    return plan.validation_token if plan is not None and plan.is_valid else None
 
 
 def evidence_boxes(ids: list[str], trace: PipelineTrace, point_size: float) -> list[EvidenceBox]:

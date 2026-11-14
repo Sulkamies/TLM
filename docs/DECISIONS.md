@@ -105,3 +105,10 @@ the browser, and the browser locale is sent. There should be **one** maintained 
   layout), with the same two adaptations. No change to the API, the server or the Android app.
 - **Update to D-013 (A0 · ry · 2026-11-14):** the browser page no longer shows the `working` explanation ("How it was
   counted"), on ry's request. The API field stays (additive-only rule; the Android app reads it).
+
+### D-014 · 2026-11-14 · A0 · approved by ry · Validate a picture once per chat with a client-held receipt
+ry asked that a chat about one picture runs A1's LLM check only once. A server-side memory of validated pictures would
+break R3.7 (stateless components, no caching of user data) and §6 A0 (A1 is called first on every request). Instead A1
+issues a signed receipt (`validation_token`, contract change 006, contracts 1.2.0) that the client sends back; A1 is
+still called first, verifies it, and skips only its LLM call. The server stores nothing. Spec for A1:
+`docs/requests/A1-validation-receipt.md`; client rules: `docs/API.md`.

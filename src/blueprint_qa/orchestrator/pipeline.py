@@ -100,6 +100,7 @@ def new_request(
     *,
     filename: str | None = None,
     locale_hint: str | None = None,
+    validation_token: str | None = None,
 ) -> PipelineRequest:
     """Build a request with a fresh UUID4 ``request_id`` and ``received_at`` (§6 A0)."""
     return PipelineRequest(
@@ -110,6 +111,7 @@ def new_request(
         question=question,
         locale_hint=locale_hint,
         received_at=datetime.now(UTC),
+        validation_token=validation_token,  # A1 verifies it (change 006)
     )
 
 

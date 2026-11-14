@@ -256,3 +256,9 @@ def test_only_the_orchestrator_imports_component_entry_points() -> None:
             if component not in ("orchestrator", match.group(2)):
                 offenders.append(f"{path.relative_to(SRC)} imports {match.group(2)}")
     assert offenders == []
+
+
+def test_new_request_carries_the_validation_receipt() -> None:
+    req = orchestrator.new_request(b"x", InputFormat.PNG, "q?", validation_token="v1.abc")
+    assert req.validation_token == "v1.abc"
+    assert orchestrator.new_request(b"x", InputFormat.PNG, "q?").validation_token is None

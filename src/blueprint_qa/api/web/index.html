@@ -9,7 +9,9 @@
      Design: at, branch ui/at/webpage, web-app/index.html (commit 85524c9), copied unchanged except:
      (1) pictures that are not PNG/JPEG (WebP, HEIC, ...) are converted to JPEG before upload, because the
      pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint;
-     (3) the "How it was counted" explanation (the API's `working`) is not shown (ry, 2026-11-14). -->
+     (3) the "How it was counted" explanation (the API's `working`) is not shown (ry, 2026-11-14);
+     (4) the validation receipt from the first answer is sent back with later questions about the same
+     picture, so A1 checks the picture with its LLM only once per picture (change 006). -->
 <style>
 :root{
   --bg:#f4f6fb; --panel:rgba(255,255,255,.80); --solid:#ffffff; --ink:#0e1522; --muted:#5b6578;
@@ -257,6 +259,7 @@ const SUGGESTIONS = ["How many toilets are there?", "How many rooms are there?",
 const SAMPLES = [["colorful-11397.png", "Two-floor home", "Finnish row house"], ["colorful-12200.png", "Apartment", "Single floor"], ["colorful-2002.png", "With sauna", "Compact flat"]];
 
 let file = null, imgUrl = null, items = [], nextId = 1, hi = null, overlayKey = '';
+let receipt = null;   // A1's validation receipt for the current picture (docs/API.md, validation_token)
 let scale = 1, tx = 0, ty = 0;
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -266,7 +269,7 @@ $('#choose').onclick = () => $('#file').click();
 $('#camera').onclick = () => $('#cam').click();
 $('#file').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
 $('#cam').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
-$('#restart').onclick = () => { $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; };
+$('#restart').onclick = () => { $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; receipt = null; };
 
 ['dragenter','dragover'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.add('over'); }));
 ['dragleave','drop'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.remove('over'); }));
@@ -283,7 +286,7 @@ $('#samples').onclick = async e => {
 
 function setImage(f) {
   if (imgUrl) URL.revokeObjectURL(imgUrl);
-  file = f; imgUrl = URL.createObjectURL(f); items = []; hi = null; overlayKey = ''; resetView();
+  file = f; imgUrl = URL.createObjectURL(f); items = []; hi = null; overlayKey = ''; receipt = null; resetView();
   $('#img').src = imgUrl; $('#fname').textContent = f.name || 'photo';
   $('#welcome').hidden = true; $('#work').hidden = false; $('#restart').hidden = false;
   render(); $('#q').focus({preventScroll: true});
@@ -324,9 +327,11 @@ async function run(it) {
     const up = await uploadable(it.file);
     const fd = new FormData(); fd.append('image', up, up.name || 'plan.jpg'); fd.append('question', it.q);
     if (navigator.language) fd.append('locale', navigator.language);
+    if (receipt && it.file === file) fd.append('validation_token', receipt);   // picture already validated
     const r = await fetch('/ask', {method: 'POST', body: fd});
     let j = {}; try { j = await r.json(); } catch (_) {}
     if (!r.ok || j.error) throw new Error(j.error || ('Server returned ' + r.status));
+    if (j.validation_token && it.file === file) receipt = j.validation_token;
     it.a = j; it.status = 'ok'; it.secs = Math.round((Date.now() - it.t0) / 1000); it.shown = false; it.counted = false;
     if (items.includes(it) && j.evidence && j.evidence.length) hi = it.id;
   } catch (e) { it.status = 'err'; it.err = e.message || String(e); }

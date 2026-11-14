@@ -1,4 +1,4 @@
-"""Answer contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
+"""Answer contract (AGENTS.md §4.2, v1.2.0). Custodian: A0."""
 
 from enum import Enum
 from typing import Literal
@@ -16,7 +16,7 @@ class AnswerStatus(str, Enum):
 
 
 class Answer(BaseModel):
-    schema_version: str = "1.1.0"
+    schema_version: str = "1.2.0"
     request_id: str
     status: AnswerStatus
     value: float | None  # THE answer; non-null iff status == ANSWERED

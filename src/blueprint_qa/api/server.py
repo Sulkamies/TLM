@@ -3,7 +3,8 @@
     python -m blueprint_qa.api.server [--host 127.0.0.1] [--port 8000]
 
 * ``POST /ask`` (multipart/form-data): ``image`` (PNG, JPEG, PDF or IFC file), ``question``
-  (text), optional ``locale`` (BCP-47; else the first ``Accept-Language`` tag). Response format:
+  (text), optional ``locale`` (BCP-47; else the first ``Accept-Language`` tag) and
+  ``validation_token`` (A1's receipt from an earlier answer for the same picture). Response format:
   :mod:`blueprint_qa.api.ask`; spec ``docs/API.md``. Used by the Android app and the web page.
 * ``GET /``: the browser UI (``api/web/index.html``, design by at), a client of ``POST /ask``.
 * ``GET /samples/<file>``: the sample plans the page offers (``api/web/samples/``, CC BY-NC-SA 4.0).
@@ -74,6 +75,7 @@ def create_app() -> FastAPI:
         image: Annotated[UploadFile, File()],
         question: Annotated[str, Form()],
         locale: Annotated[str | None, Form()] = None,
+        validation_token: Annotated[str | None, Form()] = None,
         accept_language: Annotated[str | None, Header()] = None,
     ) -> JSONResponse:
         if not question.strip():
@@ -94,6 +96,7 @@ def create_app() -> FastAPI:
             question,
             filename=image.filename,
             locale_hint=locale or first_language(accept_language),
+            validation_token=validation_token or None,
         )
         status, body = ask_format.present(run_traced(request), point_size)
         return JSONResponse(body, status_code=status)
