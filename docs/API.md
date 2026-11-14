@@ -19,7 +19,7 @@ must ignore fields they do not know. Renaming or removing a field, or changing i
 |---|---|
 | `POST /ask` | Answer one question about one plan picture |
 | `GET /` | The browser UI (design by at, see `src/blueprint_qa/api/web/index.html`) |
-| `GET /samples/<file>` | The three sample plans the browser UI offers (CubiCasa5K, CC BY-NC-SA 4.0) |
+| `GET /samples/<file>` | Three sample plans (CubiCasa5K, CC BY-NC-SA 4.0). No longer shown on the browser UI since 2026-11-14 |
 | `GET /health` | `{"status": "ok"}`, to check that the address is reachable |
 
 ## `POST /ask` request
