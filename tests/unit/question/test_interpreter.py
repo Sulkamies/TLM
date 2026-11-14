@@ -10,9 +10,10 @@ import pytest
 from question_cases import AMBIGUOUS, CASSETTES, MULTILINGUAL, SINGLE_LANGUAGE, Case, semantic
 
 from blueprint_qa.common.llm import BackendCall, BackendResponse, get_llm_client
-from blueprint_qa.contracts import EntityRef, ErrorEnvelope, ParsedQuestion
+from blueprint_qa.contracts import CONTRACT_VERSION, EntityRef, ErrorEnvelope, ParsedQuestion
 from blueprint_qa.question import interpret
 from blueprint_qa.question.providers import LlmQuestionProvider, MockQuestionProvider
+from blueprint_qa.question.providers.llm import PROMPT_VERSION
 from blueprint_qa.question.vocabulary_view import available_languages, load_synonyms
 
 RID = "00000000-0000-4000-8000-000000000000"
@@ -20,7 +21,7 @@ RID = "00000000-0000-4000-8000-000000000000"
 
 def _expected(case: Case) -> dict[str, Any]:
     full: dict[str, Any] = {
-        "schema_version": "1.0.1",
+        "schema_version": CONTRACT_VERSION,
         "comparison": None,
         "requested_unit": None,
         **case.expect,
@@ -53,7 +54,7 @@ def test_same_question_in_en_de_fi_gives_same_parse(
         assert pq.language == lang
         assert pq.original_question == question
         assert pq.request_id == RID
-        assert pq.provider == "llm:gemini-3.8-flash:interpret@v1"
+        assert pq.provider == f"llm:gemini-3.8-flash:interpret@v{PROMPT_VERSION}"
         assert (pq.clarification_needed is not None) == case.clarification
         assert 0.0 <= pq.confidence <= 1.0
         results[lang] = pq

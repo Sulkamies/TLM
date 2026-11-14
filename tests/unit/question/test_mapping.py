@@ -7,7 +7,7 @@ from typing import Any, get_args
 import pytest
 from pydantic import ValidationError
 
-from blueprint_qa.contracts import Comparison, ErrorEnvelope, ParsedQuestion
+from blueprint_qa.contracts import CONTRACT_VERSION, Comparison, ErrorEnvelope, ParsedQuestion
 from blueprint_qa.question.llm_output import UNITS, LlmParse, RequestedUnit
 from blueprint_qa.question.mapping import normalize_language, threshold_to_si, to_parsed_question
 
@@ -38,7 +38,7 @@ def run(llm: LlmParse) -> ParsedQuestion:
 def test_code_owned_fields_are_filled() -> None:
     pq = run(parse())
     assert (pq.request_id, pq.original_question, pq.provider) == ("r1", "q?", "test")
-    assert pq.schema_version == "1.0.1"
+    assert pq.schema_version == CONTRACT_VERSION
 
 
 @pytest.mark.parametrize(
@@ -104,6 +104,30 @@ def test_storey_must_be_a_fixed_value() -> None:
     assert ok.targets[0].storey == "GROUND"
     with pytest.raises(ValidationError, match="storey must be null or one of"):
         parse(targets=[{"category": "STOREY", "storey": "ground floor"}])
+
+
+def test_fixture_target_carries_its_fixture_type() -> None:
+    """Contract change 001: fixture_type is set iff category == FIXTURE (field_rules.yaml)."""
+    pq = run(parse(targets=[{"category": "FIXTURE", "fixture_type": "TOILET"}]))
+    assert (pq.targets[0].category, pq.targets[0].fixture_type) == ("FIXTURE", "TOILET")
+    room = run(parse(targets=[{"category": "ROOM", "room_type": "TOILET"}]))
+    assert room.targets[0].fixture_type is None
+
+
+@pytest.mark.parametrize(
+    ("target", "message"),
+    [
+        ({"category": "FIXTURE"}, "category FIXTURE requires fixture_type"),
+        (
+            {"category": "ROOM", "room_type": "TOILET", "fixture_type": "TOILET"},
+            "fixture_type must be null unless category is FIXTURE",
+        ),
+        ({"category": "WHOLE_PLAN", "fixture_type": "SINK"}, "must be null unless"),
+    ],
+)
+def test_fixture_type_iff_fixture_category(target: dict[str, Any], message: str) -> None:
+    with pytest.raises(ValidationError, match=message):
+        parse(targets=[target])
 
 
 def test_threshold_none_compares_two_targets() -> None:

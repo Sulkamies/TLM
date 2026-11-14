@@ -1,0 +1,8 @@
+# Category-specific EntityRef fields (cross-field rule of AGENTS.md §4.2 that the contract models document
+# but do not enforce, OPEN_QUESTIONS Q3). Added in MERGE_PLAN phase 2b; ry chose this file (2026-11-14),
+# recorded in docs/DEVIATIONS.md.
+#
+# <EntityRef field>: <EntityRef.category value>
+# The field is set if and only if targets[].category has that value. vocabulary_view.py validates the keys
+# against EntityRef and the values against its `category` type; llm_output.py enforces the rule.
+fixture_type: FIXTURE   # contracts 1.1.0, change 001: "set iff category == FIXTURE"

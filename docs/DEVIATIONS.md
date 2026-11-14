@@ -25,3 +25,17 @@ _No deviations recorded._
   A0 validity check in phase 3 does not review it. If A3 already has one, it may stay.
 - **Why / exit:** focus the integration on a working A1 → A2 ∥ A3 pipeline. The deviation ends when A3 adds the overlay
   in a later task, or the rule is changed through §4.3.
+- **Update (A2 · ry · 2026-11-14, phase 2b):** contracts 1.1.0 define `StoreyLevel`. A2 deleted the `values:` block in
+  `interim_vocabulary.yaml` (only `field: storey` remains); the values and meanings now come from
+  `contracts.VOCABULARIES`/`DESCRIPTIONS`. **This deviation is closed.**
+
+### 2026-11-14 · A2 · ry · New data file `question/field_rules.yaml` outside the fixed file map
+- **Rule:** the fixed file map in `docs/requests/A2-question-interpreter-design.md` §2, together with design rule Q1
+  (no vocabulary values such as `"FIXTURE"` in `question/*.py`).
+- **Instruction:** ry, when asked where to put the rule "`EntityRef.fixture_type` is set iff `category == "FIXTURE"`"
+  (request `A2-fixture-vocabulary.md`, item 3): "New field_rules.yaml".
+- **Done instead:** A2 added `src/blueprint_qa/question/field_rules.yaml` (`fixture_type: FIXTURE`).
+  `vocabulary_view.category_fields()` loads it and validates it against `EntityRef` and its `category` type;
+  `LlmParse` enforces the rule in both directions, so a violation makes the wrapper re-ask the LLM (R7.8).
+- **Why / exit:** Q1 forbids the value in code, and the contract documents the rule without enforcing it (OPEN_QUESTIONS
+  Q3). The file stays until the contract models enforce the rule themselves; then A2 deletes the file and the check.
