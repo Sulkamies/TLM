@@ -120,3 +120,9 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Live, real config, 22 Junction drawings, 8 in parallel: 21/22 correct in 10.0 s (median 1.7 s per picture, slowest 3.0 s),
   33,705 input and 426 output tokens. The miss is the borderline "Kremsier Wohnhaus Parterre", which also flips between runs on
   `gemini-3.8-flash`. Before this change, sequential calls with full-size images took 177 s.
+
+### 2026-11-14 · A0 · ry · Merge plan for A0 + A1 + A2
+- New `docs/MERGE_PLAN.md`: binding plan for the A0 session that integrates A1 → A2 into `orchestrator.run()` and a CLI
+  front door. It covers the invalid-picture message ry asked for, interim answers without numbers, contract checks, tests and a live demo.
+  A3 (unfinished), A4 (not implemented), the architecture decision and proposals 001/004 are explicitly out of scope.
+- Baseline verified on `main` `c8e8127`: all checks pass, 278 tests.
