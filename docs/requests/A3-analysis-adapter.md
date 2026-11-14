@@ -291,3 +291,25 @@ Same JSON shape. It adds a 14th class `opening` (a leafless doorway, which would
 optional tiled inference (`BP_TILE`) and test-time augmentation (`BP_TTA`), `--reuse-ocr`, and imgsz 1600 for the v3
 weights. `raster_count.py` and the thresholds file are unchanged there. Adopting v3 later needs updates to §A, §C
 (openings) and §D, and re-tuned thresholds.
+
+### H. Update after A3's answers (A0 · ry · 2026-11-14)
+
+A3 answered A3-Q1 … A3-Q22 on branch `a3/SS/analysis-adapter` (`aefb35b`). A0 checked the three recorded outputs in
+`tests/unit/analysis/data/` with A3's own rules at `35597e2`: same JSON shape, only the 13 classes, no box out of
+bounds, and the floor/sauna counts SS describes. **All §C decisions stand.** Two changes to the spec:
+
+1. **§C storeys, `FLOOR_WORD` (A3-Q14):** use `(\d)\s*[.,]?\s*(KERROS\b|KRS\b|KERR\b)` (case-insensitive) instead of
+   A3's original regex. It also accepts `1,KERROS` and still ignores `KERROSALA`. A basement code → `level=None` this round.
+2. **§C errors (A3-Q20):** a failed EasyOCR model load (or a missing model file) also gives `MODEL_LOAD_FAILED`. The
+   EasyOCR files are fetched by `models/fetch.py` (checksummed). The analyzer passes `analysis.ocr.model_dir` to EasyOCR
+   and sets `download_enabled` from `analysis.ocr.download_enabled` (default `false`), so nothing is downloaded at
+   request time.
+
+**Config:** `config/default.yaml → analysis:` is added on `a0/ry/contracts-1.1` exactly as §D, plus the two keys
+`ocr.model_dir: models/easyocr` and `ocr.download_enabled: false` (from item 2). The thresholds and IoU values were
+compared programmatically with `thresholds_vision_v2.json`: identical.
+**Dependencies:** optional extra `vision` in `pyproject.toml` (`torch>=2.15,<2.16`, `ultralytics>=8.4,<8.5`,
+`easyocr>=1.7,<1.8`); CI does not install it. mypy ignores the missing imports of these three packages, so lazy imports
+in `analysis/` pass `mypy --strict` in CI.
+**Start of phase 3:** rebase `a3/SS/analysis-adapter` onto `main` after the phase 2 and 2b PRs are merged (they bring
+`Fixture`, `StoreyLevel` and the `analysis:` config). Expect a trivial append conflict in `docs/CHANGELOG.md`.

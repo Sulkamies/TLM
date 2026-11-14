@@ -16,6 +16,8 @@ from blueprint_qa.contracts import (
     BlueprintAnalysis,
     EntityRef,
     ErrorEnvelope,
+    Fixture,
+    FixtureType,
     InputFormat,
     Intent,
     ParsedQuestion,
@@ -25,6 +27,8 @@ from blueprint_qa.contracts import (
     RoomType,
     Scale,
     Stage,
+    Storey,
+    StoreyLevel,
     ValidationReason,
     ValidationResult,
     generate_schema,
@@ -119,7 +123,7 @@ def test_unknown_fields_are_ignored_by_consumers() -> None:
 
 def test_rejects_unknown_enum_value() -> None:
     with pytest.raises(ValidationError):
-        EntityRef.model_validate({"category": "FIXTURE"})
+        EntityRef.model_validate({"category": "CHIMNEY"})
 
 
 def test_analysis_and_answer_round_trip() -> None:
@@ -203,3 +207,64 @@ def test_confidence_range_is_in_json_schema() -> None:
                 if "confidence" in p:
                     assert p["confidence"]["minimum"] == 0.0
                     assert p["confidence"]["maximum"] == 1.0
+
+
+def test_fixtures_and_storey_level_round_trip() -> None:
+    # v1.1.0: contract changes 001 (fixtures) and 004 (storey levels)
+    ba = BlueprintAnalysis(
+        request_id="r1",
+        source_format=InputFormat.PNG,
+        coordinate_space="PIXEL",
+        metric_available=False,
+        scale=Scale(pixels_per_meter=None, source="NONE", confidence=0.0),
+        storeys=[Storey(id="storey_1", name="1. krs", elevation_m=None, level=StoreyLevel.GROUND)],
+        rooms=[],
+        openings=[],
+        adjacency=[],
+        texts=[],
+        analyzer_version="test",
+        warnings=[],
+        fixtures=[
+            Fixture(
+                id="fixture_1",
+                storey_id="storey_1",
+                room_id=None,
+                fixture_type=FixtureType.SAUNA_BENCH,
+                position=(10.0, 20.0),
+                source_ref=None,
+                confidence=0.5,
+            )
+        ],
+    )
+    data = json.loads(ba.model_dump_json())
+    assert data["schema_version"] == CONTRACT_VERSION == "1.1.0"
+    assert data["fixtures"][0]["fixture_type"] == "SAUNA_BENCH"
+    assert data["storeys"][0]["level"] == "GROUND"
+    assert BlueprintAnalysis.model_validate(data) == ba
+
+
+def test_new_fields_are_optional_for_older_producers() -> None:
+    # Additive change (R4.3 MINOR): data without the new fields still validates.
+    assert Storey.model_validate({"id": "s", "name": None, "elevation_m": None}).level is None
+    assert EntityRef.model_validate({"category": "ROOM"}).fixture_type is None
+    ref = EntityRef.model_validate({"category": "FIXTURE", "fixture_type": "TOILET"})
+    assert ref.fixture_type is FixtureType.TOILET
+
+
+def test_rejects_unknown_fixture_type_and_level() -> None:
+    with pytest.raises(ValidationError):
+        EntityRef.model_validate({"category": "FIXTURE", "fixture_type": "SPA"})
+    with pytest.raises(ValidationError):
+        Storey.model_validate({"id": "s", "name": None, "elevation_m": None, "level": "UPPER_9"})
+    with pytest.raises(ValidationError):
+        Fixture.model_validate(
+            {
+                "id": "fixture_1",
+                "storey_id": None,
+                "room_id": None,
+                "fixture_type": "TOILET",
+                "position": [0.0, 0.0],
+                "source_ref": None,
+                "confidence": 1.5,
+            }
+        )

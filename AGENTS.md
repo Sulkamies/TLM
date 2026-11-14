@@ -144,7 +144,7 @@ Each component directory exposes its public entry point (§6) through its `__ini
 
 ## 4. Contracts are law
 
-`src/blueprint_qa/contracts/` is the single source of truth for inter-component data. The schemas below are the authoritative **v1.0.1** specification. The code MUST match this document exactly.
+`src/blueprint_qa/contracts/` is the single source of truth for inter-component data. The schemas below are the authoritative **v1.1.0** specification. The code MUST match this document exactly.
 
 ### 4.1 Global conventions
 
@@ -160,7 +160,7 @@ Each component directory exposes its public entry point (§6) through its `__ini
 | Time | ISO 8601 UTC |
 | Versioning | Every top-level contract carries `schema_version: str` (semver) |
 
-### 4.2 Contract definitions (v1.0.1)
+### 4.2 Contract definitions (v1.1.0)
 
 ```python
 # src/blueprint_qa/contracts/common.py
@@ -173,7 +173,7 @@ class InputFormat(str, Enum):
     PNG = "PNG"; JPEG = "JPEG"; PDF = "PDF"; IFC = "IFC"
 
 class ErrorEnvelope(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     stage: Stage
     code: str                       # from the registry in §5
@@ -192,14 +192,22 @@ class RoomType(str, Enum):
     SAUNA = "SAUNA"; BALCONY = "BALCONY"; OFFICE = "OFFICE"; TECHNICAL = "TECHNICAL"
     OTHER = "OTHER"; UNKNOWN = "UNKNOWN"
 
-EntityCategory = Literal["ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN"]
+class FixtureType(str, Enum):           # since v1.1.0 (change 001)
+    TOILET = "TOILET"; SINK = "SINK"; SHOWER = "SHOWER"; BATHTUB = "BATHTUB"
+    SAUNA_BENCH = "SAUNA_BENCH"; OTHER = "OTHER"
+
+class StoreyLevel(str, Enum):           # since v1.1.0 (change 004)
+    BASEMENT = "BASEMENT"; GROUND = "GROUND"; UPPER = "UPPER"
+    UPPER_1 = "UPPER_1"; UPPER_2 = "UPPER_2"; UPPER_3 = "UPPER_3"; ATTIC = "ATTIC"
+
+EntityCategory = Literal["ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN", "FIXTURE"]
 OpeningKind = Literal["DOOR", "WINDOW", "OPENING"]
 DESCRIPTIONS: Mapping[str, Mapping[str, str]]   # vocabulary name -> value -> meaning
 VOCABULARIES: Mapping[str, tuple[str, ...]]     # vocabulary name -> values, in order
 
 # src/blueprint_qa/contracts/request.py
 class PipelineRequest(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     input_bytes: bytes
     input_format: InputFormat       # declared by the caller; A1 verifies it
@@ -221,7 +229,7 @@ class PlanImage(BaseModel):
     height_px: int
 
 class ValidationResult(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     is_valid: bool
     reason: ValidationReason
@@ -259,10 +267,11 @@ class EntityRef(BaseModel):
     room_type: RoomType | None = None   # shared enum, see vocabulary.py
     label: str | None = None            # literal text, e.g. "Bedroom 2"
     ordinal: int | None = None          # "the second bedroom"
-    storey: str | None = None           # "ground floor", "2nd floor"
+    storey: str | None = None           # holds a StoreyLevel value (vocabulary.py); A2 enforces it (change 004)
+    fixture_type: FixtureType | None = None   # set iff category == "FIXTURE"; since v1.1.0
 
 class ParsedQuestion(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     original_question: str
     language: str                       # detected BCP-47 code, e.g. "en", "de", "fi"
@@ -275,7 +284,7 @@ class ParsedQuestion(BaseModel):
     provider: str                       # "llm:<model-id>:prompt@vN", "local:rules", "mock"
     clarification_needed: str | None
 
-# src/blueprint_qa/contracts/analysis.py   (re-exports RoomType from vocabulary.py)
+# src/blueprint_qa/contracts/analysis.py   (re-exports RoomType, FixtureType, StoreyLevel from vocabulary.py)
 class Scale(BaseModel):
     pixels_per_meter: float | None      # None for METRIC space or unknown scale
     source: Literal["SCALE_BAR", "DIMENSION_TEXT", "KNOWN_OBJECT", "IFC_MODEL", "NONE"]
@@ -283,6 +292,7 @@ class Scale(BaseModel):
 
 class Storey(BaseModel):
     id: str; name: str | None; elevation_m: float | None
+    level: StoreyLevel | None = None    # since v1.1.0; A3 maps the storey label/elevation to a level
 
 class Room(BaseModel):
     id: str; storey_id: str | None
@@ -304,13 +314,22 @@ class Opening(BaseModel):
     source_ref: str | None
     confidence: Confidence
 
+class Fixture(BaseModel):               # since v1.1.0 (change 001)
+    id: str                             # "fixture_<n>"
+    storey_id: str | None
+    room_id: str | None                 # containing room if determined
+    fixture_type: FixtureType           # see vocabulary.py
+    position: tuple[float, float]       # box centre, in coordinate_space
+    source_ref: str | None
+    confidence: Confidence
+
 class TextAnnotation(BaseModel):
     text: str
     bbox: tuple[float, float, float, float]   # x_min, y_min, x_max, y_max
     confidence: Confidence
 
 class BlueprintAnalysis(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     source_format: InputFormat
     coordinate_space: Literal["PIXEL", "METRIC"]
@@ -323,6 +342,7 @@ class BlueprintAnalysis(BaseModel):
     texts: list[TextAnnotation]
     analyzer_version: str               # model/parser version, matches its model card
     warnings: list[str]
+    fixtures: list[Fixture] = []        # since v1.1.0
 
 # src/blueprint_qa/contracts/answer.py
 class AnswerStatus(str, Enum):
@@ -330,7 +350,7 @@ class AnswerStatus(str, Enum):
     NEEDS_CLARIFICATION = "NEEDS_CLARIFICATION"; UNSUPPORTED_QUESTION = "UNSUPPORTED_QUESTION"
 
 class Answer(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     status: AnswerStatus
     value: float | None                 # THE answer; non-null iff status == ANSWERED
@@ -530,4 +550,4 @@ class Answer(BaseModel):
 
 ---
 
-*Document version 1.2.2. Custodian: A0. Changes require approval as in §4.3.*
+*Document version 1.3.0. Custodian: A0. Changes require approval as in §4.3.*

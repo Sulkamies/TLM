@@ -83,3 +83,7 @@ it holds a `StoreyLevel` value. This still needs A0's approval under R4.3 (ry is
 values from `contracts.VOCABULARIES` as soon as they exist there, and keeps enforcing them on `EntityRef.storey`.
 
 _Approval (A0 · ry · 2026-11-14):_ lighter option (parts 1 and 3) **APPROVED** by human ry and by A0 (R4.3, MINOR). To be applied in MERGE_PLAN phase 2.
+
+_Applied (A0 · ry · 2026-11-14):_ lighter option **APPLIED** on branch `a0/ry/contracts-1.1` (MERGE_PLAN phase 2): part 1
+(`StoreyLevel` in `vocabulary.py`, with `DESCRIPTIONS`/`VOCABULARIES`) and part 3 (`Storey.level`). Part 2 not applied:
+`EntityRef.storey` stays `str | None`, and AGENTS.md §4.2 now says it holds a `StoreyLevel` value. Contracts **1.1.0**.

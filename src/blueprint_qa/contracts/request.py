@@ -1,4 +1,4 @@
-"""Pipeline request contract (AGENTS.md §4.2, v1.0.1). Custodian: A0."""
+"""Pipeline request contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
 
 from datetime import datetime
 
@@ -11,7 +11,7 @@ class PipelineRequest(BaseModel):
     # bytes travel as base64 in JSON (R3.3 interoperability); see docs/DECISIONS.md
     model_config = ConfigDict(ser_json_bytes="base64", val_json_bytes="base64")
 
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     input_bytes: bytes
     input_format: InputFormat  # declared by the caller; A1 verifies it

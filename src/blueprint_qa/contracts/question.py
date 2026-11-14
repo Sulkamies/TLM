@@ -1,4 +1,4 @@
-"""Parsed question contract (AGENTS.md §4.2, v1.0.1). Custodian: A0."""
+"""Parsed question contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
 
 from enum import Enum
 from typing import Literal
@@ -6,7 +6,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from blueprint_qa.contracts.common import Confidence
-from blueprint_qa.contracts.vocabulary import EntityCategory, RoomType
+from blueprint_qa.contracts.vocabulary import EntityCategory, FixtureType, RoomType
 
 
 class Intent(str, Enum):
@@ -42,11 +42,12 @@ class EntityRef(BaseModel):
     room_type: RoomType | None = None  # shared enum, see vocabulary.py
     label: str | None = None  # literal text, e.g. "Bedroom 2"
     ordinal: int | None = None  # "the second bedroom"
-    storey: str | None = None  # "ground floor", "2nd floor"
+    storey: str | None = None  # holds a StoreyLevel value (vocabulary.py); str by decision 004
+    fixture_type: FixtureType | None = None  # set iff category is FIXTURE; since v1.1.0
 
 
 class ParsedQuestion(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     original_question: str
     language: str  # detected BCP-47 code, e.g. "en", "de", "fi"
