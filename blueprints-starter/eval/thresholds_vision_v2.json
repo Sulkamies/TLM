@@ -1,0 +1,37 @@
+{
+  "thresholds": {
+    "window": 0.4,
+    "door": 0.25,
+    "toilet": 0.3,
+    "sink": 0.2,
+    "bathtub": 0.75,
+    "shower": 0.25,
+    "sauna_bench": 0.35,
+    "room_kitchen": 0.3,
+    "room_bedroom": 0.15,
+    "room_bath": 0.15,
+    "room_balcony": 0.45,
+    "room_sauna": 0.35,
+    "floor": 0.45,
+    "window_iou": 0.4,
+    "toilet_iou": 1.0,
+    "sink_iou": 1.0,
+    "shower_iou": 1.0,
+    "bathtub_iou": 1.0,
+    "door_iou": 0.3
+  },
+  "strategies": {
+    "windows": "det",
+    "floors": "det_min1",
+    "toilets": "det",
+    "sinks": "det",
+    "shower_tub": "det",
+    "doors": "det",
+    "saunas": "bench_clusters",
+    "kitchens": "det",
+    "bedrooms": "det",
+    "wc_rooms": "bath_fixtures",
+    "bathrooms": "bath_fixtures",
+    "balconies": "det"
+  }
+}

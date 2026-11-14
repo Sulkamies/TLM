@@ -16,6 +16,9 @@ CACHE_DIR = os.environ.get("BP_VISION_CACHE", "cache/vision")
 # (eval/run_eval.py prints per-class errors). Lower = more recall.
 THRESH = {"window": 0.30, "door": 0.30, "toilet": 0.35, "sink": 0.35, "bathtub": 0.35,
           "shower": 0.35, "sauna_bench": 0.35, "floor": 0.40}
+# Tuned values from eval/cubicasa_check.py --tune (set BP_THRESHOLDS to that JSON file)
+if os.environ.get("BP_THRESHOLDS") and os.path.exists(os.environ["BP_THRESHOLDS"]):
+    THRESH.update(json.load(open(os.environ["BP_THRESHOLDS"]))["thresholds"])
 
 # Finnish room-label codes as they are written on plans (uppercase, no dots).
 ROOM_CODES = {
@@ -75,6 +78,17 @@ class RasterPlan:
         if floors["value"]:
             return floors
         return {"value": 1, "evidence": [], "note": "no storey labels or floor boxes found; assumed 1"}
+
+    def count_question(self, qtype: str) -> dict:
+        """Answer a CubiCasa-style count question with the tuned rules shared with
+        eval/cubicasa_check.py. qtype: windows, floors, toilets, sinks, shower_tub, doors,
+        saunas, kitchens, bedrooms, wc_rooms, bathrooms, balconies."""
+        from handlers.raster_count import count
+        settings = {}
+        if os.environ.get("BP_THRESHOLDS") and os.path.exists(os.environ["BP_THRESHOLDS"]):
+            settings = json.load(open(os.environ["BP_THRESHOLDS"]))
+        value, evidence = count(self.data, qtype, settings)
+        return {"value": value, "evidence": evidence}
 
     def text(self) -> list[dict]:
         return [{"text": o["text"], "conf": round(o["conf"], 2)} for o in self.data["ocr"]]
