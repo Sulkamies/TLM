@@ -1,0 +1,26 @@
+# A3 label table for Finnish plans. Custodian: A3.
+# Keys under room_codes and the values under storey_levels MUST be values from
+# blueprint_qa.contracts.VOCABULARIES (RoomType / StoreyLevel); validated at load time.
+#
+# room_codes: regular expressions matched against the WHOLE normalised OCR text (upper case,
+# only A-Z, Ä, Ö, Å and digits kept). From handlers/raster.py ROOM_CODES at 35597e2.
+# Not used to create rooms this round (spec §E row 5); kept for later.
+room_codes:
+  BEDROOM: ['MH\d*', MAKUUHUONE, MAKUUH]
+  BATHROOM: [KH, KPH, PH, PESUH, PESUHUONE, SH, KYLPYHUONE]
+  TOILET: [WC]
+  KITCHEN: [K, KK, KT, TK, AVOK, KEITTIÖ, KEITTIO, KEITTOKOMERO]
+  SAUNA: [S, SAUNA]
+  BALCONY: [PARV, PARVEKE, LASIT, LASITETTU, LASPARV]
+  LIVING_ROOM: [OH, OLOHUONE]
+
+# Storey label, e.g. "1. KERROS", "2 krs", "1,KERROS" (case-insensitive; spec §H item 1, A3-Q14).
+# Group 1 is the storey number. "KERROSALA" (floor area) does not match.
+storey_word: '(\d)\s*[.,]?\s*(KERROS\b|KRS\b|KERR\b)'
+
+# Finnish numbering: the 1st storey is the ground floor. Any other digit -> level None.
+storey_levels:
+  "1": GROUND
+  "2": UPPER_1
+  "3": UPPER_2
+  "4": UPPER_3
