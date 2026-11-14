@@ -18,7 +18,7 @@ exported only through `reasoning/__init__.py`. Never raises (R5.1). The only kno
 
 1. **No LLM in A4 this round.** `value` is computed by deterministic code. `explanation` comes from fixed templates
    (a Python module) in **en, de and fi**, chosen by the primary subtag of `ParsedQuestion.language`. Any other language:
-   English text and `Answer.language = "en"` (`Answer.language` is the language of the explanation). See Q10.
+   English text and `Answer.language = "en"` (`Answer.language` is the language of the explanation). See Q11.
 2. **Before computing:** `question.request_id != analysis.request_id` → `INVALID_INPUT`. Intent `UNSUPPORTED` →
    `UNSUPPORTED_QUESTION`. `clarification_needed` set → `NEEDS_CLARIFICATION` with that text, language = question.language.
 3. **Unit by intent, also when `value` is None** (Q9, option c): COUNT → `count`; AREA → `m2`; LENGTH, PERIMETER,
@@ -45,7 +45,7 @@ exported only through `reasoning/__init__.py`. Never raises (R5.1). The only kno
    - Geometry needs `metric_available=True`: METRIC space → coordinates are metres; PIXEL space → divide by
      `scale.pixels_per_meter` (missing → `CANNOT_ANSWER`).
    - HEIGHT = `Room.height_m`; VOLUME = `area_m2 × height_m`; missing → `CANNOT_ANSWER`.
-   - RATIO = area(`targets[0]`) / area(`targets[1]`) only (no count ratios this round, see Q11); a zero or missing
+   - RATIO = area(`targets[0]`) / area(`targets[1]`) only (no count ratios this round, see Q12); a zero or missing
      denominator → `CANNOT_ANSWER`.
 8. **COMPARISON:** compute `comparison.measure` for `targets[0]` and compare it with `threshold` (SI), or with
    `targets[1]` if `threshold` is None. Operators GT/GE/LT/LE/EQ; EQ is exact. Result 1.0 / 0.0, unit `boolean`. A measure
@@ -82,3 +82,15 @@ exported only through `reasoning/__init__.py`. Never raises (R5.1). The only kno
   COUNT must give 13, 12, 2, 3, 3 (SHOWER + BATHTUB, SUM), 1, 1, 1, 1, 0 (kitchens, covered) and 2 (storeys).
   "How many living rooms?" must give `CANNOT_ANSWER`.
 - The check sequence from MERGE_PLAN §6 is green on the branch. CHANGELOG and TASKS entries exist.
+
+## 4. Addition after A0's validity check (A0 · ry · 2026-11-14), for A4's next round
+
+A0 validated `a4/ry/answer-reasoner` (`7ed843c`) against this brief: passed. On A3's real analyses of the three
+recordings, A4's COUNT answers equal A3's tuned counts exactly. One gap in this brief (not an A4 error):
+
+- **Decision 9b (binding from the next A4 round):** the coverage rule applies to **positive** answers too when the
+  target is *all* elements of a category. A ROOM target without `room_type`, or a FIXTURE target without
+  `fixture_type`, is answered only if the corresponding `*_DETECTED` warning lists every value except OTHER (and UNKNOWN
+  for rooms); otherwise `CANNOT_ANSWER`, whatever the count. Reason: the raster detector sees only six room types, so
+  "How many rooms?" counted 6 on `colorful-2002` and would be a systematic undercount.
+- A4's provisional decisions in OPEN_QUESTIONS Q10 (a)–(o) are accepted by A0 for now; the humans may change them.

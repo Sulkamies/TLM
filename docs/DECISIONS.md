@@ -82,4 +82,4 @@ orchestrator afterwards (MERGE_PLAN update, phase 5).
 A4 may give a COUNT of 0 or an EXISTENCE of 0.0 only if the analysis declares, through the warnings
 `ROOM_TYPES_DETECTED:`, `FIXTURE_TYPES_DETECTED:` and `OPENING_KINDS_DETECTED:`, that it can see that kind of element;
 otherwise `CANNOT_ANSWER`. A convention in `warnings`, not a contract field, so no contract change is needed now
-(A3 spec §I). A contract field is the cleaner long-term option (OPEN_QUESTIONS Q12).
+(A3 spec §I). A contract field is the cleaner long-term option (OPEN_QUESTIONS Q13).
