@@ -67,3 +67,8 @@ and lost no accuracy on this set while uploading far less. The lite model is abo
 tokens. Its only miss ("Kremsier Wohnhaus Parterre") also flips between runs on gemini-3.8-flash, so that drawing is borderline.
 The set is small (22 drawings); A5 should confirm on the labelled fixtures. These numbers were measured by A1, not by A0.
 A1 re-records its validation cassettes with the new model.
+
+### D-010 · 2026-11-14 · A0 · approved by ry · Architecture for integration = AGENTS.md as written
+A3 is question-agnostic (`analyze(ValidationResult) -> BlueprintAnalysis`), A2 and A3 run concurrently, A4 computes the
+answer later. ry's earlier description (A3 receives the question) is not adopted. The A3 team designed for this too.
+A3 writes its own adapter from a spec by A0 (R2.1). The integration agent opens the pull requests but never merges them.

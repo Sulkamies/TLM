@@ -64,3 +64,49 @@ _Note (A0 · ry · 2026-11-14):_ **ON HOLD** until the Blueprint Analyzer's outp
 After change 003, `FixtureType` and the `"FIXTURE"` category go into `contracts/vocabulary.py` (with `DESCRIPTIONS`
 entries). The `Fixture` model and `fixture_type` field stay in `analysis.py`/`question.py`. The diff above will be
 revised to match the analyzer's final output before approval.
+
+---
+## Revision 2 (A0 · ry · 2026-11-14): final diff, aligned with the A3 detector
+
+The analyzer's output is now known (A3 note, 2026-11-14), so the hold is lifted. Status: **PROPOSED, awaiting approval**
+(A0 + 1 human, MINOR). Contracts **1.0.1 → 1.1.0** (with 004 applied in the same change).
+
+```python
+# contracts/vocabulary.py
+class FixtureType(str, Enum):
+    TOILET = "TOILET"; SINK = "SINK"; SHOWER = "SHOWER"; BATHTUB = "BATHTUB"
+    SAUNA_BENCH = "SAUNA_BENCH"; OTHER = "OTHER"
+DESCRIPTIONS["FixtureType"] = {
+    "TOILET": "A toilet bowl (WC fixture). Not the TOILET room type.",
+    "SINK": "A washbasin or kitchen sink.",
+    "SHOWER": "A shower.",
+    "BATHTUB": "A bathtub.",
+    "SAUNA_BENCH": "A sauna bench (lauteet).",
+    "OTHER": "A sanitary fixture not covered by the other values.",
+}
+EntityCategory = Literal[..., "WHOLE_PLAN", "FIXTURE"]          # + DESCRIPTIONS["EntityCategory"]["FIXTURE"]
+
+# contracts/analysis.py
+class Fixture(BaseModel):
+    id: str                               # "fixture_<n>"
+    storey_id: str | None
+    room_id: str | None                   # containing room if determined
+    fixture_type: FixtureType
+    position: tuple[float, float]         # box centre, in coordinate_space
+    source_ref: str | None
+    confidence: Confidence
+class BlueprintAnalysis(BaseModel):
+    ...
+    fixtures: list[Fixture] = []
+
+# contracts/question.py
+class EntityRef(BaseModel):
+    ...
+    fixture_type: FixtureType | None = None   # set iff category == "FIXTURE"
+```
+
+Notes: A3 suggested the name `fixture_kind`; `fixture_type` is kept for consistency with `room_type`. SHOWER and
+BATHTUB stay separate values ("showers and bathtubs" = two targets with SUM). Applying this makes A2's synonym
+coverage test fail until A2 adds en/de/fi words (MERGE_PLAN phase 2b, merged together per R4.5).
+
+_Approval (2026-11-14):_ revision 2 **APPROVED** by human ry and by A0 (R4.3, MINOR). To be applied in MERGE_PLAN phase 2.

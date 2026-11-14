@@ -17,3 +17,11 @@ _No deviations recorded._
 - **Update (A2 · ry · 2026-11-14):** ry chose the lighter option of 004 (`EntityRef.storey` stays `str`). The exit
   condition changes: once `StoreyLevel` is in the contracts, A2 deletes only the `values:` block. The `field: storey`
   link stays, so A2 keeps enforcing the convention. The deviation then ends, because the values live in the contracts.
+
+### 2026-11-14 · A0 · ry · No `--debug-overlay` for A3 in this integration
+- **Rule:** §6 A3: "MUST provide a `--debug-overlay` CLI that draws the detections on the image (raster) or a 2D plan (IFC)."
+- **Instruction:** ry, MERGE_PLAN v3 decision D5: visualisation is not part of this integration.
+- **Done instead:** the A3 adapter brief (`docs/requests/A3-analysis-adapter.md`) does not require the overlay, and the
+  A0 validity check in phase 3 does not review it. If A3 already has one, it may stay.
+- **Why / exit:** focus the integration on a working A1 → A2 ∥ A3 pipeline. The deviation ends when A3 adds the overlay
+  in a later task, or the rule is changed through §4.3.

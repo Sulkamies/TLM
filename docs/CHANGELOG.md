@@ -120,3 +120,35 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Live, real config, 22 Junction drawings, 8 in parallel: 21/22 correct in 10.0 s (median 1.7 s per picture, slowest 3.0 s),
   33,705 input and 426 output tokens. The miss is the borderline "Kremsier Wohnhaus Parterre", which also flips between runs on
   `gemini-3.8-flash`. Before this change, sequential calls with full-size images took 177 s.
+
+### 2026-11-14 · A0 · ry · Merge plan for A0 + A1 + A2
+- New `docs/MERGE_PLAN.md`: binding plan for the A0 session that integrates A1 → A2 into `orchestrator.run()` and a CLI
+  front door. It covers the invalid-picture message ry asked for, interim answers without numbers, contract checks, tests and a live demo.
+  A3 (unfinished), A4 (not implemented), the architecture decision and proposals 001/004 are explicitly out of scope.
+- Baseline verified on `main` `c8e8127`: all checks pass, 278 tests.
+
+### 2026-11-14 · A0 · ry · Integration plan v2 (A3 included)
+- `docs/MERGE_PLAN.md` rewritten as v2: phases 1 (orchestrator + CLI for A1→A2), 2 (contracts 1.1.0: fixtures 001 +
+  storey levels 004, `analysis:` config, `vision` extra), 2b (A2 synonyms), 3 (A3 adapter), 4 (A2 ∥ A3 in the pipeline).
+  Gates G1–G5. A4 out of scope. Architecture basis: AGENTS.md (A3 question-agnostic), pending ry's confirmation (Q8).
+- New `docs/requests/A3-analysis-adapter.md` (answers A3's questions, acceptance criteria).
+- Proposal 001 revision 2: final fixture diff, awaiting approval. A3's source-file passthrough goes to proposal 005 (team decision, not in this integration).
+
+### 2026-11-14 · A0 · ry · Integration plan v3
+- `docs/MERGE_PLAN.md` v3: decisions D1–D6 (AGENTS.md architecture; 001 + 004 approved; A3 writes its adapter from A0's
+  spec; the integration agent opens PRs but never merges; visualisation and proposal 005 out of scope). New phase 0: the
+  integration agent determines A3's real output from `origin/a3/SS/cubicasa-detector` and publishes a verified mapping spec.
+- Approvals recorded in proposals 001 and 004; D-010 in DECISIONS; status note in the A3 brief.
+
+### 2026-11-14 · A0 · ry · Phase 0: verified A3 mapping spec
+- Analysed A3's branch `origin/a3/SS/cubicasa-detector` at `35597e2` (read-only, via `git show`). ry decided the spec
+  follows this version, not `a3/SS/cubicasa-v3`. The counting rules (`raster_count.py` with `thresholds_vision_v2.json`)
+  were run unchanged on synthetic detector output; the detector itself could not be run (no weights or recorded output).
+- `docs/requests/A3-analysis-adapter.md`: new section "Verified mapping spec (phase 0)": detector output, tuned selection
+  rules, field-by-field mapping to `BlueprintAnalysis` 1.1.0, the proposed `analysis:` config, differences from the
+  earlier descriptions, open points.
+- OPEN_QUESTIONS Q8 answered (D1). Proposal `docs/contract-changes/005-original-file.md` (for team decision, D6).
+  Deviation recorded: no `--debug-overlay` in this integration (D5).
+- No contract, prompt or code change.
+- Added `docs/requests/A3-open-points.md`: all questions to A3/SS (A3-Q1 … A3-Q22: weights, real detector output,
+  confirmations of A0's reading of the code, and A0 decisions SS may object to). The spec's §F points to it.
