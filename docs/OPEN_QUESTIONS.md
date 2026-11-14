@@ -62,3 +62,13 @@ Each item lists the current behaviour; please confirm or change.
 (f) ifcZIP, ifcXML and encrypted PDFs give `UNREADABLE`.
 (g) `validation/raster.py` sets Pillow's process-global `MAX_IMAGE_PIXELS = None`, replacing Pillow's hard-coded limit with the
 configurable one. This also affects A3 if A3 uses Pillow; should A0 own that setting?
+
+### Q8 · A0 · ry · 2026-11-14 · Architecture for the integration
+Should the integration follow AGENTS.md as written (A3 question-agnostic, `analyze(ValidationResult) -> BlueprintAnalysis`,
+A2 and A3 concurrent, A4 computes the answer), or the earlier description in which A3 receives the question?
+
+---
+**Answer (ry, 2026-11-14, recorded by A0):**
+- **Q8:** AGENTS.md as written (MERGE_PLAN v3 decision D1, `docs/DECISIONS.md` D-010). A3 writes its own adapter from
+  A0's spec (`docs/requests/A3-analysis-adapter.md`, section "Verified mapping spec (phase 0)"). The spec targets the A3
+  branch `a3/SS/cubicasa-detector` at `35597e2`, **not** `a3/SS/cubicasa-v3` (ry, 2026-11-14).

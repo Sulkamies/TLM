@@ -139,3 +139,14 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   spec; the integration agent opens PRs but never merges; visualisation and proposal 005 out of scope). New phase 0: the
   integration agent determines A3's real output from `origin/a3/SS/cubicasa-detector` and publishes a verified mapping spec.
 - Approvals recorded in proposals 001 and 004; D-010 in DECISIONS; status note in the A3 brief.
+
+### 2026-11-14 · A0 · ry · Phase 0: verified A3 mapping spec
+- Analysed A3's branch `origin/a3/SS/cubicasa-detector` at `35597e2` (read-only, via `git show`). ry decided the spec
+  follows this version, not `a3/SS/cubicasa-v3`. The counting rules (`raster_count.py` with `thresholds_vision_v2.json`)
+  were run unchanged on synthetic detector output; the detector itself could not be run (no weights or recorded output).
+- `docs/requests/A3-analysis-adapter.md`: new section "Verified mapping spec (phase 0)": detector output, tuned selection
+  rules, field-by-field mapping to `BlueprintAnalysis` 1.1.0, the proposed `analysis:` config, differences from the
+  earlier descriptions, open points.
+- OPEN_QUESTIONS Q8 answered (D1). Proposal `docs/contract-changes/005-original-file.md` (for team decision, D6).
+  Deviation recorded: no `--debug-overlay` in this integration (D5).
+- No contract, prompt or code change.
