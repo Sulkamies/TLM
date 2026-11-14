@@ -89,3 +89,34 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   override resolves to `None`. New `test_gemini_backend_omits_thinking_config_when_budget_is_none`. 64 passing, 98 % coverage.
 - Docs: D-009, EXTERNAL_SERVICES update row, response `docs/requests/A0-validation-speed.response.md`. No live call made by A0.
 - No contract or prompt versions touched. A1 must re-record its validation cassettes for the new model.
+### 2026-11-14 · A1 · OT · Input Validator ported onto `main` (Gemini via the shared wrapper)
+- `src/blueprint_qa/validation/`: entry point `validate(request) -> ValidationResult | ErrorEnvelope`, never raises.
+  Real format from magic bytes (`FORMAT_MISMATCH`). PNG/JPEG decoded with EXIF orientation applied and re-encoded as PNG, never resized.
+  PDFs must have exactly one page (`MULTI_PAGE_PDF`) and are rendered at `pdf_render_dpi`. IFC files are checked locally, with no LLM
+  (schema, at least one `IfcSpace`/`IfcWall*`, else `NO_SPATIAL_DATA`). Images are classified through
+  `get_llm_client("validation").generate_structured(...)`; confidence below `min_confidence` gives `LOW_CONFIDENCE`.
+  Raw labels stay inside `validation/`.
+- **Size limit for the LLM copy:** a normalised PNG can be far larger than the upload (a 1.9 MB JPEG scan became 9.8 MB,
+  and the API rejected it). PNGs over `validation.llm_image_max_bytes` are shrunk until they fit. Smaller images are sent
+  byte-identical, and `PlanImage` is never changed.
+- Prompt `validation/prompts/floor_plan_classifier.v1.md` (new, v1). No user text is sent (`data={}`).
+- Tests: 157 unit tests, run through the real `LlmClient` with a fake backend or recorded cassettes; validation coverage 99 %.
+  Cassettes `tests/unit/validation/cassettes/floor_plan_classifier@v1.json` were recorded live with `gemini-3.8-flash` on 6 synthetic
+  images, all correct (about 1,600 input tokens each). Re-record with the opt-in test: `pytest -m live tests/unit/validation/test_llm_cassettes.py`.
+- **Live check on 22 real Junction drawings** (11 should be accepted, 11 rejected; full `validate()` path; drawings not committed):
+  `gemini-3.8-flash` 22/22 correct, 33,705 input and 3,376 output tokens for 21 calls (one multi-page PDF is rejected locally).
+  For comparison, earlier Claude runs on the same set: Opus 5.5 22/22, Haiku 5.5 21/22, each about 111k input tokens.
+- Requires A0 branch `a0/ot/validation-config-deps` (a0d1ff9: image libraries and validation config keys). Merge it first or together.
+- Earlier work on `a1/ot/input-validator` used Claude through an A0 branch that PR #1 superseded. Its measurements (22 real
+  Junction drawings: Opus 5.5 22/22, Haiku 5.5 21/22) are not Gemini results.
+- Recorded OT's approval of plan images for Gemini in `docs/EXTERNAL_SERVICES.md` (OPEN_QUESTIONS Q2).
+
+### 2026-11-14 · A1 · OT · Faster validation: re-recorded with gemini-3.5-flash-lite, end-to-end check with A0
+- Requested from A0 `docs/requests/A0-validation-speed.md`: LLM copy limited to 1024 px, validation model `gemini-3.5-flash-lite`
+  with `thinking_budget: null`. A0 implemented it in 1abbc37 (D-009) on `a0/ot/validation-config-deps`.
+- Re-recorded the cassettes `floor_plan_classifier@v1.json` with `gemini-3.5-flash-lite`: 6/6 correct, 17–25 output tokens each.
+  The prompt is unchanged (v1).
+- End-to-end check on A0 1abbc37 combined with A1, using CI's commands offline: ruff and mypy clean, schemas OK, 158 passed, coverage 98.27 %.
+- Live, real config, 22 Junction drawings, 8 in parallel: 21/22 correct in 10.0 s (median 1.7 s per picture, slowest 3.0 s),
+  33,705 input and 426 output tokens. The miss is the borderline "Kremsier Wohnhaus Parterre", which also flips between runs on
+  `gemini-3.8-flash`. Before this change, sequential calls with full-size images took 177 s.
