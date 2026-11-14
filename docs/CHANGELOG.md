@@ -383,3 +383,8 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   instead of 15px); landing title "Chat with your blueprint" and the line below it "Ask anything, the blueprint
   talks!". Checked: no "how it was counted" text on either screen. Test
   `test_landing_title_and_no_explanation_on_any_screen`.
+
+### 2026-11-14 · A0 · ry · Browser UI: no 1-2-3 steps on the landing page
+- `src/blueprint_qa/api/web/index.html` (ry): removed the steps "1 Add a drawing / 2 Ask in plain words / 3 Check the
+  red boxes" below the picture area, with their styles. Same page for laptop and phone, so both lose them. Test
+  `test_landing_page_has_no_steps`. No API, server or Android app change.

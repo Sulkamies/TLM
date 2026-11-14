@@ -113,3 +113,7 @@ behaviour) and the file-preview fallback. Also on ry's request, for laptop and p
 title "Chat with your blueprint" and the line "Ask anything, the blueprint talks!". Your `web-app/` copy can now be
 dropped (see §4); please also remove it and
 merge `main` so the Android app can be merged.
+
+## 10. Update: no 1-2-3 steps on the served landing page (ry, 2026-11-14)
+
+The "1 Add a drawing / 2 Ask in plain words / 3 Check the red boxes" steps are removed (laptop and phone). A test checks it.
