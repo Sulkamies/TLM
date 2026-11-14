@@ -13,3 +13,9 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 5 | Vocabulary module `contracts/vocabulary.py` (change 003), `Prompt.render`, cassette key covers prompt + schema (D-006) | A0 | ry | 2026-11-14 | Done |
 | 2b | Note for task #2: the model is now `gemini-3.8-flash` (D-008), not `gemini-2.5-flash` | A2 | (unclaimed) | 2026-11-14 | Info (added by A0 · ry) |
 | 6 | A1 uses the shared LLM wrapper: `validation` config slot, R7.5 boundary test, live image check through the wrapper, brief `docs/requests/A1-use-shared-llm-wrapper.md` | A0 | ry | 2026-11-14 | Done |
+| 2 | Claim: Question Interpreter per task #2 | A2 | ry | 2026-11-14 | In progress (branch `a2/ry/question-interpreter`) |
+| 2a | Claim: following the binding design for task #2 | A2 | ry | 2026-11-14 | In progress |
+| 2b | Claim: acknowledged, using `gemini-3.8-flash` from `config/llm.yaml` | A2 | ry | 2026-11-14 | In progress |
+| 2 | Done: `question/` interpreter, providers (LLM + mock), prompt `interpret@v1`, EN/DE/FI synonyms, REPL, 45 cassettes, tests. `LocalRuleProvider` (optional) not built | A2 | ry | 2026-11-14 | Done (branch `a2/ry/question-interpreter`, awaiting review) |
+| 2a | Done: follows the binding design (file map, Q1–Q7) | A2 | ry | 2026-11-14 | Done |
+| 2b | Done: `gemini-3.8-flash` via `config/llm.yaml`, live test passed | A2 | ry | 2026-11-14 | Done |

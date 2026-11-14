@@ -1,0 +1,66 @@
+# Deutsche Wörter für das Plan-Vokabular (design rule Q4).
+# Keys MUST be names/values from blueprint_qa.contracts.VOCABULARIES; validated at load time.
+# Plan abbreviations included: SZ, WZ, KiZi, AR, HWR, Bad, Gäste-WC, Kü.
+RoomType:
+  BEDROOM: [Schlafzimmer, SZ, Kinderzimmer, KiZi, Gästezimmer, Elternschlafzimmer]
+  BATHROOM: [Badezimmer, Bad, Duschbad, Duschraum]
+  TOILET: [WC, Gäste-WC, Toilette, Klo, Gästetoilette]
+  KITCHEN: [Küche, Kü, Kochnische, Wohnküche, Pantryküche]
+  LIVING_ROOM: [Wohnzimmer, WZ, Wohnraum, Stube]
+  DINING_ROOM: [Esszimmer, Essbereich, Essen, EZ]
+  HALLWAY: [Flur, Diele, Gang, Eingang, Korridor, Windfang, FL]
+  GARAGE: [Garage, Carport, Ga]
+  STORAGE: [Abstellraum, AR, Abstellkammer, Vorratsraum, Speisekammer, Lager]
+  CLOSET: [Ankleide, Schrank, Einbauschrank, begehbarer Kleiderschrank]
+  LAUNDRY: [Hauswirtschaftsraum, HWR, Waschküche, Wäscheraum]
+  SAUNA: [Sauna]
+  BALCONY: [Balkon, Terrasse, Loggia, Dachterrasse]
+  OFFICE: [Arbeitszimmer, Büro, AZ, Homeoffice]
+  TECHNICAL: [Technikraum, Heizungsraum, Heizraum, HAR]
+  OTHER: [sonstiger Raum, Hobbyraum, Mehrzweckraum]
+  UNKNOWN: [unbekannter Raum, unbeschrifteter Raum]
+EntityCategory:
+  ROOM: [Raum, Räume, Zimmer]
+  DOOR: [Tür, Türen, Haustür, Eingangstür]
+  WINDOW: [Fenster]
+  WALL: [Wand, Wände, Mauer]
+  STAIR: [Treppe, Treppen, Treppenhaus]
+  STOREY: [Geschoss, Stockwerk, Etage, Ebene, EG, OG, KG, DG]
+  WHOLE_PLAN: [Haus, Wohnung, Gebäude, gesamt, Gesamtfläche, Wohnfläche]
+OpeningKind:
+  DOOR: [Tür]
+  WINDOW: [Fenster]
+  OPENING: [Öffnung, Durchgang, Wanddurchbruch]
+examples:
+  - id: count_windows
+    question: "Wie viele Fenster hat die Wohnung?"
+    expect:
+      intent: COUNT
+      aggregation: SUM
+      targets: [{category: WINDOW}]
+  - id: height_living
+    question: "Wie hoch ist die Decke im Wohnzimmer?"
+    expect:
+      intent: HEIGHT
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: LIVING_ROOM}]
+  - id: compare_bath_m2
+    question: "Ist das Bad größer als 8 m²?"
+    expect:
+      intent: COMPARISON
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: BATHROOM}]
+      comparison: {measure: AREA, operator: GT, threshold: 8}
+      threshold_unit: m2
+  - id: exists_balcony
+    question: "Hat die Wohnung einen Balkon?"
+    expect:
+      intent: EXISTENCE
+      aggregation: SUM
+      targets: [{category: ROOM, room_type: BALCONY}]
+  - id: ratio_bedrooms
+    question: "Welchen Anteil der Wohnfläche nehmen die Schlafzimmer ein?"
+    expect:
+      intent: RATIO
+      aggregation: SUM
+      targets: [{category: ROOM, room_type: BEDROOM}, {category: WHOLE_PLAN}]

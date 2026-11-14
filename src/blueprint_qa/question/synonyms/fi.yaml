@@ -1,0 +1,65 @@
+# Suomenkieliset sanat pohjapiirroksen sanastolle (design rule Q4).
+# Keys MUST be names/values from blueprint_qa.contracts.VOCABULARIES; validated at load time.
+# Plan abbreviations included: MH, KH, PH, KPH, WC, K, KK, TK, OH, RH, ET, S, VH, LH, AK, PARVEKE.
+RoomType:
+  BEDROOM: [makuuhuone, MH, lastenhuone, vierashuone, työ-/makuuhuone]
+  BATHROOM: [kylpyhuone, KH, pesuhuone, PH, KPH, suihkuhuone]
+  TOILET: [WC, vessa, käymälä, erillinen WC, vieras-WC]
+  KITCHEN: [keittiö, K, keittokomero, KK, tupakeittiö, TK, avokeittiö]
+  LIVING_ROOM: [olohuone, OH, tupa, oleskelutila]
+  DINING_ROOM: [ruokailutila, ruokailuhuone, RT, RH]
+  HALLWAY: [eteinen, ET, käytävä, aula, tuulikaappi, TK]
+  GARAGE: [autotalli, AT, autokatos]
+  STORAGE: [varasto, VAR, komero, kellarivarasto, ruokakomero]
+  CLOSET: [vaatehuone, VH, vaatekaappi, kaappi]
+  LAUNDRY: [kodinhoitohuone, KHH, pesula, kuivaushuone]
+  SAUNA: [sauna, S, löylyhuone]
+  BALCONY: [parveke, PARVEKE, PARV, terassi, lasitettu parveke, viherhuone]
+  OFFICE: [työhuone, TH, kotitoimisto]
+  TECHNICAL: [tekninen tila, lämmönjakohuone, LJH, LH, teknisen tilan huone, IV-konehuone]
+  OTHER: [muu tila, harrastehuone, askarteluhuone]
+  UNKNOWN: [tuntematon tila, nimeämätön huone]
+EntityCategory:
+  ROOM: [huone, huoneet, tila]
+  DOOR: [ovi, ovet, ulko-ovi, etuovi]
+  WINDOW: [ikkuna, ikkunat]
+  WALL: [seinä, seinät]
+  STAIR: [porras, portaat, porraskäytävä]
+  STOREY: [kerros, kerrokset, alakerta, yläkerta, kellarikerros]
+  WHOLE_PLAN: [talo, asunto, rakennus, koti, koko asunto, kokonaispinta-ala]
+OpeningKind:
+  DOOR: [ovi]
+  WINDOW: [ikkuna]
+  OPENING: [aukko, oviaukko, kulkuaukko]
+examples:
+  - id: count_doors
+    question: "Kuinka monta ovea asunnossa on?"
+    expect:
+      intent: COUNT
+      aggregation: SUM
+      targets: [{category: DOOR}]
+  - id: area_label_mh2
+    question: "Mikä on MH 2:n pinta-ala?"
+    expect:
+      intent: AREA
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: BEDROOM, label: "MH 2"}]
+  - id: exists_toilet
+    question: "Onko asunnossa erillistä vessaa?"
+    expect:
+      intent: EXISTENCE
+      aggregation: SUM
+      targets: [{category: ROOM, room_type: TOILET}]
+  - id: area_ground_floor
+    question: "Mikä on alakerran pinta-ala?"
+    expect:
+      intent: AREA
+      aggregation: SUM
+      targets: [{category: STOREY, storey: "ground floor"}]
+  - id: area_second_bedroom
+    question: "Kuinka suuri on toinen makuuhuone neliöjalkoina?"
+    expect:
+      intent: AREA
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: BEDROOM, ordinal: 2}]
+      requested_unit: ft2

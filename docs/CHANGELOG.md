@@ -42,3 +42,17 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - New `tests/unit/common/test_llm_boundary.py`: CI fails if any module outside `common/` imports a vendor LLM SDK (R7.5).
 - Brief and merge checklist for A1: `docs/requests/A1-use-shared-llm-wrapper.md`. Plan images still need R7.4 approval.
 - Tests: 63 passing.
+
+### 2026-11-14 · A2 · ry · Question Interpreter (prompt `interpret@v1`)
+- New `src/blueprint_qa/question/` per the binding design: `interpret()` entry point (never raises), `QuestionProvider`
+  protocol, `LlmQuestionProvider` (default, `get_llm_client("question")`, `gemini-3.8-flash` from config) and
+  `MockQuestionProvider`. `LlmParse` is composed from contract types; its validator enforces the §4.2 invariants so the
+  wrapper re-asks on violations. `mapping.py` converts comparison thresholds to SI in code (e.g. 120 sq ft → 11.148 m²).
+- Prompt `prompts/interpret.v1.md` with `{{PLAN_VOCABULARY}}`, `{{SYNONYMS}}`, `{{EXAMPLES}}`, rendered from
+  `contracts.VOCABULARIES`/`DESCRIPTIONS` and `synonyms/{en,de,fi}.yaml` (validated against the vocabulary; Finnish and
+  German plan abbreviations included).
+- Terminal chat REPL: `python -m blueprint_qa.question` (also reads piped stdin).
+- Tests: 105 offline in `tests/unit/question/` on 45 recorded cassettes (`cassettes/interpret@v1.json`); EN/DE/FI
+  equality for 8 held-out questions; Q1 guard; opt-in live test passed. Re-record with
+  `tests/unit/question/record_cassettes.py`. Full suite: 168 passed, coverage 98 % (question/ ≥ 82 % per file).
+- No contract, config or `pyproject.toml` change. Open questions Q5 (storey text) and Q6 (unitless thresholds).
