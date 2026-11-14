@@ -12,6 +12,9 @@ dependencies = [
     "pydantic>=2.14,<2.15",
     "pyyaml>=6.0,<6.1",
     "google-genai>=3.3,<3.4",
+    "pillow>=13.0,<13.1",       # A1: decode PNG/JPEG, EXIF orientation, PNG encoding
+    "pypdfium2>=5.15,<5.16",    # A1: PDF page count and rendering (Apache-2.0/BSD-3, no system deps)
+    "ifcopenshell>=0.9,<0.10",  # A1: IFC parsing (LGPL-3.0)
 ]
 
 [project.optional-dependencies]

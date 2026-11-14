@@ -18,7 +18,11 @@ def test_repo_config_question_uses_gemini_flash() -> None:
 
 def test_validation_component_has_its_own_slot() -> None:
     s = config.llm_settings("validation")
-    assert (s.component, s.model.model) == ("validation", "gemini-3.8-flash")
+    assert (s.component, s.model.model) == ("validation", "gemini-3.5-flash-lite")
+    # D-009: the lite model rejects thinking_budget 0, so the component sets null,
+    # overriding the default 0 (no thinking config is sent then).
+    assert s.model.thinking_budget is None
+    assert config.llm_settings("question").model.thinking_budget == 0
 
 
 def test_unknown_component_falls_back_to_defaults() -> None:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -284,6 +284,22 @@ def test_gemini_backend_builds_request_and_reads_usage() -> None:
     assert [c.role for c in contents] == ["user", "model", "user"]
     assert len(contents[0].parts) == 2  # text + image on the first turn only
     assert len(contents[2].parts) == 1
+
+
+def test_gemini_backend_omits_thinking_config_when_budget_is_none() -> None:
+    from google.genai import types
+
+    response = types.GenerateContentResponse(
+        candidates=[
+            types.Candidate(
+                content=types.Content(role="model", parts=[types.Part(text='{"label":"a"}')])
+            )
+        ],
+    )
+    models = _FakeModels(response=response)
+    backend = GeminiBackend(client=_FakeGenaiClient(models))
+    backend.generate(replace(_call(), thinking_budget=None))
+    assert models.kwargs["config"].thinking_config is None
 
 
 def test_gemini_backend_maps_sdk_errors() -> None:
