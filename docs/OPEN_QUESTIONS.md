@@ -72,3 +72,11 @@ A2 and A3 concurrent, A4 computes the answer), or the earlier description in whi
 - **Q8:** AGENTS.md as written (MERGE_PLAN v3 decision D1, `docs/DECISIONS.md` D-010). A3 writes its own adapter from
   A0's spec (`docs/requests/A3-analysis-adapter.md`, section "Verified mapping spec (phase 0)"). The spec targets the A3
   branch `a3/SS/cubicasa-detector` at `35597e2`, **not** `a3/SS/cubicasa-v3` (ry, 2026-11-14).
+
+### Q9 · A0 · ry · 2026-11-14 · `Answer.unit` when there is no value
+`Answer.unit` is required, but an answer without a value (`CANNOT_ANSWER`, `NEEDS_CLARIFICATION`,
+`UNSUPPORTED_QUESTION`, and every interim answer) has no meaningful unit. The orchestrator uses `unit="count"` as a
+placeholder for now (`orchestrator/pipeline.py: PLACEHOLDER_UNIT`). Options: (a) keep a placeholder and document that
+`unit` is meaningless when `value` is None; (b) make `unit` optional (`... | None`, null iff `value` is null): a type
+change, so MAJOR under R4.3 (2 of 4 humans); (c) A4 sets the unit the intent would have had (e.g. `m2` for AREA) even
+without a value. A0 suggests (c) once A4 exists, (a) until then.
