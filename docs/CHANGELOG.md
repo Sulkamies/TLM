@@ -354,3 +354,13 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Also (ry): removed the top bar ("Blueprint Q&A · read any floor plan" with its logo) on laptop and phone. Its
   "New drawing" button moved into the "Questions" heading (same button, same behaviour), so starting over still
   works without reloading. Test `test_no_top_bar_but_new_drawing_still_works`.
+
+### 2026-11-14 · A0 · ry · Browser UI: crop tool (laptop and phone)
+- `src/blueprint_qa/api/web/index.html` (ry): a crop button in the zoom bar opens a frame over the picture; drag its
+  corners or the whole frame (mouse or finger), then "Use selection", "Cancel" or "Original picture" (undo). The
+  cut-out is made in the browser and **replaces** the picture: only it is shown, sent to the server and analysed; the
+  chat starts fresh (A1 checks the cut-out once). No API or server change; the Android app is not affected.
+- Verified in headless Edge (laptop 1280x800 with mouse, phone 390x844 with touch): dragging, cut-out size (half the
+  width -> 428 of 855 px), answer and evidence boxes on the cut-out, undo. Right half of `colorful-2002` only:
+  bedrooms 0 (both are on the left), balcony yes. Found and fixed during that test: handles were cut off when the
+  frame touched the drawing area's edge (now inside the corners). Test `test_crop_tool_replaces_the_picture_for_analysis`.
