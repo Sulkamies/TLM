@@ -52,3 +52,13 @@ clarification. Confirm, or should a missing unit set `clarification_needed`?
 - **Q6:** A measured comparison threshold with no unit sets `clarification_needed` (in the user's language). The
   threshold is still passed through, taken as SI, as a best guess. Count thresholds need no unit. Enforced in A2's LLM
   output validator.
+### Q5 · A1 · OT · 2026-11-14 · Validator edge cases decided provisionally
+Each item lists the current behaviour; please confirm or change.
+(a) The bytes match no known format: `UNREADABLE`, and `input_format` reports the *declared* format, because the contract requires one.
+(b) A corrupt IFC file, or one with an unsupported schema: invalid input (`UNREADABLE`, R5.2), not the `IFC_PARSE_FAILED` error.
+(c) An image over `max_image_pixels`: `UNREADABLE`, because no better reason exists.
+(d) "House floor plan" includes apartments and row houses. Plans of non-residential buildings give `NOT_A_BLUEPRINT`.
+(e) Below `min_confidence`, the reason is `LOW_CONFIDENCE` whatever the label.
+(f) ifcZIP, ifcXML and encrypted PDFs give `UNREADABLE`.
+(g) `validation/raster.py` sets Pillow's process-global `MAX_IMAGE_PIXELS = None`, replacing Pillow's hard-coded limit with the
+configurable one. This also affects A3 if A3 uses Pillow; should A0 own that setting?
