@@ -88,3 +88,5 @@ ry asked A0 to remove the collapsible "How it was counted" explanation from the 
 answer and the boxes, not explain the choice in detail. Adaptation (3) in the page's top comment. The API still sends
 `working`, so the Android app is unaffected; whether the app keeps showing it is your and ry's call. Please leave it
 out of future web designs too (a test checks the served page).
+Also removed on ry's request: the "Counted on the drawing" legend and the suggested-question chips (so the §4
+advice on better chips no longer applies to the web page). Tests check that neither comes back.
