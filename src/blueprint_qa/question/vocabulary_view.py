@@ -4,10 +4,17 @@ Renders the prompt sections from ``VOCABULARIES`` / ``DESCRIPTIONS`` at runtime 
 loads the language data in ``synonyms/<lang>.yaml``, rejecting anything that is not a
 current vocabulary value. No plan value is spelled out in this module.
 
-Interim vocabularies (``interim_vocabulary.yaml``) fix the values of a free-text
-``EntityRef`` field until A0 adds them to the contracts (contract change 004, storey
-levels). An interim entry is ignored once the contracts define a vocabulary of the same
-name, so applying the contract change needs no code change here.
+Field vocabularies (``interim_vocabulary.yaml``) link a free-text ``EntityRef`` field
+to a vocabulary whose values it must take (storey levels, contract change 004, lighter
+option chosen by ry: ``EntityRef.storey`` stays ``str``, values are a convention).
+
+* Until the contracts define that vocabulary, the values come from the YAML file.
+* Once ``contracts.VOCABULARIES`` defines it, the contract values and descriptions win
+  and the YAML ``values`` are ignored (the link stays, so A2 keeps enforcing them).
+* If a contract ever types the field with a vocabulary, the entry is dropped: the
+  output schema then enforces the values by itself.
+
+So applying contract change 004 needs no code change here.
 """
 
 from __future__ import annotations
@@ -57,7 +64,7 @@ class InterimVocabulary(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     field: str  # the free-text EntityRef field whose values it fixes
-    values: dict[str, str] = Field(min_length=1)  # value -> meaning
+    values: dict[str, str] = Field(default_factory=dict)  # value -> meaning (until in contracts)
 
 
 # --------------------------------------------------------------------------- vocabulary
@@ -78,13 +85,23 @@ def _read_interim(path: Path) -> dict[str, InterimVocabulary]:
 
 
 def interim_vocabularies() -> dict[str, InterimVocabulary]:
-    """Interim entries not (yet) superseded by a contract vocabulary or a typed field."""
+    """Active field vocabularies, with values from the contracts when they define them."""
     typed = set(_contract_question_fields().values())
-    return {
-        name: entry
-        for name, entry in _read_interim(INTERIM_FILE).items()
-        if name not in VOCABULARIES and entry.field not in typed
-    }
+    out: dict[str, InterimVocabulary] = {}
+    for name, entry in _read_interim(INTERIM_FILE).items():
+        if entry.field in typed:
+            continue  # the contract types the field; its schema enforces the values
+        if name in VOCABULARIES:
+            entry = InterimVocabulary(
+                field=entry.field,
+                values={v: DESCRIPTIONS[name][v] for v in VOCABULARIES[name]},
+            )
+        elif not entry.values:
+            raise ValueError(
+                f"{INTERIM_FILE.name}: {name} has no values and is not in contracts.VOCABULARIES"
+            )
+        out[name] = entry
+    return out
 
 
 def plan_vocabularies() -> dict[str, tuple[str, ...]]:

@@ -14,3 +14,6 @@ _No deviations recorded._
   vocabulary. Still no values are spelled out in `question/*.py`; the Q1 test now covers the interim values too.
 - **Why / exit:** contracts cannot change until A0 applies proposal 004. The interim entry is ignored automatically
   once `StoreyLevel` exists in `contracts.VOCABULARIES`, and A2 then deletes it.
+- **Update (A2 · ry · 2026-11-14):** ry chose the lighter option of 004 (`EntityRef.storey` stays `str`). The exit
+  condition changes: once `StoreyLevel` is in the contracts, A2 deletes only the `values:` block. The `field: storey`
+  link stays, so A2 keeps enforcing the convention. The deviation then ends, because the values live in the contracts.

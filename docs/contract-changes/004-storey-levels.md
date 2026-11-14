@@ -74,3 +74,10 @@ A2 already emits only these values. They live in `src/blueprint_qa/question/inte
 and A2's LLM output validator rejects anything else. Once `StoreyLevel` exists in
 `contracts.VOCABULARIES`, `vocabulary_view.py` ignores the interim entry automatically (a unit test
 covers this). After that, A2 only has to delete the entry and re-record its cassettes.
+
+## Decision (ry, 2026-11-14, recorded by A2)
+
+ry chose the **lighter option** (MINOR): apply part 1 (`StoreyLevel` in `vocabulary.py`) and part 3
+(`Storey.level`). **Do not apply part 2**: `EntityRef.storey` stays `str | None`, and AGENTS.md §4.2 should say that
+it holds a `StoreyLevel` value. This still needs A0's approval under R4.3 (ry is the 1 human). A2 now takes the
+values from `contracts.VOCABULARIES` as soon as they exist there, and keeps enforcing them on `EntityRef.storey`.

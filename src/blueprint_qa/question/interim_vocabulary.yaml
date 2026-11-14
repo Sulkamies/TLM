@@ -1,11 +1,10 @@
-# INTERIM plan vocabulary, pending contract change 004 (docs/contract-changes/004-storey-levels.md).
+# Field vocabularies: free-text EntityRef fields whose values are fixed by convention.
+# Contract change 004 (docs/contract-changes/004-storey-levels.md), lighter option chosen by ry
+# (2026-11-14): EntityRef.storey stays `str` in the contract and must hold a StoreyLevel value.
 #
-# ry decided (2026-11-14, OPEN_QUESTIONS Q5) that storeys get fixed values "for now". Only A0 may add
-# them to contracts/vocabulary.py, so until 004 is applied A2 keeps them here, in the same shape as
-# contracts.VOCABULARIES / DESCRIPTIONS. `field` is the free-text EntityRef field they constrain.
-#
-# vocabulary_view.py ignores an entry as soon as a vocabulary of the same name exists in contracts,
-# so applying 004 needs no A2 code change; delete the entry (or this file) afterwards.
+# `field` links the vocabulary to the EntityRef field. Keep it permanently.
+# `values` are INTERIM: once A0 adds StoreyLevel to contracts/vocabulary.py, the contract values and
+# descriptions are used instead (no A2 code change). Then delete the `values:` block here.
 StoreyLevel:
   field: storey
   values:

@@ -65,3 +65,10 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - `interpret.v1.md` edited in place: it was not merged yet, so R7.7 still allows that. Cassettes re-recorded (53, all
   valid on the first ask). New EN/DE/FI cases: upper-floor area, and "bigger than 10" without a unit.
 - No contract, config or `pyproject.toml` change.
+
+### 2026-11-14 · A2 · ry · Storey levels: support the lighter option of contract change 004
+- ry chose the lighter option (`EntityRef.storey` stays `str`). `vocabulary_view.py` now uses the contract's
+  `StoreyLevel` values and descriptions once they exist, and keeps the `storey` link and its validation. The entry is
+  dropped only if a contract types the field. Before this, the lighter option would have silently disabled the
+  storey constraint.
+- Tests for both cases. Prompt text unchanged (`interpret@v1`), cassettes still valid.

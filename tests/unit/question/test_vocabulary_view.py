@@ -66,15 +66,52 @@ def test_interim_storey_levels_are_active_until_the_contract_has_them() -> None:
     assert set(VOCABULARIES) < set(plan_vocabularies())
 
 
-def test_interim_entry_is_dropped_once_contracts_define_it(
+def test_lighter_option_contract_values_win_and_are_still_enforced(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Applying contract change 004 needs no A2 code change."""
-    contract = {**VOCABULARIES, "StoreyLevel": ("GROUND",)}
-    monkeypatch.setattr(vocabulary_view, "VOCABULARIES", contract)
+    """Contract change 004, lighter option: StoreyLevel lands in contracts, storey stays str."""
+    monkeypatch.setattr(
+        vocabulary_view, "VOCABULARIES", {**VOCABULARIES, "StoreyLevel": ("GROUND", "ROOF")}
+    )
+    monkeypatch.setattr(
+        vocabulary_view,
+        "DESCRIPTIONS",
+        {**DESCRIPTIONS, "StoreyLevel": {"GROUND": "Contract ground.", "ROOF": "Roof."}},
+    )
+    assert constrained_text_fields() == {"storey": ("GROUND", "ROOF")}
+    assert question_fields()["StoreyLevel"] == "storey"
+    text = render_plan_vocabulary()
+    assert "### StoreyLevel (field `targets[].storey`)" in text
+    assert "- GROUND: Contract ground." in text and "- ROOF: Roof." in text
+    assert "UPPER_1" not in text  # YAML values ignored once the contract defines them
+
+
+def test_lighter_option_validation_uses_contract_values(monkeypatch: pytest.MonkeyPatch) -> None:
+    from pydantic import ValidationError
+
+    from blueprint_qa.question.llm_output import LlmParse
+
+    monkeypatch.setattr(
+        vocabulary_view, "VOCABULARIES", {**VOCABULARIES, "StoreyLevel": ("GROUND", "ROOF")}
+    )
+    monkeypatch.setattr(
+        vocabulary_view,
+        "DESCRIPTIONS",
+        {**DESCRIPTIONS, "StoreyLevel": {"GROUND": "g", "ROOF": "r"}},
+    )
+    base = {"language": "en", "intent": "COUNT", "aggregation": "SUM", "confidence": 1.0}
+    LlmParse.model_validate({**base, "targets": [{"category": "STOREY", "storey": "ROOF"}]})
+    with pytest.raises(ValidationError, match="storey must be null or one of GROUND, ROOF"):
+        LlmParse.model_validate({**base, "targets": [{"category": "STOREY", "storey": "ATTIC"}]})
+
+
+def test_entry_dropped_if_a_contract_types_the_field(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Strict option (not chosen): the schema would enforce the values by itself."""
+    monkeypatch.setattr(
+        vocabulary_view, "_contract_question_fields", lambda: {"StoreyLevel": "storey"}
+    )
     assert vocabulary_view.interim_vocabularies() == {}
     assert constrained_text_fields() == {}
-    assert plan_vocabularies()["StoreyLevel"] == ("GROUND",)
 
 
 @pytest.mark.parametrize(
@@ -82,7 +119,8 @@ def test_interim_entry_is_dropped_once_contracts_define_it(
     [
         ("- a\n", "top level must be a mapping"),
         ("X:\n  field: not_a_field\n  values: {A: a}\n", "is not an EntityRef field"),
-        ("X:\n  field: storey\n  values: {}\n", "at least 1"),
+        ("X:\n  field: storey\n  values: {}\n", "has no values"),
+        ("X:\n  field: storey\n", "has no values"),
     ],
 )
 def test_invalid_interim_file_is_rejected(
