@@ -47,4 +47,4 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 22 | Browser UI: remove "How it was counted", the "Counted on the drawing" legend and the suggested questions (ry); API and Android app unchanged | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-hide-working`, awaiting review) |
 | 26 | Browser UI: no badge, no "Take a photo" button, no sample plans, smaller answer (ry) | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-landing-tweaks`, awaiting review) |
 | 27 | Browser UI on phones: at's phone layout and touch handling (d0256e2), laptop view unchanged; both: smaller answers, title "Chat with your blueprint" (ry) | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-phone-layout`, awaiting review) |
-| 28 | Browser UI: remove the 1-2-3 steps on the landing page (ry), laptop and phone | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-no-steps`, awaiting review) |
+| 28 | Browser UI: remove the 1-2-3 steps on the landing page and the top bar ("New drawing" moved to the Questions heading) (ry), laptop and phone | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-no-steps`, awaiting review) |
