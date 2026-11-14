@@ -67,6 +67,32 @@ python -m blueprint_qa.api tests/unit/validation/data/bar_chart.png "How many be
 - Raster plans have no scale, so areas and lengths give `CANNOT_ANSWER`; counts and yes/no questions work.
   A typical question takes 5–7 s on a CPU (the first one about 15 s while the model loads).
 
+## User interfaces: browser and Android app
+
+Both talk to the same server through the same API, `POST /ask` (spec: `docs/API.md`), and can be used at the same time.
+Start the server (setup as for the CLI above, plus the `server` extra):
+
+```bash
+pip install -e ".[server]"
+python -m blueprint_qa.api.server --host 0.0.0.0 --port 8000
+```
+
+**Browser (laptop):** open `http://localhost:8000/` on the PC running the server, or `http://<PC-IP>:8000/` from
+another computer or a phone browser on the network. Choose, drop, paste or photograph a plan (or try one of the three
+sample plans), ask or tap a suggestion, and use "Show on the drawing"; zoom with the wheel, the buttons or a pinch.
+Design by at (`web-app/` on branch `ui/at/android-app`); the served copy is `src/blueprint_qa/api/web/`.
+
+**Android app** (`android-app/`, branch `ui/at/android-app`):
+
+1. Phone and PC on the same Wi-Fi. Find the PC's address (`ipconfig` → IPv4, e.g. `192.168.1.20`).
+2. Allow Python through the Windows firewall when asked (private networks only).
+3. Check from the phone's browser: `http://192.168.1.20:8000/health` → `{"status":"ok"}`.
+4. In the app, tap the gear icon and enter `http://192.168.1.20:8000`. Demo mode switches off.
+
+`--host 0.0.0.0` makes the server reachable from your network, and every question uses your `GEMINI_API_KEY`; the
+default is localhost only (enough for the browser on the same PC). API spec: `docs/API.md`; response models:
+`src/blueprint_qa/api/ask.py`; web page: `src/blueprint_qa/api/web/index.html`. Settings: `config/default.yaml -> api`.
+
 ## Layout status
 
 | Path | Owner | Status |
@@ -74,7 +100,8 @@ python -m blueprint_qa.api tests/unit/validation/data/bar_chart.png "How many be
 | `src/blueprint_qa/contracts/` + `schema/*.json` | A0 | v1.1.0, matches AGENTS.md §4.2. Plan vocabulary lives only in `vocabulary.py` |
 | `src/blueprint_qa/common/` (`config`, `log`, `llm`) | A0 | Done: Gemini wrapper with structured output, retries and cassettes |
 | `config/default.yaml`, `config/llm.yaml` | A0 | Done (question → `gemini-3.8-flash`) |
-| `src/blueprint_qa/orchestrator/`, `api/` | A0 | Done: `run()` A1 → (A2 ∥ A3) → A4 with contract checks; CLI `python -m blueprint_qa.api` |
+| `src/blueprint_qa/orchestrator/`, `api/` | A0 | Done: `run()` A1 → (A2 ∥ A3) → A4 with contract checks; CLI `python -m blueprint_qa.api`; HTTP server (`POST /ask`, browser UI at `/`) |
+| `android-app/` | (no role; at) | Kotlin/Compose client on branch `ui/at/android-app`; needs one human's approval to merge (R2.4, D-013) |
 | `src/blueprint_qa/question/` | A2 | Done (`interpret()`, Gemini + mock providers, en/de/fi) |
 | `src/blueprint_qa/validation/` | A1 | Done (`validate()`, PNG/JPEG/PDF via Gemini, IFC locally) |
 | `src/blueprint_qa/analysis/`, `models/` | A3 | Done for raster plans (`analyze()`, CubiCasa YOLO + OCR; weights via `python models/fetch.py`); IFC not yet |
