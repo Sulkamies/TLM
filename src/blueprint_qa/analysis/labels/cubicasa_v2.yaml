@@ -1,0 +1,37 @@
+# What each class of the cubicasa_v2 detector becomes in BlueprintAnalysis. Custodian: A3.
+# Spec: docs/requests/A3-analysis-adapter.md, "Verified mapping spec (phase 0)" §C.
+# Every RoomType / OpeningKind / FixtureType value here is validated against
+# blueprint_qa.contracts.VOCABULARIES at load time; every class name against `classes`.
+
+classes: [window, door, toilet, sink, bathtub, shower, sauna_bench,
+          room_balcony, room_kitchen, room_bedroom, room_bath, room_sauna, floor]
+
+storey_class: floor          # one Storey per box (det_min1: at least one storey)
+
+rooms:                        # one Room per selected box
+  room_kitchen: KITCHEN
+  room_bedroom: BEDROOM
+  room_balcony: BALCONY
+
+bath_room:                    # tuned rule "bath_fixtures"
+  class: room_bath
+  wet_fixtures: [shower, bathtub]   # a wet-fixture centre inside the box -> wet
+  wc_fixtures: [toilet]             # else a toilet centre inside -> wc_only; no fixtures -> wet
+  wet: BATHROOM
+  wc_only: TOILET
+
+sauna:                        # tuned rule "bench_clusters"
+  bench_class: sauna_bench
+  room_class: room_sauna      # used only for the polygon of a bench cluster
+  room_type: SAUNA
+
+openings:                     # one Opening per selected box
+  window: WINDOW
+  door: DOOR
+
+fixtures:                     # one Fixture per selected box
+  toilet: TOILET
+  sink: SINK
+  shower: SHOWER
+  bathtub: BATHTUB
+  sauna_bench: SAUNA_BENCH
