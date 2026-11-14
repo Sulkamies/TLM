@@ -141,3 +141,31 @@ def test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer() -
     assert ".num{font-size:34px;" in body
     assert 'id="choose"' in body  # choosing a picture still works (plus drag and drop, paste)
     assert "sample" not in body.lower() and "/samples/" not in body  # no sample plans either
+
+
+def _phone_css() -> str:
+    start = PAGE.index("@media (max-width:900px){")
+    depth, j = 1, start + len("@media (max-width:900px){")
+    while depth:
+        depth += {"{": 1, "}": -1}.get(PAGE[j], 0)
+        j += 1
+    return PAGE[start:j]
+
+
+def test_phone_layout_is_phone_only() -> None:
+    # ry, 2026-11-14: at's phone layout and touch handling (d0256e2); laptop view unchanged.
+    phone = _phone_css()
+    for rule in (
+        "body.working{",
+        ".fsbtn{display:inline-block}",
+        "body.fs .stage{",
+        "scale(var(--inv,1))",
+    ):
+        assert rule in phone, rule  # phone-only CSS lives in the phone block
+    laptop = PAGE.replace(phone, "")
+    assert ".fsbtn{display:none}" in laptop  # the full-screen button is hidden on laptops
+    assert "body.working{" not in laptop and "body.fs" not in laptop and "var(--inv" not in laptop
+    js = PAGE.split("<script>", 1)[1]
+    assert "if (isTap && e.pointerType !== 'mouse')" in js  # taps and double-taps: touch only
+    assert "e.pointerType !== 'mouse' && scale > 1" in js  # momentum glide: touch only
+    assert "e.deltaY < 0 ? 1.15 : 1 / 1.15" in js  # laptop wheel zoom unchanged

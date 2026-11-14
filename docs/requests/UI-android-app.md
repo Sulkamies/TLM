@@ -103,3 +103,11 @@ picture. Without it the app keeps working exactly as now.
 Removed on ry's request: the "Every answer shows where it came from" badge and the "Take a photo" button; the answer
 is shown smaller (34px instead of 46px); the sample plans are no longer offered on the landing page. A test checks
 the served page. The Android app is not affected.
+
+## 9. Update: your phone layout (d0256e2) is in the served page, phones only (ry, 2026-11-14)
+
+ry asked to take over your phone improvements without changing the laptop view. Ported: the phone layout, full-screen
+button, double-tap zoom, midpoint-following pinch, momentum glide (fingers only), constant-size boxes and badges (phone
+CSS only), no keyboard pop-up, the fading hint. Not ported: the new wheel/trackpad zoom and button steps (laptop
+behaviour) and the file-preview fallback. Your `web-app/` copy can now be dropped (see §4); please also remove it and
+merge `main` so the Android app can be merged.

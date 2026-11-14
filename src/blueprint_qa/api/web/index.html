@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <meta name="color-scheme" content="light dark">
 <title>Blueprint Q&amp;A</title>
 <!-- Browser client of POST /ask (spec: docs/API.md), served by the A0 server at "/".
@@ -12,8 +12,10 @@
      (3) no explanation of how an answer was reached: neither "How it was counted" (the API's `working`)
      nor the "Counted on the drawing" legend; (4) no suggested questions; (5) no "Every answer shows where
      it came from" badge, no "Take a photo" button, no sample plans, and a smaller answer (34px instead of 46px)
-     (ry, 2026-11-14); (6) the validation receipt from the first answer is sent back with later questions about
-     the same picture, so A1 checks the picture with its LLM only once per picture (change 006). -->
+     (ry, 2026-11-14); (6) the phone layout and touch handling of at's commit d0256e2 (ui/at/webpage), limited to
+     phones: phone-width CSS, touch-only gestures; the laptop view is unchanged (ry, 2026-11-14); (7) the
+     validation receipt from the first answer is sent back with later questions about the same picture, so A1
+     checks the picture with its LLM only once per picture (change 006). -->
 <style>
 :root{
   --bg:#f4f6fb; --panel:rgba(255,255,255,.80); --solid:#ffffff; --ink:#0e1522; --muted:#5b6578;
@@ -111,6 +113,7 @@ header h1 span{color:var(--muted);font-weight:500}
 .zoomtools button{min-width:36px;height:34px;border:0;border-radius:999px;background:transparent;font-size:18px;line-height:1;color:var(--ink)}
 .zoomtools button:hover{background:var(--soft)}
 .zoomtools .lvl{font-size:12px;font-weight:600;min-width:52px;color:var(--muted)}
+.fsbtn{display:none}                                               /* full-screen button: phones only */
 
 /* ---------- chat ---------- */
 .chat{min-width:0;min-height:0;display:flex;flex-direction:column;border-radius:var(--r);background:var(--panel);border:1px solid var(--line);
@@ -158,12 +161,41 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 @media (max-width:900px){
+  html,body{height:auto;min-height:100%}
   body{overflow:auto}
-  #welcome{padding-top:4vh}
-  #work{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(240px,44vh) minmax(380px,1fr);gap:10px;padding:10px;height:auto;min-height:0}
-  .chat{min-height:380px}
-  .hint,header h1 span{display:none}
+  #welcome{padding-top:4vh;overflow:visible;flex:none}
+  /* With a drawing open the screen is one fixed block: drawing on top (fixed share of the height), questions below it
+     (scrolling inside), so the red boxes are always visible next to the answer. --vh is set from the real window height
+     in JS, because 100vh/100dvh are unreliable in in-app browsers and with the keyboard open. */
+  body.working{height:calc(var(--vh,1vh)*100);overflow:hidden}
+  body.working footer{display:none}
+  header{padding:8px 14px}
+  #work{display:flex;flex-direction:column;gap:8px;padding:8px 10px 8px;flex:1;min-height:0;height:auto}
+  .stage{flex:none;gap:0;height:calc(var(--vh,1vh)*34);min-height:140px;max-height:360px}
+  .stagebar{display:none}
+  #vp{min-height:0;flex:1}
+  .chat{flex:1;min-height:0;border-radius:16px}
+  .chat h3{padding:8px 14px 2px;font-size:14px}
+  #log{padding:4px 12px 8px;gap:8px}
+  .a{padding:10px 12px}
+  .compose{padding:8px 10px 10px;gap:8px}
+  .row input{padding:11px 52px 11px 16px}
+  .zoomtools{left:auto;right:8px;bottom:8px;transform:none}              /* small corner bar: don't cover the drawing */
+  .zoomtools button{min-width:38px;height:34px;font-size:16px}           /* bigger touch targets */
+  .zoomtools .lvl{display:none}
+  .fsbtn{display:inline-block}
+  .hint{font-size:11px;padding:3px 9px;left:8px;top:8px;transition:opacity .6s}
+  .hint.gone{opacity:0}
+  header h1 span{display:none}
   .chat,.compose,.row{min-width:0;max-width:100%}
+  /* --inv = 1 / zoom (set in apply()): outlines, badges and glow keep the same size on screen at any zoom level */
+  .box{border-width:calc(2px * var(--inv,1));border-radius:calc(4px * var(--inv,1))}
+  .box::after{inset:calc(-6px * var(--inv,1))}
+  .box.focus{box-shadow:0 0 0 calc(4px * var(--inv,1)) rgba(255,77,94,.28),0 0 calc(24px * var(--inv,1)) rgba(255,77,94,.6)}
+  .badge{left:0;top:0;transform:translate(-50%,-50%) scale(var(--inv,1))}   /* centred on the box corner */
+  /* full-screen drawing (button only exists on phones) */
+  body.fs .stage{position:fixed;inset:0;z-index:30;height:auto;max-height:none;min-height:0;padding:8px;gap:0;background:var(--bg)}
+  body.fs .stagebar{display:none}
 }
 </style>
 </head>
@@ -208,6 +240,7 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
         <button id="zout" title="Zoom out" aria-label="Zoom out">−</button>
         <button class="lvl" id="zreset" title="Reset view" aria-label="Reset view">100%</button>
         <button id="zin" title="Zoom in" aria-label="Zoom in">+</button>
+        <button id="zfs" class="fsbtn" title="Full screen" aria-label="Full screen drawing"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
     </div>
   </div>
@@ -229,6 +262,12 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
 
 <script>
 const $ = s => document.querySelector(s);
+/* Phone helpers (at, d0256e2). SMALL = the phone layout is active; TOUCH = a finger, not a mouse. */
+const SMALL = matchMedia('(max-width:900px)');
+const SVG = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`;
+const ICON_FS = SVG('M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'), ICON_CLOSE = SVG('M6 6l12 12M18 6L6 18');
+const setVh = () => document.documentElement.style.setProperty('--vh', innerHeight / 100 + 'px');   // used by phone CSS only
+setVh(); addEventListener('resize', setVh); addEventListener('orientationchange', setVh);
 
 let file = null, imgUrl = null, items = [], nextId = 1, hi = null, overlayKey = '';
 let receipt = null;   // A1's validation receipt for the current picture (docs/API.md, validation_token)
@@ -239,7 +278,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 /* ---------- picking a picture ---------- */
 $('#choose').onclick = () => $('#file').click();
 $('#file').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
-$('#restart').onclick = () => { $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; receipt = null; };
+$('#restart').onclick = () => { document.body.classList.remove('working', 'fs'); $('#zfs').innerHTML = ICON_FS; if (SMALL.matches) scrollTo(0, 0); $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; receipt = null; };
 
 ['dragenter','dragover'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.add('over'); }));
 ['dragleave','drop'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.remove('over'); }));
@@ -251,8 +290,12 @@ function setImage(f) {
   if (imgUrl) URL.revokeObjectURL(imgUrl);
   file = f; imgUrl = URL.createObjectURL(f); items = []; hi = null; overlayKey = ''; receipt = null; resetView();
   $('#img').src = imgUrl; $('#fname').textContent = f.name || 'photo';
-  $('#welcome').hidden = true; $('#work').hidden = false; $('#restart').hidden = false;
-  render(); $('#q').focus({preventScroll: true});
+  $('#welcome').hidden = true; $('#work').hidden = false; $('#restart').hidden = false; document.body.classList.add('working');
+  if (SMALL.matches) scrollTo(0, 0);
+  render();
+  clearTimeout(window.__hintT); $('#hint').classList.remove('gone');
+  if (SMALL.matches) window.__hintT = setTimeout(() => $('#hint').classList.add('gone'), 5000);   // phones: hint fades out
+  if (matchMedia('(hover:hover) and (pointer:fine)').matches) $('#q').focus({preventScroll: true});   // not on phones: it would pop the keyboard up
 }
 
 /* ---------- asking ---------- */
@@ -304,7 +347,8 @@ function render() {
   const log = $('#log');
   log.innerHTML = items.length ? items.map(row).join('') :
     `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg><div>Ask a question below.</div></div>`;
-  log.scrollTop = log.scrollHeight;
+  const lastQ = SMALL.matches ? [...log.querySelectorAll('.q')].pop() : null;
+  log.scrollTop = lastQ ? Math.max(0, lastQ.offsetTop - log.offsetTop - 4) : log.scrollHeight;
   $('#count').textContent = items.length ? `· ${items.length}` : '';
   items.forEach(i => { i.shown = true; });
   countUp();
@@ -395,38 +439,69 @@ function apply() {
   const w = vp.clientWidth, h = vp.clientHeight;
   tx = Math.min(0, Math.max(w - w * scale, tx)); ty = Math.min(0, Math.max(h - h * scale, ty));
   $('#zoom').style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  $('#zoom').style.setProperty('--inv', (1 / scale).toFixed(4));      // read by the phone CSS only
   $('#zreset').textContent = Math.round(scale * 100) + '%';
-  $('#hint').textContent = scale > 1 ? 'Drag to move' : 'Scroll to zoom · drag to move';
+  const touch = matchMedia('(pointer:coarse)').matches;
+  $('#hint').textContent = scale > 1 ? 'Drag to move' : (touch ? 'Pinch or double-tap to zoom' : 'Scroll to zoom · drag to move');
 }
 function zoomAt(px, py, f) {
   const ns = Math.min(8, Math.max(1, scale * f)); tx = px - (px - tx) * (ns / scale); ty = py - (py - ty) * (ns / scale); scale = ns; apply();
 }
-function resetView() { scale = 1; tx = ty = 0; apply(); }
+let vx = 0, vy = 0, raf = 0;                  // finger drag speed (px per frame) for the momentum glide
+function resetView() { cancelAnimationFrame(raf); vx = vy = 0; scale = 1; tx = ty = 0; apply(); }
 vp.addEventListener('wheel', e => { e.preventDefault(); const r = vp.getBoundingClientRect();
   zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, {passive: false});
 $('#zin').onclick = () => zoomAt(vp.clientWidth / 2, vp.clientHeight / 2, 1.4);
 $('#zout').onclick = () => zoomAt(vp.clientWidth / 2, vp.clientHeight / 2, 1 / 1.4);
 $('#zreset').onclick = resetView;
+$('#zfs').onclick = () => {                    // phones: let the drawing fill the whole screen
+  const on = document.body.classList.toggle('fs'); $('#zfs').innerHTML = on ? ICON_CLOSE : ICON_FS;
+  requestAnimationFrame(() => { apply(); drawOverlay(); });
+};
 
-const pts = new Map(); let last = null, pinch = 0;
-let down = null;
-vp.addEventListener('pointerdown', e => { if (e.target.closest('.zoomtools')) return; vp.setPointerCapture(e.pointerId); pts.set(e.pointerId, e); last = {x: e.clientX, y: e.clientY}; down = {x: e.clientX, y: e.clientY}; vp.classList.add('drag'); });
+const pts = new Map(); let last = null, down = null, lastT = 0, pinch = 0, pc = null, lastTap = null;
+vp.addEventListener('pointerdown', e => {
+  if (e.target.closest('.zoomtools')) return;
+  cancelAnimationFrame(raf); try { vp.setPointerCapture(e.pointerId); } catch (_) {} pts.set(e.pointerId, e);
+  last = {x: e.clientX, y: e.clientY}; down = {x: e.clientX, y: e.clientY}; lastT = performance.now(); vx = vy = 0; vp.classList.add('drag');
+});
 vp.addEventListener('pointermove', e => {
   if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e);
-  if (pts.size === 2) {                       // two fingers: pinch to zoom
+  if (pts.size === 2) {                         // two fingers: zoom around their midpoint, and follow it as it moves
     const [a, b] = [...pts.values()], d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), r = vp.getBoundingClientRect();
-    if (pinch) zoomAt((a.clientX + b.clientX) / 2 - r.left, (a.clientY + b.clientY) / 2 - r.top, d / pinch);
-    pinch = d;
-  } else if (scale > 1 && last) { tx += e.clientX - last.x; ty += e.clientY - last.y; apply(); }
+    const cx = (a.clientX + b.clientX) / 2 - r.left, cy = (a.clientY + b.clientY) / 2 - r.top;
+    if (pinch) { if (pc) { tx += cx - pc.x; ty += cy - pc.y; } zoomAt(cx, cy, d / pinch); }
+    pinch = d; pc = {x: cx, y: cy}; down = null;
+  } else if (scale > 1 && last) {               // one pointer: drag (a finger also remembers its speed for the glide)
+    const dx = e.clientX - last.x, dy = e.clientY - last.y, now = performance.now(), dt = Math.max(1, now - lastT);
+    tx += dx; ty += dy; apply();
+    vx = 0.7 * vx + 0.3 * (dx / dt * 16); vy = 0.7 * vy + 0.3 * (dy / dt * 16); lastT = now;
+  }
   last = {x: e.clientX, y: e.clientY};
 });
+function glide() {
+  vx *= 0.93; vy *= 0.93; if (Math.hypot(vx, vy) < 0.4) return;
+  const ox = tx, oy = ty; tx += vx; ty += vy; apply(); if (tx === ox) vx = 0; if (ty === oy) vy = 0;   // stop at the edges
+  raf = requestAnimationFrame(glide);
+}
 const up = e => {
-  // A tap (finger or click without dragging) on a box shows its name too, since touch screens have no hover.
-  if (e.type === 'pointerup' && down && pts.size === 1 && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 6 && e.pointerType !== 'mouse') {
-    const b = document.elementsFromPoint(e.clientX, e.clientY).find(n => n.classList && n.classList.contains('box'));
-    if (b) { hideTip(); showTip(b, e.clientX, e.clientY); setTimeout(hideTip, 3000); }
+  const wasOne = pts.size === 1, isTap = e.type === 'pointerup' && wasOne && down && Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8;
+  if (isTap && e.pointerType !== 'mouse') {
+    const now = Date.now(), r = vp.getBoundingClientRect();
+    if (lastTap && now - lastTap.t < 320 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 40) {
+      hideTip(); lastTap = null;                // double-tap: zoom in on the spot, or back out
+      if (scale > 1.2) resetView(); else zoomAt(e.clientX - r.left, e.clientY - r.top, 2.5);
+    } else {
+      lastTap = {t: now, x: e.clientX, y: e.clientY};   // single tap on a box names it (touch screens have no hover)
+      const b = document.elementsFromPoint(e.clientX, e.clientY).find(n => n.classList && n.classList.contains('box'));
+      if (b) { hideTip(); showTip(b, e.clientX, e.clientY); setTimeout(hideTip, 3000); }
+    }
+  } else if (e.type === 'pointerup' && wasOne && e.pointerType !== 'mouse' && scale > 1 && Math.hypot(vx, vy) > 2) {
+    raf = requestAnimationFrame(glide);         // a finger flick glides on; the mouse stops where it is (as before)
   }
-  pts.delete(e.pointerId); pinch = 0; last = pts.size ? last : null; if (!pts.size) vp.classList.remove('drag');
+  pts.delete(e.pointerId); pinch = 0; pc = null;
+  if (pts.size) { const p = [...pts.values()][0]; last = {x: p.clientX, y: p.clientY}; }   // no jump when one finger lifts
+  else { last = null; vp.classList.remove('drag'); }
 };
 vp.addEventListener('pointerup', up); vp.addEventListener('pointercancel', up);
 </script>
