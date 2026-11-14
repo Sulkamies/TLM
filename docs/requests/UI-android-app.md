@@ -81,3 +81,10 @@ unchanged except for the same two adaptations (JPEG conversion of other picture 
 page reads only contract fields, all 10 places where server or user text becomes HTML go through `esc()`, the
 samples are unchanged, and live answers carry the labels your new evidence chips and box tooltips show. The Android
 app is untouched. The suggestions in §4 (one copy of the page, the "toilets" chip, Gradle JDK note) still apply.
+
+## 6. Update: no "How it was counted" on the served page (ry, 2026-11-14)
+
+ry asked A0 to remove the collapsible "How it was counted" explanation from the browser page: the page should show the
+answer and the boxes, not explain the choice in detail. Adaptation (3) in the page's top comment. The API still sends
+`working`, so the Android app is unaffected; whether the app keeps showing it is your and ry's call. Please leave it
+out of future web designs too (a test checks the served page).

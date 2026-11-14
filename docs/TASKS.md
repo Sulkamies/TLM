@@ -44,3 +44,4 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 19 | Phases 4 + 5: A2 ∥ A3 concurrently, then A4, in `orchestrator/pipeline.py`; CLI analysis summary; live demo with the real model | A0 | ry | 2026-11-14 | Done (branch `a0/ry/integration-a3-a4`, awaiting review) |
 | 20 | HTTP server `POST /ask` for all UIs (`api/server.py`, `api/ask.py`), browser UI at `/` (`api/web/index.html`), API spec `docs/API.md`, `server` extra, `api:` config, live test; request `docs/requests/UI-android-app.md` | A0 | ry | 2026-11-14 | Done (branch `a0/ry/http-api`, awaiting review) |
 | 21 | Served browser page follows at's redesign (`ui/at/webpage`, `85524c9`), same two adaptations; no API/server/app change | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-ui-v2`, awaiting review) |
+| 22 | Browser UI: remove "How it was counted" (ry); API and Android app unchanged | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-hide-working`, awaiting review) |

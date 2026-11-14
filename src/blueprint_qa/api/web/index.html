@@ -8,7 +8,8 @@
 <!-- Browser client of POST /ask (spec: docs/API.md), served by the A0 server at "/".
      Design: at, branch ui/at/webpage, web-app/index.html (commit 85524c9), copied unchanged except:
      (1) pictures that are not PNG/JPEG (WebP, HEIC, ...) are converted to JPEG before upload, because the
-     pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint. -->
+     pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint;
+     (3) the "How it was counted" explanation (the API's `working`) is not shown (ry, 2026-11-14). -->
 <style>
 :root{
   --bg:#f4f6fb; --panel:rgba(255,255,255,.80); --solid:#ffffff; --ink:#0e1522; --muted:#5b6578;
@@ -142,12 +143,6 @@ header h1 span{color:var(--muted);font-weight:500}
 .ev span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ev:hover,.ev.lit{border-color:var(--mark);color:var(--ink)}
 .ev.lit{background:rgba(255,77,94,.12)}
-details.why{margin-top:10px;font-size:13px;color:var(--muted)}
-details.why summary{cursor:pointer;font-weight:600;list-style:none;display:inline-flex;gap:6px;align-items:center}
-details.why summary::-webkit-details-marker{display:none}
-details.why summary::before{content:"›";display:inline-block;transition:transform .2s;font-size:16px;line-height:1}
-details.why[open] summary::before{transform:rotate(90deg)}
-.work{margin-top:6px;white-space:pre-wrap}
 .foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:8px}
 .meta{font-size:12px;color:var(--muted)}
 .err{color:var(--err)}
@@ -360,7 +355,6 @@ function row(it) {
     let h = isText ? `<div class="text">${esc(j.answer)}</div>`
       : `<div class="big"><span class="num" data-to="${esc(j.answer)}">${esc(j.answer)}</span>${j.unit && j.unit !== 'count' ? `<span class="unit">${esc(j.unit)}</span>` : ''}</div>`;
     if (ev.length) h += `<div class="evrow">${ev.map((e, i) => `<button class="ev" data-id="${it.id}" data-i="${i}" title="${esc(e.label || '')}"><b>${i + 1}</b><span>${esc(e.label || 'item ' + (i + 1))}</span></button>`).join('')}</div>`;
-    if (j.working) h += `<details class="why"${j.working.length < 150 ? ' open' : ''}><summary>How it was counted</summary><div class="work">${esc(j.working)}</div></details>`;
     h += `<div class="foot">${ev.length ? `<button class="link" data-show="${it.id}">${hi === it.id ? 'Marked on the drawing ✓' : 'Show on the drawing'}</button>` : '<span></span>'}<span class="meta">${it.secs}s</span></div>`;
     a = `<div class="a${enter}">${h}</div>`;
   }
