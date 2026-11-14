@@ -58,13 +58,13 @@ python -m blueprint_qa.api tests/unit/validation/data/bar_chart.png "How many be
 
 | Path | Owner | Status |
 |---|---|---|
-| `src/blueprint_qa/contracts/` + `schema/*.json` | A0 | v1.0.1, matches AGENTS.md §4.2. Plan vocabulary lives only in `vocabulary.py` |
+| `src/blueprint_qa/contracts/` + `schema/*.json` | A0 | v1.1.0, matches AGENTS.md §4.2. Plan vocabulary lives only in `vocabulary.py` |
 | `src/blueprint_qa/common/` (`config`, `log`, `llm`) | A0 | Done: Gemini wrapper with structured output, retries and cassettes |
 | `config/default.yaml`, `config/llm.yaml` | A0 | Done (question → `gemini-3.8-flash`) |
 | `src/blueprint_qa/orchestrator/`, `api/` | A0 | Phase 1: `run()` A1 → A2 with interim answers; CLI `python -m blueprint_qa.api`. A3/A4 slots empty |
 | `src/blueprint_qa/question/` | A2 | Done (`interpret()`, Gemini + mock providers, en/de/fi) |
 | `src/blueprint_qa/validation/` | A1 | Done (`validate()`, PNG/JPEG/PDF via Gemini, IFC locally) |
-| `analysis/`, `reasoning/` | A3, A4 | A3 in progress (`docs/requests/A3-analysis-adapter.md`); A4 not started |
+| `analysis/`, `reasoning/` | A3, A4 | A3 in progress (`docs/requests/A3-analysis-adapter.md`); A4 in progress (`docs/requests/A4-answer-reasoner.md`) |
 
 ## Using the LLM wrapper (A1, A2, A3)
 

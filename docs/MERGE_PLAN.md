@@ -156,3 +156,18 @@ pytest --cov=blueprint_qa --cov-fail-under=80
 - [ ] Phase 3 PR: A3 adapter validated against the brief
 - [ ] Phase 4 PR: A2 ∥ A3 in the pipeline, live demo reported
 - [ ] Every PR has the check results in its description; ry has the URLs
+
+---
+
+## Update v3.1 (A0 · ry · 2026-11-14): A4 in scope, actual merge order
+
+- **Done:** phase 0 (PR #5), phase 1 (PR #7), phase 2 + 2b (PR #6 with #8 merged into it first: `main` requires green CI,
+  so 2b was merged into the phase 2 branch and the combination merged into `main` once).
+- **Phase 3:** the A3 session is launched by SS on `a3/SS/analysis-adapter`, with the addendum in the A3 spec §I.
+- **A4 is in scope (D-011).** New **phase 3b:** an A4 session launched by ry builds `reasoning.answer()` on
+  `a4/ry/answer-reasoner` from `docs/requests/A4-answer-reasoner.md`, in parallel with phase 3. The integration agent
+  runs the validity check against that brief and prepares the PR (as for A3).
+- **Phase 4** is unchanged (A2 ∥ A3 in the pipeline).
+- **New phase 5:** fill the A4 slot in `orchestrator/pipeline.py` (`answer(question, analysis)` after A2 ∥ A3, contract
+  check, the interim texts are kept only for the stages that stop early) and show the number in the CLI. Live demo: the
+  phase 4 questions now return numbers. Precondition: phases 3b and 4 merged.

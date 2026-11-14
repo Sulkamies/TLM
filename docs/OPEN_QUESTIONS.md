@@ -80,3 +80,22 @@ placeholder for now (`orchestrator/pipeline.py: PLACEHOLDER_UNIT`). Options: (a)
 `unit` is meaningless when `value` is None; (b) make `unit` optional (`... | None`, null iff `value` is null): a type
 change, so MAJOR under R4.3 (2 of 4 humans); (c) A4 sets the unit the intent would have had (e.g. `m2` for AREA) even
 without a value. A0 suggests (c) once A4 exists, (a) until then.
+
+- **Q9 (answer, ry, 2026-11-14, recorded by A0):** option (c). A4 sets the unit the intent would have had (e.g. `m2` for
+  AREA) even when `value` is None (`docs/requests/A4-answer-reasoner.md`, decision 3). The orchestrator's placeholder
+  `count` remains only for its own interim answers until A4 is wired in.
+
+### Q10 · A0 · ry · 2026-11-14 · Explanations in languages other than en/de/fi
+A4 writes explanations from fixed templates in en, de and fi only; for any other language it answers in English and sets
+`Answer.language="en"`. AGENTS §6 A4 says the explanation MUST be in `ParsedQuestion.language`. Accept this for now, or
+should A4 word other languages with an LLM through `common/llm.py` (adds cost, latency and cassettes)?
+
+### Q11 · A0 · ry · 2026-11-14 · RATIO questions about counts
+`ParsedQuestion` has no measure for RATIO, so A4 computes RATIO from areas only. "What share of the rooms are bedrooms?"
+(a count ratio) therefore gives `CANNOT_ANSWER`. Should RATIO get a measure (like `Comparison.measure`), a MINOR
+contract change?
+
+### Q12 · A0 · ry · 2026-11-14 · Coverage as a contract field instead of warnings
+D-012 uses warning strings (`ROOM_TYPES_DETECTED:` etc.) to tell A4 what the analysis can see. A typed optional field,
+e.g. `BlueprintAnalysis.coverage: dict[str, list[str]] = {}`, would be validated by the contract (MINOR change). Change
+it when a second analyzer path (IFC) appears?

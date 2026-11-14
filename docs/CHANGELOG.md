@@ -191,3 +191,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   `house_plan_fi.png` in fi/en/de gives the same `ParsedQuestion`; `bar_chart.png` and `prompt_injection.png` give the
   invalid text without an A2 call.
 - README: CLI usage, layout status. OPEN_QUESTIONS Q9 (`Answer.unit` without a value). No contract or prompt change.
+
+### 2026-11-14 · A0 · ry · A4 in scope: brief, coverage warnings, plan update
+- New `docs/requests/A4-answer-reasoner.md`: entry point and A0's binding decisions (no LLM this round; unit by intent
+  also without a value; resolution, aggregation, measures, comparison; zero answers only with coverage warnings).
+- A3 spec §I: every raster analysis also emits `FIXTURE_TYPES_DETECTED:` and `OPENING_KINDS_DETECTED:`.
+- DECISIONS D-011 (A4 in scope) and D-012 (coverage warnings); OPEN_QUESTIONS Q9 answered (c), new Q10–Q12.
+- MERGE_PLAN update v3.1 (actual merge order, phase 3b for A4, phase 5 for wiring A4). README: contracts v1.1.0, A4 status.
+- Docs only; no contract, prompt or code change.
