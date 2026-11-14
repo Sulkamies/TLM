@@ -161,3 +161,20 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - `pyproject.toml`: optional extra `vision` (torch, ultralytics, easyocr; not installed in CI) and a mypy override for them.
 - `docs/requests/A2-fixture-vocabulary.md` (phase 2b work items). A3 spec: section H (A3-Q14 regex, A3-Q20 OCR model).
 - Expected: 29 A2 tests fail on this branch until A2's phase 2b lands (synonyms, cassettes, interim vocabulary).
+
+### 2026-11-14 · A2 · ry · Phase 2b: Question Interpreter on contracts 1.1.0
+- Request `docs/requests/A2-fixture-vocabulary.md`, branch `a2/ry/fixture-vocabulary` (from `a0/ry/contracts-1.1`).
+- `synonyms/{en,de,fi}.yaml`: words for `EntityCategory.FIXTURE` and every `FixtureType` value; few-shot examples
+  "How many showers and bathtubs?" (en), "Gibt es eine Badewanne?" (de), "Montako suihkua ja kylpyammetta asunnossa
+  on?" (fi).
+- `fixture_type` iff `category == FIXTURE` enforced in `LlmParse`, with the link as data in the new
+  `question/field_rules.yaml` (ry's choice; deviation recorded).
+- Storey levels from the contracts: interim `values:` deleted from `interim_vocabulary.yaml`; A2 storey deviation closed.
+- **Prompt `interpret.v2.md`** (v1 unchanged): one instruction on fixtures and on WC room vs toilet bowl. `PROMPT_VERSION = 2`.
+- **Cassettes re-recorded** (R7.12): `cassettes/interpret@v2.json`, 67 entries; stale `interpret@v1.json` removed.
+- Tests: version literals use `CONTRACT_VERSION` / `PROMPT_VERSION`; new held-out en/de/fi cases (WC rooms → `ROOM` +
+  `TOILET`, toilet bowls → `FIXTURE` + `TOILET`, washbasins → `FIXTURE` + `SINK`) and A0's acceptance questions verbatim;
+  rule tests for `field_rules.yaml`.
+- Checks (MERGE_PLAN §6) green on this branch: ruff format/check, mypy, schema check, 297 passed, coverage 98.41 %
+  (`question/` 98 %). Live: `pytest -m live tests/unit/question` passed; REPL live check of A0's four acceptance questions
+  gave the expected `ParsedQuestion`s.

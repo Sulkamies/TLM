@@ -27,6 +27,7 @@ EntityCategory:
   STAIR: [Treppe, Treppen, Treppenhaus]
   STOREY: [Geschoss, Stockwerk, Etage, Ebene, EG, OG, KG, DG]
   WHOLE_PLAN: [Haus, Wohnung, Gebäude, gesamt, Gesamtfläche, Wohnfläche]
+  FIXTURE: [Sanitärobjekt, Sanitärobjekte, Sanitäreinrichtung, Sanitärgegenstand]
 StoreyLevel:
   BASEMENT: [Keller, Kellergeschoss, KG, Untergeschoss, UG, Souterrain]
   GROUND: [Erdgeschoss, EG, Parterre]
@@ -35,6 +36,13 @@ StoreyLevel:
   UPPER_2: [2. Obergeschoss, 2. OG, zweiter Stock, 2. Stock]
   UPPER_3: [3. Obergeschoss, 3. OG, dritter Stock, 3. Stock]
   ATTIC: [Dachgeschoss, DG, Dachboden, Spitzboden]
+FixtureType:
+  TOILET: [WC-Becken, WC-Schüssel, Toilettenschüssel, Kloschüssel, Toilette (Becken)]
+  SINK: [Waschbecken, Waschtisch, Handwaschbecken, Spüle, Spülbecken]
+  SHOWER: [Dusche, Duschkabine, Duschwanne, Duschtasse]
+  BATHTUB: [Badewanne, Wanne]
+  SAUNA_BENCH: [Saunabank, Saunabänke, Saunaliege]
+  OTHER: [sonstiges Sanitärobjekt, Bidet, Urinal]
 OpeningKind:
   DOOR: [Tür]
   WINDOW: [Fenster]
@@ -78,3 +86,9 @@ examples:
       intent: RATIO
       aggregation: SUM
       targets: [{category: ROOM, room_type: BEDROOM}, {category: WHOLE_PLAN}]
+  - id: exists_bathtub
+    question: "Gibt es eine Badewanne?"
+    expect:
+      intent: EXISTENCE
+      aggregation: SUM
+      targets: [{category: FIXTURE, fixture_type: BATHTUB}]

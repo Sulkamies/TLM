@@ -171,7 +171,51 @@ UNITLESS_CASE = Case(
     clarification=True,
 )
 
-MULTILINGUAL = (*MULTILINGUAL, STOREY_CASE, UNITLESS_CASE)
+# Contract change 001 (MERGE_PLAN phase 2b): a separate WC room is a ROOM, a toilet bowl a FIXTURE.
+FIXTURE = "FIXTURE"
+FIXTURE_CASES: tuple[Case, ...] = (
+    Case(
+        "count_toilet_rooms",
+        {
+            "en": "How many separate WC rooms?",
+            "de": "Wie viele Gäste-WCs?",
+            "fi": "Montako erillistä WC:tä?",
+        },
+        {
+            "intent": "COUNT",
+            "aggregation": "SUM",
+            "targets": [{"category": ROOM, "room_type": "TOILET"}],
+        },
+    ),
+    Case(
+        "count_toilet_bowls",
+        {
+            "en": "How many toilet bowls are there?",
+            "de": "Wie viele Toiletten (WC-Becken) gibt es?",
+            "fi": "Montako wc-istuinta asunnossa on?",
+        },
+        {
+            "intent": "COUNT",
+            "aggregation": "SUM",
+            "targets": [{"category": FIXTURE, "fixture_type": "TOILET"}],
+        },
+    ),
+    Case(
+        "count_sinks",
+        {
+            "en": "How many washbasins are there?",
+            "de": "Wie viele Waschbecken gibt es?",
+            "fi": "Montako pesuallasta asunnossa on?",
+        },
+        {
+            "intent": "COUNT",
+            "aggregation": "SUM",
+            "targets": [{"category": FIXTURE, "fixture_type": "SINK"}],
+        },
+    ),
+)
+
+MULTILINGUAL = (*MULTILINGUAL, STOREY_CASE, UNITLESS_CASE, *FIXTURE_CASES)
 
 AMBIGUOUS = Case(
     "ambiguous_it",
@@ -196,6 +240,21 @@ SINGLE_LANGUAGE: tuple[Case, ...] = (
             "intent": "EXISTENCE",
             "aggregation": "SUM",
             "targets": [{"category": ROOM, "room_type": "LAUNDRY"}],
+        },
+    ),
+    # A0's live acceptance questions for phase 2b, verbatim (requests/A2-fixture-vocabulary.md).
+    Case(
+        "de_count_windows_short",
+        {"de": "Wie viele Fenster gibt es?"},
+        {"intent": "COUNT", "aggregation": "SUM", "targets": [{"category": "WINDOW"}]},
+    ),
+    Case(
+        "fi_count_bedrooms_short",
+        {"fi": "Montako makuuhuonetta?"},
+        {
+            "intent": "COUNT",
+            "aggregation": "SUM",
+            "targets": [{"category": ROOM, "room_type": "BEDROOM"}],
         },
     ),
     Case(

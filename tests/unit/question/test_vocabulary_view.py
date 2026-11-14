@@ -11,6 +11,7 @@ from blueprint_qa.contracts import DESCRIPTIONS, VOCABULARIES
 from blueprint_qa.question import vocabulary_view
 from blueprint_qa.question.providers.llm import PROMPT_VERSION, PROMPTS_DIR, build_prompt
 from blueprint_qa.question.vocabulary_view import (
+    category_fields,
     constrained_text_fields,
     plan_descriptions,
     plan_vocabularies,
@@ -21,7 +22,7 @@ from blueprint_qa.question.vocabulary_view import (
 )
 
 QUESTION_PKG = Path(__file__).resolve().parents[3] / "src" / "blueprint_qa" / "question"
-VOCAB_ENUM_NAMES = ("RoomType", "EntityCategory", "OpeningKind")
+VOCAB_ENUM_NAMES = ("RoomType", "EntityCategory", "OpeningKind", "FixtureType", "StoreyLevel")
 
 
 def test_q1_no_plan_vocabulary_values_in_question_code() -> None:
@@ -48,7 +49,8 @@ def test_question_fields_found_from_entity_ref() -> None:
     assert question_fields() == {
         "RoomType": "room_type",
         "EntityCategory": "category",
-        "StoreyLevel": "storey",  # interim, contract change 004
+        "FixtureType": "fixture_type",  # contract change 001, typed in EntityRef
+        "StoreyLevel": "storey",  # change 004 (lighter): link from interim_vocabulary.yaml
     }
 
 
@@ -59,11 +61,22 @@ def test_plan_vocabulary_lists_every_value_with_its_meaning() -> None:
         for value in vocab[name]:
             assert f"- {value}: {desc[name][value]}" in text
     assert "### StoreyLevel (field `targets[].storey`)" in text
+    assert "### FixtureType (field `targets[].fixture_type`)" in text
 
 
-def test_interim_storey_levels_are_active_until_the_contract_has_them() -> None:
-    assert "GROUND" in constrained_text_fields()["storey"]
-    assert set(VOCABULARIES) < set(plan_vocabularies())
+def test_storey_levels_come_from_the_contract_and_are_still_enforced() -> None:
+    """Contracts 1.1.0 define StoreyLevel: the interim values are gone, the link stays."""
+    import yaml
+
+    raw = yaml.safe_load(vocabulary_view.INTERIM_FILE.read_text(encoding="utf-8"))
+    assert raw == {"StoreyLevel": {"field": "storey"}}
+    assert constrained_text_fields() == {"storey": VOCABULARIES["StoreyLevel"]}
+    assert plan_vocabularies() == dict(VOCABULARIES)
+    assert plan_descriptions() == {n: dict(d) for n, d in DESCRIPTIONS.items()}
+
+
+def test_fixture_type_belongs_to_the_fixture_category() -> None:
+    assert category_fields() == {"fixture_type": "FIXTURE"}
 
 
 def test_lighter_option_contract_values_win_and_are_still_enforced(
@@ -131,6 +144,32 @@ def test_invalid_interim_file_is_rejected(
     monkeypatch.setattr(vocabulary_view, "INTERIM_FILE", path)
     with pytest.raises(ValueError, match=message):
         vocabulary_view.interim_vocabularies()
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        ("- a\n", "top level must be a mapping"),
+        ("not_a_field: FIXTURE\n", "is not a category-specific EntityRef field"),
+        ("category: FIXTURE\n", "is not a category-specific EntityRef field"),
+        ("fixture_type: BATHROOM\n", "is not a category value"),
+    ],
+)
+def test_invalid_field_rules_file_is_rejected(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, text: str, message: str
+) -> None:
+    path = tmp_path / "rules.yaml"
+    path.write_text(text, encoding="utf-8")
+    monkeypatch.setattr(vocabulary_view, "FIELD_RULES_FILE", path)
+    with pytest.raises(ValueError, match=message):
+        category_fields()
+
+
+def test_missing_field_rules_file_means_no_rules(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(vocabulary_view, "FIELD_RULES_FILE", tmp_path / "absent.yaml")
+    assert category_fields() == {}
 
 
 def test_missing_interim_file_means_no_interim_vocabulary(

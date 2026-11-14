@@ -15,6 +15,10 @@ option chosen by ry: ``EntityRef.storey`` stays ``str``, values are a convention
   output schema then enforces the values by itself.
 
 So applying contract change 004 needs no code change here.
+
+Category-specific fields (``field_rules.yaml``) say which ``EntityRef`` field is set if
+and only if ``category`` has a given value (``fixture_type``, contract change 001). The
+contract documents that rule but does not enforce it (OPEN_QUESTIONS Q3).
 """
 
 from __future__ import annotations
@@ -35,6 +39,8 @@ from blueprint_qa.question.llm_output import LlmParse
 
 SYNONYMS_DIR = Path(__file__).parent / "synonyms"
 INTERIM_FILE = Path(__file__).parent / "interim_vocabulary.yaml"
+FIELD_RULES_FILE = Path(__file__).parent / "field_rules.yaml"
+CATEGORY_FIELD = "category"  # the EntityRef field that names the kind of element
 REQUIRED_LANGUAGES: tuple[str, ...] = ("en", "de", "fi")
 
 
@@ -147,6 +153,31 @@ def _contract_question_fields() -> dict[str, str]:
             if values and values == vocab_values:
                 out[vocab] = field_name
     return out
+
+
+@lru_cache(maxsize=4)
+def _read_field_rules(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    if not isinstance(data, dict):
+        raise ValueError(f"{path.name}: top level must be a mapping")
+    categories = _annotation_values(EntityRef.model_fields[CATEGORY_FIELD].annotation)
+    out: dict[str, str] = {}
+    for field_name, category in data.items():
+        if field_name not in EntityRef.model_fields or field_name == CATEGORY_FIELD:
+            raise ValueError(
+                f"{path.name}: {field_name!r} is not a category-specific EntityRef field"
+            )
+        if category not in categories:
+            raise ValueError(f"{path.name}: {field_name}: {category!r} is not a category value")
+        out[str(field_name)] = str(category)
+    return out
+
+
+def category_fields() -> dict[str, str]:
+    """``EntityRef`` field -> the ``category`` value for which (and only which) it is set."""
+    return _read_field_rules(FIELD_RULES_FILE)
 
 
 def question_fields() -> dict[str, str]:
