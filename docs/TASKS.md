@@ -52,4 +52,4 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 25 | Done: one-line test change; `test_output_follows_the_contract` passes on contracts 1.2.0 | A3 | SS | 2026-11-14 | Done (branch `a3/SS/contract-version`, PR into `a0/ry/validation-receipt`) |
 | 26 | Browser UI: no badge, no "Take a photo" button, no sample plans, smaller answer (ry) | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-landing-tweaks`, awaiting review) |
 | 27 | Browser UI on phones: at's phone layout and touch handling (d0256e2), laptop view unchanged; both: smaller answers, title "Chat with your blueprint" (ry) | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-phone-layout`, awaiting review) |
-| 28 | Browser UI: remove the 1-2-3 steps on the landing page (ry), laptop and phone | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-no-steps`, awaiting review) |
+| 28 | Browser UI: remove the 1-2-3 steps on the landing page and the top bar ("New drawing" moved to the Questions heading) (ry), laptop and phone | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-no-steps`, awaiting review) |

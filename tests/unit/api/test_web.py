@@ -188,3 +188,12 @@ def test_landing_page_has_no_steps() -> None:
     # ry, 2026-11-14: no 1-2-3 steps ("Add a drawing" ...) on laptop or phone.
     body = PAGE.split("-->", 1)[1]
     assert "steps" not in body and "Add a drawing" not in body and "Ask in plain words" not in body
+
+
+def test_no_top_bar_but_new_drawing_still_works() -> None:
+    # ry, 2026-11-14: no top bar on laptop or phone; "New drawing" moved, not lost.
+    body = PAGE.split("-->", 1)[1]
+    assert "<header>" not in body and "read any floor plan" not in body
+    heading = body[body.index("<h3>Questions") : body.index("</h3>", body.index("<h3>Questions"))]
+    assert '<button class="btn ghost small" id="restart" hidden>New drawing</button>' in heading
+    assert "$('#restart').onclick" in body  # same button, same behaviour
