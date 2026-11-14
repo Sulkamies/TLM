@@ -90,3 +90,9 @@ answer and the boxes, not explain the choice in detail. Adaptation (3) in the pa
 out of future web designs too (a test checks the served page).
 Also removed on ry's request: the "Counted on the drawing" legend and the suggested-question chips (so the §4
 advice on better chips no longer applies to the web page). Tests check that neither comes back.
+
+## 8. Update: landing page tweaks on the served page (ry, 2026-11-14)
+
+Removed on ry's request: the "Every answer shows where it came from" badge and the "Take a photo" button; the answer
+is shown smaller (34px instead of 46px); the sample plans are no longer offered on the landing page. A test checks
+the served page. The Android app is not affected.

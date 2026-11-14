@@ -322,3 +322,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   Android app is unaffected. Test `test_the_page_does_not_show_the_explanation`.
 - Also removed (ry): the "Counted on the drawing" legend above the picture, and the suggested-question chips (the
   user types the question; the empty chat says "Ask a question below."). Test `test_the_page_has_no_suggested_questions`.
+
+### 2026-11-14 · A0 · ry · Browser UI: landing page tweaks
+- `src/blueprint_qa/api/web/index.html` (ry): removed the "Every answer shows where it came from" badge and the
+  "Take a photo" button (with its hidden camera input); the answer number or yes/no word is smaller (34px instead of
+  46px). The sample plans are no longer offered on the landing page (with their footer credit); the `/samples/`
+  endpoint and files stay unchanged. Choosing, dragging and pasting a picture work as before. No API, server or
+  Android app change.
+- Test `test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer`. README wording.
