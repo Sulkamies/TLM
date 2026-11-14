@@ -313,3 +313,16 @@ compared programmatically with `thresholds_vision_v2.json`: identical.
 in `analysis/` pass `mypy --strict` in CI.
 **Start of phase 3:** rebase `a3/SS/analysis-adapter` onto `main` after the phase 2 and 2b PRs are merged (they bring
 `Fixture`, `StoreyLevel` and the `analysis:` config). Expect a trivial append conflict in `docs/CHANGELOG.md`.
+
+### I. Coverage warnings for A4 (A0 · ry · 2026-11-14), binding, extends §C
+
+A4 is now in scope (D-011). It may answer 0 / "no" only when the analysis declares that it can see that kind of element
+(AGENTS §6 A4, "a 0.0 existence answer requires positive evidence"). In addition to
+`ROOM_TYPES_DETECTED:BALCONY,BATHROOM,BEDROOM,KITCHEN,SAUNA,TOILET` (§C), every raster analysis must also emit:
+
+- `FIXTURE_TYPES_DETECTED:BATHTUB,SAUNA_BENCH,SHOWER,SINK,TOILET`
+- `OPENING_KINDS_DETECTED:DOOR,WINDOW`
+
+Values are contract vocabulary values, sorted, comma-separated, without spaces. Emit all three in every raster analysis
+(also when nothing of that kind was found: that is exactly when A4 needs them). Add a test that they are present. A
+future IFC path must emit the same warnings for what it reads. Sent to the running A3 session by SS on 2026-11-14.

@@ -257,3 +257,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Proof: in a fresh temporary copy, `python models/fetch.py` fetched all three files in 3.5 s, and
   `python models/fetch.py --check` exited 0 (all verified). In a repo checkout the fetched files are git-ignored.
 - Test: every entry in `FILES` has an https URL; the best.pt entry has the expected sha256 and size (no download in tests).
+
+### 2026-11-14 · A0 · ry · A4 in scope: brief, coverage warnings, plan update
+- New `docs/requests/A4-answer-reasoner.md`: entry point and A0's binding decisions (no LLM this round; unit by intent
+  also without a value; resolution, aggregation, measures, comparison; zero answers only with coverage warnings).
+- A3 spec §I: every raster analysis also emits `FIXTURE_TYPES_DETECTED:` and `OPENING_KINDS_DETECTED:`.
+- DECISIONS D-011 (A4 in scope) and D-012 (coverage warnings); OPEN_QUESTIONS Q9 answered (c), new Q11–Q13 (Q10 is A4's).
+- MERGE_PLAN update v3.1 (actual merge order, phase 3b for A4, phase 5 for wiring A4). README: contracts v1.1.0, A4 status.
+- Docs only; no contract, prompt or code change.

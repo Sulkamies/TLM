@@ -72,3 +72,14 @@ A1 re-records its validation cassettes with the new model.
 A3 is question-agnostic (`analyze(ValidationResult) -> BlueprintAnalysis`), A2 and A3 run concurrently, A4 computes the
 answer later. ry's earlier description (A3 receives the question) is not adopted. The A3 team designed for this too.
 A3 writes its own adapter from a spec by A0 (R2.1). The integration agent opens the pull requests but never merges them.
+
+### D-011 · 2026-11-14 · A0 · approved by ry · A4 (Answer Reasoner) is in scope now
+MERGE_PLAN v3 had A4 out of scope. ry brought it in: A4 is built in parallel with A3 by an A4 session launched by ry
+(branch `a4/ry/answer-reasoner`), from the brief `docs/requests/A4-answer-reasoner.md`. A0 wires it into the
+orchestrator afterwards (MERGE_PLAN update, phase 5).
+
+### D-012 · 2026-11-14 · A0 · approved by ry · Coverage warnings as positive evidence for zero answers
+A4 may give a COUNT of 0 or an EXISTENCE of 0.0 only if the analysis declares, through the warnings
+`ROOM_TYPES_DETECTED:`, `FIXTURE_TYPES_DETECTED:` and `OPENING_KINDS_DETECTED:`, that it can see that kind of element;
+otherwise `CANNOT_ANSWER`. A convention in `warnings`, not a contract field, so no contract change is needed now
+(A3 spec §I). A contract field is the cleaner long-term option (OPEN_QUESTIONS Q13).
