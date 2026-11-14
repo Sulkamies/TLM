@@ -100,3 +100,6 @@ them all. Changes stay additive; breaking ones need a new endpoint. The Android 
 with at's three sample plans at `/samples/`. Two adaptations only: non-PNG/JPEG pictures are converted to JPEG in
 the browser, and the browser locale is sent. There should be **one** maintained copy of the page: proposal in
 `docs/requests/UI-android-app.md` §4.
+- **Update to D-013 (A0 · ry · 2026-11-14):** the served page follows at's redesign (`web-app/index.html`, commit
+  `85524c9` on `ui/at/webpage`: new look, evidence chips, hover/tap names on boxes, collapsible reasoning, better phone
+  layout), with the same two adaptations. No change to the API, the server or the Android app.

@@ -73,3 +73,11 @@ sauna?".
 **Android Studio note.** New Android Studio versions run Gradle on Java 25, which Gradle 8.11.1 does not support
 ("Incompatible Gradle JVM version"). Mention "Gradle JDK 17–21" in `android-app/README.md`, or pin it with
 `gradle/gradle-daemon-jvm.properties` (`toolchainVersion=21`).
+
+## 5. Update: the served page follows your redesign (`ui/at/webpage`, commit `85524c9`)
+
+ry asked A0 again to make the served page match yours. `src/blueprint_qa/api/web/index.html` is now `85524c9`
+unchanged except for the same two adaptations (JPEG conversion of other picture formats; locale sent). Checked: the
+page reads only contract fields, all 10 places where server or user text becomes HTML go through `esc()`, the
+samples are unchanged, and live answers carry the labels your new evidence chips and box tooltips show. The Android
+app is untouched. The suggestions in §4 (one copy of the page, the "toilets" chip, Gradle JDK note) still apply.

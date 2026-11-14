@@ -51,8 +51,9 @@ def test_the_page_reads_only_contract_fields() -> None:
     # The page calls a /ask response `j` (and keeps it as `it.a`).
     read = set(re.findall(r"\bj\.(\w+)", PAGE)) | set(re.findall(r"\bit\.a\.(\w+)", PAGE))
     assert read <= ANSWER_FIELDS | ERROR_FIELDS, read - (ANSWER_FIELDS | ERROR_FIELDS)
-    # Evidence boxes are drawn in drawOverlay(), where each box is `e`.
-    box = set(re.findall(r"\be\.(\w+)", _function("drawOverlay")))
+    # Evidence boxes (`e`): drawn in drawOverlay(), named in the hover tooltip showTip().
+    used = _function("drawOverlay") + _function("showTip")
+    box = set(re.findall(r"\be\.(\w+)", used))
     assert box == BOX_FIELDS, box ^ BOX_FIELDS
 
 
@@ -65,7 +66,8 @@ def test_server_text_is_always_escaped_before_it_becomes_html() -> None:
     # The page builds HTML strings; every value that comes from the server (or the user) must go
     # through esc(), which escapes & < > " ' (so it is safe in text and in attributes).
     assert "const esc = s => String(s).replace(/[&<>\"']/g" in PAGE
-    untrusted = re.compile(r"\b(j\.(answer|unit|working|error)|e\.label|it\.(err|q))\b")
+    # (`.length` only reads the size, e.g. whether "How it was counted" starts open; no text.)
+    untrusted = re.compile(r"\b(j\.(answer|unit|working|error)|e\.label|it\.(err|q))\b(?!\.length)")
     # Innermost interpolations (no nested template), i.e. the ones whose value becomes text.
     exprs = re.findall(r"\$\{([^{}`]*)\}", PAGE)
     assert len(exprs) > 10
