@@ -334,6 +334,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   (one test line), UI request §7 (optional for the app). Until A1 implements it, behaviour is unchanged.
 - Stacked on `a0/ry/web-hide-working` (merge that first).
 
+### 2026-11-14 · A3 · SS · test_analyzer.py compares schema_version with CONTRACT_VERSION (request A3-contract-version-literal)
+- `tests/unit/analysis/test_analyzer.py`: `assert a.schema_version == CONTRACT_VERSION` instead of the literal `"1.1.0"`,
+  so contract MINOR bumps (here 006, 1.2.0) no longer break A3's tests. No production code change.
+- `tests/unit/analysis`: 69 passed on `a0/ry/validation-receipt` (3 failed before the change).
+
 ### 2026-11-14 · A1 · ry · Validation receipt (contract change 006, A1 part)
 - Implements `docs/requests/A1-validation-receipt.md`. New `src/blueprint_qa/validation/receipt.py`: issues
   `v1.<payload>.<signature>` (HMAC-SHA256, base64url, claims `h/f/p/c/e`) after a valid LLM classification of a PNG,

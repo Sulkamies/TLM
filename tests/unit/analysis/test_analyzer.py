@@ -14,6 +14,7 @@ from blueprint_qa.analysis import analyze
 from blueprint_qa.analysis.analyzer import ANALYZER_VERSION
 from blueprint_qa.analysis.raster import detector as detector_module
 from blueprint_qa.contracts import (
+    CONTRACT_VERSION,
     BlueprintAnalysis,
     ErrorEnvelope,
     InputFormat,
@@ -78,7 +79,7 @@ def test_output_follows_the_contract(name: str, use_detector: UseDetector) -> No
     again = BlueprintAnalysis.model_validate_json(a.model_dump_json())
     assert again == a
     assert a.request_id == REQUEST_ID
-    assert a.schema_version == "1.1.0"
+    assert a.schema_version == CONTRACT_VERSION
     assert a.source_format == InputFormat.PNG
     assert a.coordinate_space == "PIXEL"
     assert a.analyzer_version == ANALYZER_VERSION
