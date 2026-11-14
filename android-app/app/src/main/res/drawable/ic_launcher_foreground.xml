@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A small floor plan: outer walls, two interior walls, a door gap. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="square"
+        android:pathData="M34,34 H74 V74 H52 M44,74 H34 V34 M56,34 V52 M56,60 V74 M34,54 H48" />
+</vector>
