@@ -101,3 +101,18 @@ def test_the_spec_lists_every_field() -> None:
         assert f'"{name}"' in SPEC, name
     for path in ("POST /ask", "GET /", "GET /health"):
         assert path in SPEC
+
+
+def test_the_page_does_not_show_the_explanation() -> None:
+    # ry, 2026-11-14: the web page shows the answer and its boxes, not "How it was counted".
+    # The API still sends `working` (docs/API.md); the Android app may show it.
+    body = PAGE.split("-->", 1)[1]  # skip the provenance comment, which mentions the removal
+    assert "j.working" not in PAGE and "it.a.working" not in PAGE
+    assert "How it was counted" not in body
+    assert "Counted on the drawing" not in body and "legend" not in body
+
+
+def test_the_page_has_no_suggested_questions() -> None:
+    # ry, 2026-11-14: no suggestion chips; the user types the question.
+    body = PAGE.split("-->", 1)[1]
+    assert "SUGGESTIONS" not in body and "chips" not in body and "suggestion" not in body

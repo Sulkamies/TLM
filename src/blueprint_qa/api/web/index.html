@@ -8,7 +8,9 @@
 <!-- Browser client of POST /ask (spec: docs/API.md), served by the A0 server at "/".
      Design: at, branch ui/at/webpage, web-app/index.html (commit 85524c9), copied unchanged except:
      (1) pictures that are not PNG/JPEG (WebP, HEIC, ...) are converted to JPEG before upload, because the
-     pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint. -->
+     pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint;
+     (3) no explanation of how an answer was reached: neither "How it was counted" (the API's `working`)
+     nor the "Counted on the drawing" legend; (4) no suggested questions (ry, 2026-11-14). -->
 <style>
 :root{
   --bg:#f4f6fb; --panel:rgba(255,255,255,.80); --solid:#ffffff; --ink:#0e1522; --muted:#5b6578;
@@ -94,8 +96,6 @@ header h1 span{color:var(--muted);font-weight:500}
 .stagebar{display:flex;align-items:center;gap:10px}
 .file{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:13px;color:var(--muted);backdrop-filter:blur(8px)}
 .file b{font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.legend{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-.legend i{width:12px;height:12px;border-radius:3px;border:2px solid var(--mark);background:rgba(255,77,94,.18)}
 #vp{position:relative;flex:1;min-height:240px;border-radius:var(--r);overflow:hidden;touch-action:none;cursor:grab;
   background:var(--canvas);border:1px solid var(--line);box-shadow:var(--shadow);
   background-image:radial-gradient(var(--line-strong) 1px,transparent 1px);background-size:20px 20px}
@@ -142,12 +142,6 @@ header h1 span{color:var(--muted);font-weight:500}
 .ev span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ev:hover,.ev.lit{border-color:var(--mark);color:var(--ink)}
 .ev.lit{background:rgba(255,77,94,.12)}
-details.why{margin-top:10px;font-size:13px;color:var(--muted)}
-details.why summary{cursor:pointer;font-weight:600;list-style:none;display:inline-flex;gap:6px;align-items:center}
-details.why summary::-webkit-details-marker{display:none}
-details.why summary::before{content:"›";display:inline-block;transition:transform .2s;font-size:16px;line-height:1}
-details.why[open] summary::before{transform:rotate(90deg)}
-.work{margin-top:6px;white-space:pre-wrap}
 .foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:8px}
 .meta{font-size:12px;color:var(--muted)}
 .err{color:var(--err)}
@@ -157,9 +151,6 @@ details.why[open] summary::before{transform:rotate(90deg)}
 .empty{margin:auto;text-align:center;color:var(--muted);max-width:260px}
 .empty svg{width:34px;height:34px;opacity:.6;margin-bottom:8px}
 .compose{padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chips button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink);transition:.15s}
-.chips button:hover{border-color:var(--accent);background:var(--soft);color:var(--accent)}
 .row{position:relative;display:flex;align-items:center}
 .row input{flex:1;min-width:0;font:inherit;padding:14px 56px 14px 18px;border-radius:999px;border:1px solid var(--line-strong);background:var(--solid);color:var(--ink);transition:.15s}
 .row input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px var(--soft)}
@@ -181,10 +172,8 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
   .samples{gap:8px}.samples .thumb{height:96px}
   #work{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(240px,44vh) minmax(380px,1fr);gap:10px;padding:10px;height:auto;min-height:0}
   .chat{min-height:380px}
-  .legend,.hint,header h1 span{display:none}
-  .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-  .chips button{white-space:nowrap}
-  .chat,.compose,.chips,.row{min-width:0;max-width:100%}
+  .hint,header h1 span{display:none}
+  .chat,.compose,.row{min-width:0;max-width:100%}
 }
 </style>
 </head>
@@ -221,7 +210,6 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
   <div class="stage">
     <div class="stagebar">
       <span class="file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><b id="fname"></b></span>
-      <span class="legend"><i></i>Counted on the drawing</span>
     </div>
     <div id="vp">
       <div id="zoom">
@@ -241,7 +229,6 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
     <h3>Questions <small id="count"></small></h3>
     <div id="log"></div>
     <div class="compose">
-      <div class="chips" id="chips"></div>
       <form class="row" id="form">
         <input id="q" placeholder="Ask about this drawing…" autocomplete="off" aria-label="Ask a question">
         <button class="go" type="submit" id="send" aria-label="Ask" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
@@ -257,8 +244,6 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
 
 <script>
 const $ = s => document.querySelector(s);
-const SUGGESTIONS = ["How many toilets are there?", "How many rooms are there?", "How many windows are there?",
-                     "How many doors are there?", "What is the total floor area?"];
 const SAMPLES = [["colorful-11397.png", "Two-floor home", "Finnish row house"], ["colorful-12200.png", "Apartment", "Single floor"], ["colorful-2002.png", "With sauna", "Compact flat"]];
 
 let file = null, imgUrl = null, items = [], nextId = 1, hi = null, overlayKey = '';
@@ -295,8 +280,6 @@ function setImage(f) {
 }
 
 /* ---------- asking ---------- */
-$('#chips').innerHTML = SUGGESTIONS.map(s => `<button type="button">${esc(s)}</button>`).join('');
-$('#chips').onclick = e => { if (e.target.tagName === 'BUTTON') ask(e.target.textContent); };
 $('#q').oninput = () => { $('#send').disabled = !$('#q').value.trim(); };
 $('#form').onsubmit = e => { e.preventDefault(); const v = $('#q').value; $('#q').value = ''; $('#send').disabled = true; ask(v); };
 
@@ -342,7 +325,7 @@ async function run(it) {
 function render() {
   const log = $('#log');
   log.innerHTML = items.length ? items.map(row).join('') :
-    `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg><div>Ask a question below or pick one of the suggestions.</div></div>`;
+    `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"/></svg><div>Ask a question below.</div></div>`;
   log.scrollTop = log.scrollHeight;
   $('#count').textContent = items.length ? `· ${items.length}` : '';
   items.forEach(i => { i.shown = true; });
@@ -360,7 +343,6 @@ function row(it) {
     let h = isText ? `<div class="text">${esc(j.answer)}</div>`
       : `<div class="big"><span class="num" data-to="${esc(j.answer)}">${esc(j.answer)}</span>${j.unit && j.unit !== 'count' ? `<span class="unit">${esc(j.unit)}</span>` : ''}</div>`;
     if (ev.length) h += `<div class="evrow">${ev.map((e, i) => `<button class="ev" data-id="${it.id}" data-i="${i}" title="${esc(e.label || '')}"><b>${i + 1}</b><span>${esc(e.label || 'item ' + (i + 1))}</span></button>`).join('')}</div>`;
-    if (j.working) h += `<details class="why"${j.working.length < 150 ? ' open' : ''}><summary>How it was counted</summary><div class="work">${esc(j.working)}</div></details>`;
     h += `<div class="foot">${ev.length ? `<button class="link" data-show="${it.id}">${hi === it.id ? 'Marked on the drawing ✓' : 'Show on the drawing'}</button>` : '<span></span>'}<span class="meta">${it.secs}s</span></div>`;
     a = `<div class="a${enter}">${h}</div>`;
   }

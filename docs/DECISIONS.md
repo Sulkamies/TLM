@@ -103,3 +103,6 @@ the browser, and the browser locale is sent. There should be **one** maintained 
 - **Update to D-013 (A0 · ry · 2026-11-14):** the served page follows at's redesign (`web-app/index.html`, commit
   `85524c9` on `ui/at/webpage`: new look, evidence chips, hover/tap names on boxes, collapsible reasoning, better phone
   layout), with the same two adaptations. No change to the API, the server or the Android app.
+- **Update to D-013 (A0 · ry · 2026-11-14):** the browser page no longer shows the `working` explanation ("How it was
+  counted"), on ry's request. The API field stays (additive-only rule; the Android app reads it). Also removed: the
+  "Counted on the drawing" legend and the suggested-question chips.

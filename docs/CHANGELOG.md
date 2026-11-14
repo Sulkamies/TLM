@@ -314,3 +314,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - No change to the API (`docs/API.md`), the server or the Android app. `tests/unit/api/test_web.py` adapted to the new
   page structure (box labels now read in the tooltip; `.length` reads are not text). 601 passed; live check of page,
   samples and answers.
+
+### 2026-11-14 · A0 · ry · Browser UI: no "How it was counted", no legend, no suggested questions
+- `src/blueprint_qa/api/web/index.html`: the collapsible "How it was counted" explanation is removed (ry). The page shows
+  the answer, the evidence chips and the boxes on the drawing. Sentence answers (e.g. why a question cannot be answered)
+  still show, since they are the answer itself. No change to the API: `working` is still sent (`docs/API.md`), so the
+  Android app is unaffected. Test `test_the_page_does_not_show_the_explanation`.
+- Also removed (ry): the "Counted on the drawing" legend above the picture, and the suggested-question chips (the
+  user types the question; the empty chat says "Ask a question below."). Test `test_the_page_has_no_suggested_questions`.
