@@ -13,6 +13,7 @@ from blueprint_qa.api import cli, main
 from blueprint_qa.contracts import (
     Answer,
     AnswerStatus,
+    BlueprintAnalysis,
     ErrorEnvelope,
     InputFormat,
     PipelineRequest,
@@ -145,7 +146,31 @@ def test_error_envelope_hides_details(
 
 
 def test_answered_value_is_printed() -> None:
-    assert cli.human(answer(AnswerStatus.ANSWERED, 3.0)).startswith("3.0 count\n")
+    assert cli.human(answer(AnswerStatus.ANSWERED, 3.0)).startswith("3 count\n")
+    assert cli.human(answer(AnswerStatus.ANSWERED, 12.75)).startswith("12.75 count\n")
+
+
+ANALYSIS = BlueprintAnalysis.model_validate_json(
+    (
+        Path(__file__).resolve().parents[1]
+        / "orchestrator"
+        / "data"
+        / "colorful-2002.analysis.json"
+    ).read_text(encoding="utf-8")
+)
+
+
+def test_debug_summarises_the_plan_analysis(
+    plan: Path, fake: FakeRun, capsys: pytest.CaptureFixture[str]
+) -> None:
+    fake.trace = PipelineTrace(result=answer(), stages=[(Stage.ANALYSIS, ANALYSIS)])
+    main([str(plan), "q?", "--debug"])
+    err = capsys.readouterr().err
+    data = json.loads(err.split("--- ANALYSIS: BlueprintAnalysis\n", 1)[1])
+    assert data["rooms"] == {"BALCONY": 1, "BATHROOM": 1, "BEDROOM": 2, "KITCHEN": 1, "SAUNA": 1}
+    assert data["openings"] == {"DOOR": 7, "WINDOW": 4}
+    assert data["storeys"] == [{"id": "storey_1", "name": None, "level": None}]
+    assert "polygon" not in err  # summary only
 
 
 def test_debug_prints_stage_outputs_without_bytes(

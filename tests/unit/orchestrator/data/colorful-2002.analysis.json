@@ -1,0 +1,564 @@
+{
+ "schema_version": "1.1.0",
+ "request_id": "11111111-1111-4111-8111-111111111111",
+ "source_format": "PNG",
+ "coordinate_space": "PIXEL",
+ "metric_available": false,
+ "scale": {
+  "pixels_per_meter": null,
+  "source": "NONE",
+  "confidence": 0.0
+ },
+ "storeys": [
+  {
+   "id": "storey_1",
+   "name": null,
+   "elevation_m": null,
+   "level": null
+  }
+ ],
+ "rooms": [
+  {
+   "id": "room_1",
+   "storey_id": "storey_1",
+   "room_type": "BALCONY",
+   "label_text": "PARVEKE",
+   "polygon": [
+    [
+     688.8258056640625,
+     66.8528060913086
+    ],
+    [
+     810.864501953125,
+     66.8528060913086
+    ],
+    [
+     810.864501953125,
+     315.2379150390625
+    ],
+    [
+     688.8258056640625,
+     315.2379150390625
+    ]
+   ],
+   "area_m2": null,
+   "area_source": null,
+   "height_m": null,
+   "source_ref": null,
+   "confidence": 0.9316405653953552
+  },
+  {
+   "id": "room_2",
+   "storey_id": "storey_1",
+   "room_type": "KITCHEN",
+   "label_text": null,
+   "polygon": [
+    [
+     271.8558349609375,
+     93.9136962890625
+    ],
+    [
+     524.0797729492188,
+     93.9136962890625
+    ],
+    [
+     524.0797729492188,
+     257.0924987792969
+    ],
+    [
+     271.8558349609375,
+     257.0924987792969
+    ]
+   ],
+   "area_m2": null,
+   "area_source": null,
+   "height_m": null,
+   "source_ref": null,
+   "confidence": 0.8939589858055115
+  },
+  {
+   "id": "room_3",
+   "storey_id": "storey_1",
+   "room_type": "BEDROOM",
+   "label_text": "MH",
+   "polygon": [
+    [
+     66.4197769165039,
+     111.48040771484375
+    ],
+    [
+     268.00958251953125,
+     111.48040771484375
+    ],
+    [
+     268.00958251953125,
+     252.15040588378906
+    ],
+    [
+     66.4197769165039,
+     252.15040588378906
+    ]
+   ],
+   "area_m2": null,
+   "area_source": null,
+   "height_m": null,
+   "source_ref": null,
+   "confidence": 0.9517773985862732
+  },
+  {
+   "id": "room_4",
+   "storey_id": "storey_1",
+   "room_type": "SAUNA",
+   "label_text": null,
+   "polygon": [
+    [
+     74.0579605102539,
+     258.0533447265625
+    ],
+    [
+     173.37808227539062,
+     258.0533447265625
+    ],
+    [
+     173.37808227539062,
+     344.8948669433594
+    ],
+    [
+     74.0579605102539,
+     344.8948669433594
+    ]
+   ],
+   "area_m2": null,
+   "area_source": null,
+   "height_m": null,
+   "source_ref": null,
+   "confidence": 0.8969444036483765
+  },
+  {
+   "id": "room_5",
+   "storey_id": "storey_1",
+   "room_type": "BATHROOM",
+   "label_text": null,
+   "polygon": [
+    [
+     66.4520034790039,
+     346.38372802734375
+    ],
+    [
+     267.66583251953125,
+     346.38372802734375
+    ],
+    [
+     267.66583251953125,
+     465.9599914550781
+    ],
+    [
+     66.4520034790039,
+     465.9599914550781
+    ]
+   ],
+   "area_m2": null,
+   "area_source": null,
+   "height_m": null,
+   "source_ref": null,
+   "confidence": 0.8332156538963318
+  },
+  {
+   "id": "room_6",
+   "storey_id": "storey_1",
+   "room_type": "BEDROOM",
+   "label_text": "MH",
+   "polygon": [
+    [
+     66.0366439819336,
+     469.4992370605469
+    ],
+    [
+     294.0632629394531,
+     469.4992370605469
+    ],
+    [
+     294.0632629394531,
+     696.1237182617188
+    ],
+    [
+     66.0366439819336,
+     696.1237182617188
+    ]
+   ],
+   "area_m2": null,
+   "area_source": null,
+   "height_m": null,
+   "source_ref": null,
+   "confidence": 0.9672073721885681
+  }
+ ],
+ "openings": [
+  {
+   "id": "window_1",
+   "storey_id": "storey_1",
+   "kind": "WINDOW",
+   "position": [
+    677.9790649414062,
+    176.63798904418945
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.7217257618904114
+  },
+  {
+   "id": "window_2",
+   "storey_id": null,
+   "kind": "WINDOW",
+   "position": [
+    53.951833724975586,
+    187.7662582397461
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.7095687389373779
+  },
+  {
+   "id": "door_1",
+   "storey_id": "storey_1",
+   "kind": "DOOR",
+   "position": [
+    270.3477478027344,
+    217.0328598022461
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.6697748303413391
+  },
+  {
+   "id": "door_2",
+   "storey_id": "storey_1",
+   "kind": "DOOR",
+   "position": [
+    678.1454162597656,
+    266.68341064453125
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.8822273015975952
+  },
+  {
+   "id": "door_3",
+   "storey_id": "storey_1",
+   "kind": "DOOR",
+   "position": [
+    230.9943084716797,
+    253.69536590576172
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.46852776408195496
+  },
+  {
+   "id": "window_3",
+   "storey_id": null,
+   "kind": "WINDOW",
+   "position": [
+    57.925424575805664,
+    297.4086456298828
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.8762445449829102
+  },
+  {
+   "id": "door_4",
+   "storey_id": "storey_1",
+   "kind": "DOOR",
+   "position": [
+    143.67166137695312,
+    362.5579376220703
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.6784101724624634
+  },
+  {
+   "id": "door_5",
+   "storey_id": "storey_1",
+   "kind": "DOOR",
+   "position": [
+    270.0382843017578,
+    413.63067626953125
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.694765031337738
+  },
+  {
+   "id": "door_6",
+   "storey_id": "storey_1",
+   "kind": "DOOR",
+   "position": [
+    252.21153259277344,
+    501.5204162597656
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.6220943927764893
+  },
+  {
+   "id": "door_7",
+   "storey_id": "storey_1",
+   "kind": "DOOR",
+   "position": [
+    358.07029724121094,
+    527.1346130371094
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.7626727223396301
+  },
+  {
+   "id": "window_4",
+   "storey_id": null,
+   "kind": "WINDOW",
+   "position": [
+    54.524370193481445,
+    589.3781127929688
+   ],
+   "width_m": null,
+   "connects": [],
+   "source_ref": null,
+   "confidence": 0.7315860390663147
+  }
+ ],
+ "adjacency": [],
+ "texts": [
+  {
+   "text": "7.1",
+   "bbox": [
+    392.0,
+    0.0,
+    424.0,
+    22.0
+   ],
+   "confidence": 0.34844034473226076
+  },
+  {
+   "text": "2 9",
+   "bbox": [
+    449.0,
+    0.0,
+    511.0,
+    19.0
+   ],
+   "confidence": 0.45499327778816223
+  },
+  {
+   "text": "4",
+   "bbox": [
+    289.0,
+    3.0,
+    315.0,
+    21.0
+   ],
+   "confidence": 0.8292763082978252
+  },
+  {
+   "text": "2",
+   "bbox": [
+    221.0,
+    5.0,
+    247.0,
+    19.0
+   ],
+   "confidence": 0.9999786616510029
+  },
+  {
+   "text": "3",
+   "bbox": [
+    255.0,
+    5.0,
+    281.0,
+    19.0
+   ],
+   "confidence": 0.9999700786921473
+  },
+  {
+   "text": "5",
+   "bbox": [
+    325.0,
+    5.0,
+    351.0,
+    19.0
+   ],
+   "confidence": 0.9262810281514113
+  },
+  {
+   "text": "6",
+   "bbox": [
+    361.0,
+    5.0,
+    385.0,
+    19.0
+   ],
+   "confidence": 0.9999461181269567
+  },
+  {
+   "text": "PARVEKE",
+   "bbox": [
+    740.0,
+    142.0,
+    764.0,
+    242.0
+   ],
+   "confidence": 0.9999088035396901
+  },
+  {
+   "text": "MH",
+   "bbox": [
+    157.0,
+    163.0,
+    177.0,
+    203.0
+   ],
+   "confidence": 0.9979186649471938
+  },
+  {
+   "text": "OH",
+   "bbox": [
+    524.0,
+    218.0,
+    548.0,
+    252.0
+   ],
+   "confidence": 0.9583314327288358
+  },
+  {
+   "text": "HN",
+   "bbox": [
+    222.0,
+    272.0,
+    246.0,
+    306.0
+   ],
+   "confidence": 0.8885364469401736
+  },
+  {
+   "text": "MH",
+   "bbox": [
+    157.0,
+    573.0,
+    177.0,
+    609.0
+   ],
+   "confidence": 0.9975523992342895
+  }
+ ],
+ "analyzer_version": "cubicasa-yolo11m-v2+rules-v2",
+ "warnings": [
+  "SAUNA_FROM_BENCHES:room_4",
+  "NO_STOREY_FOR:window_2",
+  "NO_STOREY_FOR:window_3",
+  "NO_STOREY_FOR:window_4",
+  "ROOMS_ARE_BOXES",
+  "ROOM_TYPES_DETECTED:BALCONY,BATHROOM,BEDROOM,KITCHEN,SAUNA,TOILET",
+  "FIXTURE_TYPES_DETECTED:BATHTUB,SAUNA_BENCH,SHOWER,SINK,TOILET",
+  "OPENING_KINDS_DETECTED:DOOR,WINDOW",
+  "NO_ADJACENCY",
+  "NO_OPENING_CONNECTIVITY",
+  "FIXTURE_ROOM_FROM_BOX_CENTRE"
+ ],
+ "fixtures": [
+  {
+   "id": "fixture_1",
+   "storey_id": "storey_1",
+   "room_id": "room_2",
+   "fixture_type": "SINK",
+   "position": [
+    406.58790588378906,
+    115.2090072631836
+   ],
+   "source_ref": null,
+   "confidence": 0.8161972761154175
+  },
+  {
+   "id": "fixture_2",
+   "storey_id": "storey_1",
+   "room_id": "room_4",
+   "fixture_type": "SAUNA_BENCH",
+   "position": [
+    123.71802139282227,
+    277.5935974121094
+   ],
+   "source_ref": null,
+   "confidence": 0.8969444036483765
+  },
+  {
+   "id": "fixture_3",
+   "storey_id": "storey_1",
+   "room_id": "room_4",
+   "fixture_type": "SAUNA_BENCH",
+   "position": [
+    123.9408950805664,
+    307.9557647705078
+   ],
+   "source_ref": null,
+   "confidence": 0.8541689515113831
+  },
+  {
+   "id": "fixture_4",
+   "storey_id": "storey_1",
+   "room_id": "room_4",
+   "fixture_type": "SAUNA_BENCH",
+   "position": [
+    148.08463287353516,
+    332.1822509765625
+   ],
+   "source_ref": null,
+   "confidence": 0.8639940619468689
+  },
+  {
+   "id": "fixture_5",
+   "storey_id": "storey_1",
+   "room_id": "room_5",
+   "fixture_type": "TOILET",
+   "position": [
+    187.2844696044922,
+    444.3600616455078
+   ],
+   "source_ref": null,
+   "confidence": 0.6272903084754944
+  },
+  {
+   "id": "fixture_6",
+   "storey_id": "storey_1",
+   "room_id": "room_5",
+   "fixture_type": "SINK",
+   "position": [
+    236.51687622070312,
+    451.2013397216797
+   ],
+   "source_ref": null,
+   "confidence": 0.7913164496421814
+  },
+  {
+   "id": "fixture_7",
+   "storey_id": "storey_1",
+   "room_id": "room_5",
+   "fixture_type": "SHOWER",
+   "position": [
+    117.92459487915039,
+    458.4820861816406
+   ],
+   "source_ref": null,
+   "confidence": 0.4751474857330322
+  }
+ ]
+}

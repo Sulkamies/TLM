@@ -1,4 +1,7 @@
-"""Orchestrator pipeline (MERGE_PLAN phase 1): A1 -> A2, interim answers, contract checks."""
+"""Orchestrator pipeline, A1 -> A2 paths (phase 1): interim answers, contract checks.
+
+A3/A4 are skipped here (analyze/reason = None); see test_pipeline_a3_a4.py for phases 4/5.
+"""
 
 from __future__ import annotations
 
@@ -11,6 +14,7 @@ import pytest
 from orch_fakes import RID, envelope, make_request, parsed, validation
 
 from blueprint_qa import orchestrator
+from blueprint_qa.analysis import analyze
 from blueprint_qa.contracts import (
     Answer,
     AnswerStatus,
@@ -30,6 +34,7 @@ from blueprint_qa.orchestrator.pipeline import (
     run_traced,
 )
 from blueprint_qa.question import interpret
+from blueprint_qa.reasoning import answer
 from blueprint_qa.validation import validate
 
 SRC = Path(__file__).resolve().parents[3] / "src" / "blueprint_qa"
@@ -49,9 +54,10 @@ class Recorder:
 
 
 def comps(a1: object, a2: object = None) -> tuple[Components, Recorder, Recorder]:
+    """A1 and A2 fakes; A3 and A4 skipped (the phase 1 pipeline)."""
     v = a1 if isinstance(a1, Recorder) else Recorder(a1)
     q = a2 if isinstance(a2, Recorder) else Recorder(a2)
-    return Components(validate=v, interpret=q), v, q
+    return Components(validate=v, interpret=q, analyze=None, reason=None), v, q
 
 
 def run(c: Components, question: str = "How many bedrooms?") -> Answer | ErrorEnvelope:
@@ -220,10 +226,10 @@ def test_new_request_generates_uuid4_and_utc_time() -> None:
     assert (req.filename, req.locale_hint) == ("a.pdf", "de")
 
 
-def test_default_components_and_empty_slots() -> None:
+def test_default_components_are_the_real_entry_points() -> None:
     c = Components()
     assert c.validate is validate and c.interpret is interpret
-    assert c.analyze is None and c.reason is None  # A3 and A4 slots
+    assert c.analyze is analyze and c.reason is answer  # phases 4 and 5
     assert STAGE_ORDER == (
         (Stage.VALIDATION,),
         (Stage.QUESTION, Stage.ANALYSIS),

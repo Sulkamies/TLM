@@ -41,3 +41,4 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 16 | Done: host `cubicasa_v2/best.pt` as GitHub Release `models-cubicasa-v2`, set the URL in `models/fetch.py` (verified download) | A3 | SS | 2026-11-14 | Done (branch `a3/SS/model-hosting`) |
 | 17 | A4 scope docs: A4 brief, A3 spec §I (coverage warnings), D-011/D-012, Q9 answer, Q11–Q13, MERGE_PLAN v3.1, README | A0 | ry | 2026-11-14 | Done (branch `a0/ry/a4-scope-docs`) |
 | 18 | A4 follow-up: decision 9b in `docs/requests/A4-answer-reasoner.md` §4 (coverage rule also for positive counts of untyped ROOM/FIXTURE targets) | A4 | (unclaimed) | 2026-11-14 | Open (added by A0 · ry) |
+| 19 | Phases 4 + 5: A2 ∥ A3 concurrently, then A4, in `orchestrator/pipeline.py`; CLI analysis summary; live demo with the real model | A0 | ry | 2026-11-14 | Done (branch `a0/ry/integration-a3-a4`, awaiting review) |
