@@ -1,7 +1,7 @@
 """Raster floor plans (CubiCasa PNGs and other scans).
 
-Reads the cached detector + OCR output written by `modal_infer.py::precompute`
-(or calls the Modal service live if no cache exists) and answers counts with
+Reads the cached detector + OCR output written by `python -m vision.analyze`
+(or runs vision/analyze.py locally if no cache exists) and answers counts with
 pixel boxes as evidence.
 """
 from __future__ import annotations
@@ -40,12 +40,13 @@ class RasterPlan:
         cache = os.path.join(CACHE_DIR, os.path.basename(path) + ".json")
         if os.path.exists(cache):
             self.data = json.load(open(cache))
-        else:  # live call to the deployed Modal service
-            import modal
-            Vision = modal.Cls.from_name("blueprints-infer", "Vision")
-            self.data = Vision().analyze.remote(open(path, "rb").read())
+        else:  # run detector + OCR locally (CPU is fine for single images)
+            from vision.analyze import get_vision
+            with open(path, "rb") as fh:
+                self.data = get_vision().analyze(fh.read())
             os.makedirs(CACHE_DIR, exist_ok=True)
-            json.dump(self.data, open(cache, "w"))
+            with open(cache, "w") as fh:
+                json.dump(self.data, fh)
 
     def detections(self, kind: str):
         t = THRESH.get(kind, 0.35)

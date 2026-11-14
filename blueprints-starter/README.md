@@ -9,8 +9,8 @@ question + file ──► Claude (router + answer writer, cheap model)
       ┌───────────────┼──────────────────┬───────────────────┬──────────────────┐
   raster PNG      Swiss PDF          IFC / IFC plan      schedule PDF          calc
   detector+OCR    DXF geometry       IfcOpenShell        pdfplumber tables     exact math
-  (Modal GPU,     (exact, no ML)     (exact, no ML)      (vector text)
-   precomputed)
+  (trained on a   (exact, no ML)     (exact, no ML)      (vector text)
+   GPU VM, cached)
       └──────────── evidence: pixel boxes | DXF polygons | IFC GUIDs | PDF boxes ──► viewer
 ```
 
@@ -21,7 +21,9 @@ question + file ──► Claude (router + answer writer, cheap model)
 | `handlers/ifc.py` | IfcOpenShell queries (spaces, counts, quantities, elements) | Written, **not run**: test first |
 | `handlers/raster.py` | Counts from cached detector + OCR output | Written, not run (needs trained model) |
 | `train/cubicasa_to_yolo.py` | CubiCasa5K SVG labels → YOLO format | Smoke-tested on a fake plan |
-| `modal_train.py`, `modal_infer.py` | Modal training and GPU inference service | Written, not run |
+| `train/setup_vm.sh`, `train/train.py` | GPU VM setup (Verda) + detector fine-tuning | Written, not run |
+| `vision/analyze.py` | Detector + OCR, GPU or CPU, batch precompute | Written, not run |
+| `modal_train.py`, `modal_infer.py` | Same on Modal (optional alternative) | Written, not run |
 | `app/agent.py`, `app/tools.py` | Claude tool-use loop | Written, not run |
 | `app/server.py`, `app/static/index.html` | FastAPI + viewer with highlights | Written, not run |
 | `eval/swiss_check.py` | Scores the Swiss handler alone | Working |
@@ -37,51 +39,33 @@ python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=sk-...                        # pool the team's Claude credits
 export BP_DATA_ROOT=/path/to/junction-dataset-preview  # folder that contains data/
-modal setup                                            # log in to Modal once per laptop
 ```
 
 Check: `python eval/swiss_check.py questions.jsonl $BP_DATA_ROOT` should print `TOTAL 1131 / 1179`.
 
-## Step 1: Train the CubiCasa detector on Modal (person A)
+## Step 1: Train the CubiCasa detector on a Verda GPU VM (person A)
 
-1. **Find the class names.** Download CubiCasa5K into a Modal Volume and list every SVG class:
-   ```bash
-   modal run modal_train.py::discover
-   ```
-   Check the exact Zenodo file name on https://zenodo.org/records/2613548 first and fix
-   `CUBICASA_URL` if it differs. In the output, every class is printed with the target it
-   maps to. Edit `CLASS_RULES` in `train/cubicasa_to_yolo.py` until windows, doors,
-   toilets, sinks, bathtubs, showers and sauna benches all map correctly.
-2. **Convert the labels** (CPU, excludes the 241 question plans):
-   ```bash
-   modal run modal_train.py::prepare
-   ```
-   It prints box counts per class. If a class has 0 boxes, go back to step 1.
-   - **Coordinate check:** the converter rescales SVG coordinates to `F1_scaled.png`
-     using the SVG's width/height. Draw the labels for 3 plans
-     (`modal volume get blueprints-data yolo/labels/...`) and check the boxes line up.
-     If they don't, try `--image F1_original.png`.
-3. **Train** (H100, about 1–2 h; `--detach` keeps it running if your laptop sleeps):
-   ```bash
-   modal run --detach modal_train.py::train --epochs 80 --imgsz 1280 --name cubicasa_v1
-   ```
-   Watch it on the Modal dashboard. Weights land in `/data/runs/cubicasa_v1/weights/best.pt`.
-   If it runs out of memory, use `--batch 8`.
-   If small fixtures are missed, retrain with `--imgsz 1600` or `--model yolo11l.pt`.
-4. **Deploy inference and precompute** all question images (OCR + detections cached as JSON):
-   ```bash
-   modal deploy modal_infer.py
-   modal run modal_infer.py::precompute --folder $BP_DATA_ROOT/data/cubicasa5k --out cache/vision
-   ```
-   From then on, answering a CubiCasa question needs **no GPU**: it reads `cache/vision/*.json`.
-5. **Tune thresholds:** run `python -m eval.run_eval --questions questions.jsonl --source cubicasa5k --n 300`,
-   look at the worst templates, and adjust `THRESH` and `ROOM_CODES` in `handlers/raster.py`.
-   Tuning takes minutes because nothing is recomputed.
+Full click-by-click guide: **TRAINING-VERDA.md**. Short version:
 
-**v2 (optional):** render the Swiss DXFs to PNG together with their door, window and fixture
-boxes (reuse `handlers/swiss.py`, which already has every box) and add them to
-`/data/yolo`. Then measure on the Swiss PNGs. They have answers, because they are the
-same floors as the Swiss PDFs.
+```bash
+# on the VM, inside the uploaded blueprints-starter folder
+bash train/setup_vm.sh && source ~/venv/bin/activate
+python train/cubicasa_to_yolo.py --src ~/data --discover                 # fix CLASS_RULES
+python train/cubicasa_to_yolo.py --src ~/data --out ~/yolo --exclude train/exclude_ids.txt
+python train/train.py --data ~/yolo/data.yaml --epochs 1 --name smoke     # check train_batch0.jpg
+tmux new -s train
+python train/train.py --data ~/yolo/data.yaml --name cubicasa_v1          # 1-3 h
+python -m vision.analyze --weights ~/runs/cubicasa_v1/weights/best.pt --folder ~/plans --out cache/vision
+```
+Copy `best.pt` → `models/cubicasa_v1.pt` and `cache/vision/` back to your laptop, then
+**delete the VM** (a shut-down VM still costs the full GPU price).
+
+After that, everything runs on your laptop: answers read `cache/vision/*.json`, and new
+images go through `vision/analyze.py` on the CPU (a few seconds per image).
+Tune `THRESH` and `ROOM_CODES` in `handlers/raster.py` with
+`python -m eval.run_eval --questions questions.jsonl --source cubicasa5k --n 300`.
+
+(`modal_train.py` / `modal_infer.py` do the same on Modal if you ever get it working.)
 
 ## Step 2: Structured handlers (person B)
 

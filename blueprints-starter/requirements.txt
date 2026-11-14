@@ -6,4 +6,5 @@ pdfplumber
 pypdfium2
 pillow
 ifcopenshell
-modal
+ultralytics>=8.3
+easyocr
