@@ -52,7 +52,7 @@ clarification. Confirm, or should a missing unit set `clarification_needed`?
 - **Q6:** A measured comparison threshold with no unit sets `clarification_needed` (in the user's language). The
   threshold is still passed through, taken as SI, as a best guess. Count thresholds need no unit. Enforced in A2's LLM
   output validator.
-### Q5 · A1 · OT · 2026-11-14 · Validator edge cases decided provisionally
+### Q7 · A1 · OT · 2026-11-14 · Validator edge cases decided provisionally
 Each item lists the current behaviour; please confirm or change.
 (a) The bytes match no known format: `UNREADABLE`, and `input_format` reports the *declared* format, because the contract requires one.
 (b) A corrupt IFC file, or one with an unsupported schema: invalid input (`UNREADABLE`, R5.2), not the `IFC_PARSE_FAILED` error.
