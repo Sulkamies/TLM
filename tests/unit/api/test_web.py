@@ -127,6 +127,7 @@ def test_the_page_sends_the_receipt_back_for_the_same_picture_only() -> None:
     )  # declared, reset on a new picture, reset on "New drawing"
     assert "it.file === file" in PAGE  # a late answer for an old picture never sets the new receipt
 
+
 def test_landing_page_has_no_badge_and_no_camera_button_and_a_smaller_answer() -> None:
     # ry, 2026-11-14: no "Every answer shows where it came from" badge, no "Take a photo" button,
     # and the answer (number or yes/no word) at 34px instead of 46px.
