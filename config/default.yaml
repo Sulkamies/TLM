@@ -12,6 +12,6 @@ validation:                    # A1
   min_confidence: 0.7          # [ASSUMPTION]
   pdf_render_dpi: 200          # [ASSUMPTION]
   max_image_pixels: null       # reject larger decoded/rendered images as UNREADABLE; null = no limit (R3.9)
-  llm_image_max_side_px: null  # longest side of the copy sent to the LLM; null = full size (PlanImage is never resized)
+  llm_image_max_side_px: 1024  # LLM copy only; Gemini bills the same tokens at any size (measured), so smaller = faster upload
   llm_image_max_bytes: 7500000 # LLM copy only: larger PNGs are shrunk until they fit; null = no limit
   supported_ifc_schemas: [IFC2X3, IFC4, IFC4X3]   # as reported by ifcopenshell (IFC4X3_ADD2 -> IFC4X3)

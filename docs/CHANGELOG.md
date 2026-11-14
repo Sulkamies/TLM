@@ -80,3 +80,12 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   `llm_image_max_bytes: 7500000`, `supported_ifc_schemas: [IFC2X3, IFC4, IFC4X3]`. Existing keys unchanged.
 - No test pinned the `validation` section, so no test changed. Response: `docs/requests/A0-validation-config-and-deps.response.md`.
 - No contract or prompt versions touched.
+
+### 2026-11-14 · A0 · OT · Faster image validation (D-009)
+- `config/default.yaml → validation.llm_image_max_side_px`: `null` → `1024` (LLM copy only).
+- `config/llm.yaml → components.validation`: `model: gemini-3.5-flash-lite`, `thinking_budget: null` (the model rejects 0
+  with HTTP 400). Defaults and `question` unchanged.
+- Tests: `test_validation_component_has_its_own_slot` now pins `gemini-3.5-flash-lite` and checks that the `thinking_budget`
+  override resolves to `None`. New `test_gemini_backend_omits_thinking_config_when_budget_is_none`. 64 passing, 98 % coverage.
+- Docs: D-009, EXTERNAL_SERVICES update row, response `docs/requests/A0-validation-speed.response.md`. No live call made by A0.
+- No contract or prompt versions touched. A1 must re-record its validation cassettes for the new model.

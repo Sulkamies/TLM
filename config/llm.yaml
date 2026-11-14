@@ -15,4 +15,5 @@ components:
   question:                    # A2 Question Interpreter
     model: gemini-3.8-flash
   validation:                  # A1 Input Validator (image classification; images need EXTERNAL_SERVICES approval)
-    model: gemini-3.8-flash
+    model: gemini-3.5-flash-lite # D-009: about 2x faster than gemini-3.8-flash, same accuracy on A1's set
+    thinking_budget: null      # REQUIRED: this model rejects thinking_budget 0 with HTTP 400 (measured)

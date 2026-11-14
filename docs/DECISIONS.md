@@ -45,3 +45,25 @@ The live test showed Google returns 404 for `gemini-2.5-flash`: *"no longer avai
 models/gemini-3.8-flash"*. `gemini-3.8-flash` was verified with the wrapper's exact settings (JSON schema, temperature 0,
 `thinking_budget: 0`). `config/llm.yaml` (defaults and `components.question`) now uses it. Note: `gemini-3.5-flash-lite`
 rejects `thinking_budget: 0` (HTTP 400). If it is ever used, set `thinking_budget: null` for that component.
+
+### D-009 · 2026-11-14 · A0 · approved by OT · Faster image validation: 1024 px LLM copy, gemini-3.5-flash-lite
+Request: `docs/requests/A0-validation-speed.md` (A1). `config/default.yaml → validation.llm_image_max_side_px: 1024`, and
+`config/llm.yaml → components.validation`: `model: gemini-3.5-flash-lite`, `thinking_budget: null`. This model rejects
+`thinking_budget: 0` with HTTP 400 (see D-008); with `null` the wrapper sends no thinking config, so the model default applies.
+`question` and the defaults are unchanged. Only the copy sent to the LLM is shrunk; the `PlanImage` passed to A3 is never resized.
+
+A1's measurements (2026-11-14; 22 real Junction drawings, 11 accept / 11 reject, one multi-page PDF rejected locally;
+21 LLM calls through `validate()`, 8 in parallel):
+
+| Model | LLM copy | Batch time | Median per picture | Correct | Upload | Input / output tokens |
+|---|---|---|---|---|---|---|
+| gemini-3.8-flash | full size | 50 s | 12.4 s | 22/22 | 46 MB | 33,705 / 3,777 |
+| gemini-3.8-flash | 1024 px | 21 s | 5.0 s | 22/22 | 9.7 MB | 33,705 / 3,045 |
+| gemini-3.8-flash | 768 px | 20 s | 3.9 s | 22/22 | 5.8 MB | 33,705 / 2,714 |
+| gemini-3.5-flash-lite | 1024 px | 12–14 s | 2.2–2.6 s | 22/22, then 21/22 | 9.7 MB | 33,705 / ~410 |
+
+Reason: input tokens were identical at every image size (Gemini resizes images itself), so the smaller copy costs no tokens
+and lost no accuracy on this set while uploading far less. The lite model is about 2× faster and uses about 7× fewer output
+tokens. Its only miss ("Kremsier Wohnhaus Parterre") also flips between runs on gemini-3.8-flash, so that drawing is borderline.
+The set is small (22 drawings); A5 should confirm on the labelled fixtures. These numbers were measured by A1, not by A0.
+A1 re-records its validation cassettes with the new model.
