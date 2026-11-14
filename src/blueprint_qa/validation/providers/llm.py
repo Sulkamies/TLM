@@ -76,6 +76,10 @@ class LlmFloorPlanClassifier:
         self._max_bytes = max_bytes
         self._client = client or get_llm_client(COMPONENT)
 
+    @property
+    def provider(self) -> str:
+        return self._client.provider_tag(classifier_prompt())
+
     def classify(self, request_id: str, image_png: bytes) -> ClassifierVerdict | ErrorEnvelope:
         image = prepare_llm_image(image_png, self._max_side_px, self._max_bytes)
         result = self._client.generate_structured(

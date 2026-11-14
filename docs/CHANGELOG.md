@@ -338,3 +338,22 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - `tests/unit/analysis/test_analyzer.py`: `assert a.schema_version == CONTRACT_VERSION` instead of the literal `"1.1.0"`,
   so contract MINOR bumps (here 006, 1.2.0) no longer break A3's tests. No production code change.
 - `tests/unit/analysis`: 69 passed on `a0/ry/validation-receipt` (3 failed before the change).
+
+### 2026-11-14 · A1 · ry · Validation receipt (contract change 006, A1 part)
+- Implements `docs/requests/A1-validation-receipt.md`. New `src/blueprint_qa/validation/receipt.py`: issues
+  `v1.<payload>.<signature>` (HMAC-SHA256, base64url, claims `h/f/p/c/e`) after a valid LLM classification of a PNG,
+  JPEG or PDF; verifies it on later requests (signature via `hmac.compare_digest`, same picture hash and format, not
+  expired, same classifier provider, confidence ≥ `validation.min_confidence`). Settings from
+  `config/default.yaml -> validation_receipt` (`ttl_s`, `key_env`); key from `$BP_VALIDATION_RECEIPT_KEY`, else 32 random
+  bytes per process. Key and token are never logged or returned in errors.
+- `validator.py`: with an accepted receipt the local steps still run (sniffing, `normalize_raster` /
+  `render_single_page`, so A3 gets `plan_image`), the classifier is not called, and the result has
+  `provider="receipt:" + p` and the same token. Any other token is ignored quietly (event `receipt_rejected` with a
+  reason code) and the picture is validated normally, with a fresh receipt if valid. Events `receipt_used` /
+  `receipt_rejected`. No receipt for IFC, invalid pictures or errors. `run_validation(..., receipts=None)` disables it.
+- `FloorPlanClassifier.provider` (internal): the provider string `classify` would report, without an LLM call.
+- No contract, prompt or cassette change. Tests: `tests/unit/validation/test_receipt.py` (round trip, tampering, other
+  picture, expiry, provider/key/threshold change, random key, IFC/invalid get none). Check sequence green except A3's
+  three version-literal tests (pending `docs/requests/A3-contract-version-literal.md`). Live through
+  `python -m blueprint_qa.api.server`: three questions about one picture → one validation `llm_call`, then two
+  `receipt_used`.

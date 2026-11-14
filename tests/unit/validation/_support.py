@@ -66,13 +66,16 @@ def make_ifc(
     return text.encode("utf-8")
 
 
-def make_request(data: bytes, input_format: InputFormat) -> PipelineRequest:
+def make_request(
+    data: bytes, input_format: InputFormat, validation_token: str | None = None
+) -> PipelineRequest:
     return PipelineRequest(
         request_id=str(uuid.uuid4()),
         input_bytes=data,
         input_format=input_format,
         question="How many bedrooms are there?",
         received_at=datetime.now(UTC),
+        validation_token=validation_token,
     )
 
 
@@ -118,7 +121,9 @@ class RecordingClassifier:
         label: FloorPlanLabel = FloorPlanLabel.HOUSE_FLOOR_PLAN,
         confidence: float = 0.95,
         error: ErrorEnvelope | None = None,
+        provider: str = "test:recording",
     ) -> None:
+        self.provider = provider
         self.label = label
         self.confidence = confidence
         self.error = error
@@ -130,5 +135,5 @@ class RecordingClassifier:
             return self.error
         return ClassifierVerdict(
             classification=FloorPlanClassification(label=self.label, confidence=self.confidence),
-            provider="test:recording",
+            provider=self.provider,
         )
