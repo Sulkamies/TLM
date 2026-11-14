@@ -50,3 +50,6 @@ _No deviations recorded._
   until a server address is set, then calls `POST /ask` (see `android-app/README.md`).
 - **Why / exit:** the UI is a separate Android project that does not fit the Python `src` layout. It needs A0 plus one human
   to approve the directory (R2.4) before merging to `main`; the pull request must not be merged without that approval.
+- **Update (UI · at · 2026-11-14):** the same branch also adds `web-app/`, a static web page (`index.html`, no build,
+  no recognition code) with three CubiCasa sample plans credited in `web-app/samples/LICENSE.md`. Same reasoning and
+  same exit as above: R2.4 approval (A0 + one human) is needed before merging to `main`.
