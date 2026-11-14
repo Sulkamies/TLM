@@ -18,6 +18,8 @@ import json
 import os
 
 WEIGHTS = os.environ.get("BP_WEIGHTS", "models/cubicasa_v1.pt")
+# Use the resolution the model was trained at (v2: 1280, v3: 1600).
+IMGSZ = int(os.environ.get("BP_IMGSZ", "1280"))
 
 
 class Vision:
@@ -33,7 +35,7 @@ class Vision:
             # Room labels are short Latin-alphabet abbreviations (MH, KH, OH, PARVEKE...)
             self.ocr = easyocr.Reader(["en"], gpu=self.gpu)
 
-    def analyze(self, image_bytes: bytes, conf: float = 0.15, imgsz: int = 1280) -> dict:
+    def analyze(self, image_bytes: bytes, conf: float = 0.15, imgsz: int = IMGSZ) -> dict:
         import numpy as np
         from PIL import Image
 
@@ -59,7 +61,7 @@ def get_vision() -> Vision:
     return Vision()
 
 
-def precompute(weights: str, folder: str, out: str, conf: float = 0.15) -> None:
+def precompute(weights: str, folder: str, out: str, conf: float = 0.15, imgsz: int = IMGSZ) -> None:
     os.makedirs(out, exist_ok=True)
     v = Vision(weights)
     files = [f for f in sorted(os.listdir(os.path.expanduser(folder)))
@@ -69,7 +71,7 @@ def precompute(weights: str, folder: str, out: str, conf: float = 0.15) -> None:
         if os.path.exists(target):
             continue
         with open(os.path.join(os.path.expanduser(folder), f), "rb") as fh:
-            result = v.analyze(fh.read(), conf=conf)
+            result = v.analyze(fh.read(), conf=conf, imgsz=imgsz)
         with open(target, "w") as fh:
             json.dump(result, fh)
         print(f"[{i}/{len(files)}] {f}: {len(result['detections'])} detections, {len(result['ocr'])} texts")
@@ -81,5 +83,6 @@ if __name__ == "__main__":
     ap.add_argument("--folder", required=True)
     ap.add_argument("--out", default="cache/vision")
     ap.add_argument("--conf", type=float, default=0.15)
+    ap.add_argument("--imgsz", type=int, default=IMGSZ, help="must match training: v2 1280, v3 1600")
     a = ap.parse_args()
-    precompute(a.weights, a.folder, a.out, a.conf)
+    precompute(a.weights, a.folder, a.out, a.conf, a.imgsz)

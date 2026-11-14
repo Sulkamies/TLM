@@ -183,6 +183,7 @@ def main():
     for dirpath, _, files in os.walk(a.src):
         if "model.svg" in files and a.image in files:
             plans.append(dirpath)
+    plans.sort()   # fixed order -> the same train/val split on every machine
     print(f"found {len(plans)} plans")
 
     if a.discover:
