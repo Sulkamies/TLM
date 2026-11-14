@@ -44,7 +44,7 @@ vision = [
 where = ["src"]
 
 [tool.setuptools.package-data]
-blueprint_qa = ["py.typed", "contracts/schema/*.json", "*/prompts/*.md", "*/synonyms/*.yaml", "*/labels/*.yaml", "api/web/*.html"]
+blueprint_qa = ["py.typed", "contracts/schema/*.json", "*/prompts/*.md", "*/synonyms/*.yaml", "*/labels/*.yaml", "api/web/*.html", "api/web/samples/*"]
 
 # ---------------------------------------------------------------- ruff
 [tool.ruff]

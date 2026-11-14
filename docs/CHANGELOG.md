@@ -297,8 +297,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Tests `tests/unit/api/test_server.py` (19). Live test with the real model over HTTP: correct counts, "Kyllä" / "No",
   text answers, 400/415 bodies; evidence boxes drawn onto the picture land on the right bedrooms, doors and sinks.
   First request 16 s (model load), then 5–11 s.
-- **Browser UI** `src/blueprint_qa/api/web/index.html`, served at `GET /`: choose or drop a picture, ask, "Show on the
-  drawing"; self-contained (no CDN), server text inserted as text only. Same `POST /ask` as the app.
+- **Browser UI** `src/blueprint_qa/api/web/index.html`, served at `GET /`: **at's design** (`web-app/index.html`,
+  `ca8a9da`: welcome screen, samples, zoom/pan, suggestion chips, camera, paste) with two adaptations (non-PNG/JPEG
+  converted to JPEG in the browser; locale sent). Samples at `GET /samples/` (CC BY-NC-SA 4.0 credit). Same
+  `POST /ask` as the app. Test: every server/user string put into HTML goes through `esc()`.
+- OPEN_QUESTIONS Q14 ("toilets" read as WC rooms, found via the suggestion chips).
 - **One written contract** for all clients: `docs/API.md`; `tests/unit/api/test_web.py` checks that the page and the
   Android app read only contract fields and that the spec lists every field.
 - D-013 (one API for all UIs; A0 approves `android-app/`, one human still needed). Request `docs/requests/UI-android-app.md`.

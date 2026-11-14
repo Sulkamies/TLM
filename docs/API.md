@@ -18,7 +18,8 @@ must ignore fields they do not know. Renaming or removing a field, or changing i
 | Method and path | Purpose |
 |---|---|
 | `POST /ask` | Answer one question about one plan picture |
-| `GET /` | The browser UI |
+| `GET /` | The browser UI (design by at, see `src/blueprint_qa/api/web/index.html`) |
+| `GET /samples/<file>` | The three sample plans the browser UI offers (CubiCasa5K, CC BY-NC-SA 4.0) |
 | `GET /health` | `{"status": "ok"}`, to check that the address is reachable |
 
 ## `POST /ask` request

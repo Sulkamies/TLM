@@ -131,3 +131,10 @@ contract change?
 D-012 uses warning strings (`ROOM_TYPES_DETECTED:` etc.) to tell A4 what the analysis can see. A typed optional field,
 e.g. `BlueprintAnalysis.coverage: dict[str, list[str]] = {}`, would be validated by the contract (MINOR change). Change
 it when a second analyzer path (IFC) appears?
+
+### Q14 · A0 · ry · 2026-11-14 · What does "How many toilets are there?" mean?
+A2 reads "toilets" as WC **rooms** (`ROOM` + `TOILET`). On a plan with a toilet bowl in the bathroom but no separate WC
+room, the answer is a confident 0, while most users mean toilet bowls (1). The CubiCasa questions avoid the word
+("toilet bowls", "separate WC rooms"). Options: (a) keep it; (b) A2 maps a bare "toilets" to `FIXTURE` + `TOILET`;
+(c) A2 sets `clarification_needed` for a bare "toilets". A0 suggests (b) for en/de/fi ("toilets", "Toiletten",
+"vessat"), keeping "WC rooms" / "Gäste-WC" / "erillinen WC" as rooms. Found while testing the web page's suggestion chips.

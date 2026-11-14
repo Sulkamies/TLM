@@ -2,217 +2,309 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Blueprint Q&amp;A</title>
-<!-- Browser client of POST /ask (spec: docs/API.md). Same contract as the Android app. Custodian: A0. -->
+<!-- Browser client of POST /ask (spec: docs/API.md), served by the A0 server at "/".
+     Design: at, branch ui/at/android-app, web-app/index.html (commit ca8a9da), copied unchanged except:
+     (1) pictures that are not PNG/JPEG (WebP, HEIC, ...) are converted to JPEG before upload, because the
+     pipeline reads PNG, JPEG and PDF only; (2) the browser's locale is sent as the "locale" hint. -->
+
 <style>
-  :root {
-    --bg: #f6f7f9; --surface: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #dde1e8;
-    --accent: #2f5bd3; --accent-text: #ffffff; --error: #b3261e; --box: #e5484d; --box-hi: #2f5bd3;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #12151b; --surface: #1b2029; --text: #e6e9ef; --muted: #9aa3b2; --line: #2c3340;
-      --accent: #7b9bff; --accent-text: #0d1220; --error: #ff8a80; --box: #ff6b6b; --box-hi: #7b9bff;
-    }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-         font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  header { padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
-  header h1 { margin: 0; font-size: 18px; }
-  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
-  main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
-         grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }
-  @media (max-width: 760px) { main { grid-template-columns: minmax(0, 1fr); } }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
-  #drop { border: 2px dashed var(--line); border-radius: 10px; padding: 28px 14px; text-align: center;
-          color: var(--muted); cursor: pointer; }
-  #drop.over { border-color: var(--accent); color: var(--text); }
-  #drop strong { color: var(--text); }
-  .stage { position: relative; display: none; }
-  .stage img { display: block; width: 100%; height: auto; border-radius: 6px; image-orientation: from-image; }
-  .box { position: absolute; border: 2px solid var(--box); border-radius: 3px; pointer-events: none; }
-  .box span { position: absolute; left: -2px; top: -18px; background: var(--box); color: #fff;
-              font-size: 11px; padding: 0 4px; border-radius: 3px; white-space: nowrap; }
-  .row { display: flex; gap: 8px; margin-top: 10px; align-items: center; flex-wrap: wrap; }
-  .file-name { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
-  form { display: flex; gap: 8px; }
-  input[type=text] { flex: 1; min-width: 0; padding: 10px 12px; font: inherit; color: var(--text);
-                     background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
-  button { font: inherit; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line);
-           background: var(--surface); color: var(--text); cursor: pointer; }
-  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
-  button:disabled { opacity: .5; cursor: default; }
-  button.link { border: 0; padding: 0; background: none; color: var(--accent); }
-  #items { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
-  #items li { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
-  #items li.hi { border-color: var(--accent); }
-  .q { color: var(--muted); font-size: 14px; }
-  .big { font-size: 30px; font-weight: 600; }
-  .unit { font-size: 16px; color: var(--muted); margin-left: 6px; }
-  .text { margin-top: 2px; }
-  .working { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .err { color: var(--error); }
-  .hint { color: var(--muted); font-size: 13px; }
-  .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line);
-          border-top-color: var(--accent); border-radius: 50%; animation: s 0.8s linear infinite;
-          vertical-align: -2px; margin-right: 6px; }
-  @keyframes s { to { transform: rotate(360deg); } }
+:root{--bg:#f8f9fd;--panel:#ffffff;--ink:#16181d;--muted:#5b6270;--line:#dfe3ec;--accent:#1f4e8c;--accent-ink:#ffffff;
+  --soft:#e6eaf2;--mark:#e53935;--warn:#ffe9b0;--warn-ink:#3a2e00;--err:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#111418;--panel:#1a1e24;--ink:#eceef3;--muted:#a0a8b6;--line:#2c323b;
+  --accent:#a9c7ff;--accent-ink:#003063;--soft:#2a2f37;--warn:#544600;--warn-ink:#ffe9b0;--err:#f2b8b5}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+header h1{font-size:18px;margin:0;font-weight:650;flex:1}
+button{font:inherit;cursor:pointer}
+.btn{border:0;border-radius:999px;padding:12px 20px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.btn.small{padding:6px 12px;font-size:14px}
+.link{background:none;border:0;color:var(--accent);padding:0;font-weight:600}
+[hidden]{display:none!important}
+
+/* ---------- welcome ---------- */
+#welcome{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px 16px}
+.card{width:100%;max-width:640px;text-align:center}
+.card h2{font-size:28px;margin:0 0 8px}
+.card p{color:var(--muted);margin:0 0 20px}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.drop{border:2px dashed var(--line);border-radius:16px;padding:18px;color:var(--muted);margin:16px 0}
+.drop.over{border-color:var(--accent);background:var(--soft)}
+.samples{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.samples button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px;width:120px}
+.samples img{width:100%;height:110px;object-fit:contain;display:block}
+.samples span{display:block;font-size:12px;color:#444;margin-top:4px}
+.tip{font-size:13px;color:var(--muted);margin-top:16px}
+
+/* ---------- workspace ---------- */
+#work{flex:1;min-height:0;display:grid;grid-template-columns:1fr 420px}
+.stage{min-width:0;min-height:0;display:flex;flex-direction:column;padding:12px 12px 12px 16px;gap:8px}
+.stagebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stagebar .name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+#vp{position:relative;flex:1;min-height:240px;background:var(--soft);border-radius:16px;overflow:hidden;touch-action:none;cursor:grab}
+#vp.drag{cursor:grabbing}
+#zoom{position:absolute;inset:0;transform-origin:0 0}
+#img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+#overlay{position:absolute;pointer-events:none}
+.box{position:absolute;border:2px solid var(--mark);background:rgba(229,57,53,.15)}
+.badge{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:var(--mark);color:#fff;font:700 10px/18px system-ui;text-align:center}
+.zoomtools{position:absolute;right:10px;bottom:10px;display:flex;gap:6px;align-items:center}
+.zoomtools button{width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:18px}
+.hint{position:absolute;left:10px;bottom:10px;font-size:12px;color:#fff;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:8px}
+
+.chat{min-height:0;display:flex;flex-direction:column;border-left:1px solid var(--line);background:var(--panel)}
+.chat h3{margin:0;padding:12px 16px;font-size:18px}
+#log{flex:1;min-height:0;overflow:auto;padding:4px 16px 12px;display:flex;flex-direction:column;gap:12px}
+.q{align-self:flex-end;max-width:85%;background:var(--accent);color:var(--accent-ink);padding:10px 14px;border-radius:18px 18px 4px 18px;word-break:break-word}
+.a{align-self:flex-start;max-width:92%;background:var(--soft);padding:10px 14px;border-radius:18px 18px 18px 4px}
+.num{font-size:40px;font-weight:650;line-height:1.1}
+.num small{font-size:16px;font-weight:600;margin-left:6px}
+.work{color:var(--muted);font-size:13px;margin-top:6px;white-space:pre-wrap}
+.meta{color:var(--muted);font-size:12px;margin-top:6px}
+.err{color:var(--err)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes s{to{transform:rotate(360deg)}}
+.empty{color:var(--muted);text-align:center;padding:24px 0}
+.compose{border-top:1px solid var(--line);padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px}
+.row{display:flex;gap:8px}
+.row input{flex:1;min-width:0;font:inherit;padding:12px 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.row .btn{padding:12px 18px}
+footer{font-size:12px;color:var(--muted);padding:6px 16px;border-top:1px solid var(--line)}
+
+@media (max-width:900px){
+  #work{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(220px,42%) minmax(0,1fr)}
+  .chat,.compose,.chips,.row{min-width:0;max-width:100%}
+  .stage{padding:8px 12px 0}
+  .chat{border-left:0;border-top:1px solid var(--line)}
+  .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+  .chips button{white-space:nowrap}
+  .hint{display:none}
+  .chat h3{padding:8px 16px}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>Blueprint Q&amp;A</h1>
-  <p>Choose a floor plan and ask questions about it, e.g. “How many bedrooms are there?” (English, Deutsch, suomi).</p>
+  <button class="btn ghost small" id="restart" hidden>New drawing</button>
 </header>
-<main>
-  <section class="card" aria-label="Floor plan">
-    <div id="drop" tabindex="0" role="button">
-      <strong>Choose a picture</strong> or drop it here<br>
-      <span class="hint">PNG, JPEG or a one-page PDF</span>
+
+<!-- ============ welcome ============ -->
+<section id="welcome">
+  <div class="card">
+    <h2>Ask a floor plan anything</h2>
+    <p>Add a picture of a floor plan, ask how many toilets, rooms, windows or doors it has, and see exactly where the answer came from.</p>
+    <div class="actions">
+      <button class="btn" id="choose">Choose a picture</button>
+      <button class="btn ghost" id="camera">Take a photo</button>
     </div>
-    <input id="file" type="file" accept="image/png,image/jpeg,application/pdf" hidden>
-    <div class="stage" id="stage"><img id="plan" alt="The chosen floor plan"></div>
-    <div class="row" id="fileRow" hidden>
-      <span class="file-name" id="fileName"></span>
-      <button type="button" id="change">Choose another</button>
+    <div class="drop" id="drop">…or drag a picture here, or paste one (Ctrl+V)</div>
+    <div>Try a sample drawing:</div>
+    <div class="samples" id="samples"></div>
+    <div class="tip">Pictures are sent to the server and to Google Gemini to read them. Don't upload anything confidential.</div>
+  </div>
+</section>
+
+<!-- ============ workspace ============ -->
+<section id="work" hidden>
+  <div class="stage">
+    <div class="stagebar">
+      <span class="name" id="fname"></span>
     </div>
-  </section>
-  <section class="card" aria-label="Questions">
-    <form id="ask">
-      <input id="question" type="text" placeholder="Ask about the plan…" autocomplete="off" disabled>
-      <button class="primary" id="send" disabled>Ask</button>
-    </form>
-    <p class="hint" id="status">Choose a floor plan first.</p>
-    <ul id="items"></ul>
-  </section>
-</main>
+    <div id="vp">
+      <div id="zoom">
+        <img id="img" alt="Blueprint" draggable="false">
+        <div id="overlay"></div>
+      </div>
+      <div class="hint" id="hint">Scroll to zoom · drag to move</div>
+      <div class="zoomtools">
+        <button id="zout" title="Zoom out" aria-label="Zoom out">−</button>
+        <button id="zin" title="Zoom in" aria-label="Zoom in">+</button>
+        <button id="zreset" title="Reset view" aria-label="Reset view" style="font-size:13px">1×</button>
+      </div>
+    </div>
+  </div>
+  <div class="chat">
+    <h3>Questions</h3>
+    <div id="log"></div>
+    <div class="compose">
+      <div class="chips" id="chips"></div>
+      <form class="row" id="form">
+        <input id="q" placeholder="Ask a question" autocomplete="off" aria-label="Ask a question">
+        <button class="btn" type="submit" id="send">Ask</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>Answers are read from the drawing by an AI model and can be wrong: check the red boxes. Sample plans: CubiCasa5K, CC BY-NC-SA 4.0.</footer>
+
+<input type="file" id="file" accept="image/png,image/jpeg,image/webp" hidden>
+<input type="file" id="cam" accept="image/*" capture="environment" hidden>
+
 <script>
-"use strict";
-// State: the chosen file, its Q&A items, and which answer's evidence is drawn.
-const $ = (id) => document.getElementById(id);
-let file = null, generation = 0, nextId = 0, highlighted = null;
-const items = new Map();
+const $ = s => document.querySelector(s);
+const SUGGESTIONS = ["How many toilets are there?", "How many rooms are there?", "How many windows are there?",
+                     "How many doors are there?", "What is the total floor area?"];
+const SAMPLES = [["colorful-11397.png", "Two-floor home"], ["colorful-12200.png", "Apartment"], ["colorful-2002.png", "With sauna"]];
 
-function choose(f) {
-  if (!f) return;
-  file = f; generation++; items.clear(); highlighted = null;
-  $("items").replaceChildren();
-  $("fileName").textContent = f.name;
-  $("fileRow").hidden = false;
-  $("drop").style.display = "none";
-  const isImage = f.type === "image/png" || f.type === "image/jpeg";
-  $("stage").style.display = isImage ? "block" : "none";
-  if (isImage) $("plan").src = URL.createObjectURL(f);
-  $("status").textContent = isImage ? "" : "PDF chosen: answers work, the drawing is not previewed.";
-  $("question").disabled = $("send").disabled = false;
-  $("question").focus();
-  drawEvidence();
-}
+let file = null, imgUrl = null, items = [], nextId = 1, hi = null;
+let scale = 1, tx = 0, ty = 0;
 
-function ask(question) {
-  const id = nextId++, gen = generation, item = { id, question, state: "loading" };
-  items.set(id, item); render(item); send(item, gen);
-}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-async function send(item, gen) {
-  const body = new FormData();
-  body.append("image", file, file.name);
-  body.append("question", item.question);
-  if (navigator.language) body.append("locale", navigator.language);
-  let result;
-  try {
-    const r = await fetch("ask", { method: "POST", body, headers: { Accept: "application/json" } });
-    const json = await r.json().catch(() => null);
-    if (!r.ok) result = { state: "error", error: (json && json.error) || `Server returned ${r.status}` };
-    else if (!json || json.answer === null || json.answer === undefined) result = { state: "error", error: "Server sent no answer" };
-    else result = { state: "done", answer: json };
-  } catch (e) {
-    result = { state: "error", error: "Could not reach the server." };
-  }
-  if (gen !== generation) return;          // the picture changed meanwhile: drop the result
-  Object.assign(item, result); render(item);
-  if (item.answer && item.answer.evidence && item.answer.evidence.length) { highlighted = item.id; renderAll(); }
-}
+/* ---------- picking a picture ---------- */
+$('#choose').onclick = () => $('#file').click();
+$('#camera').onclick = () => $('#cam').click();
+$('#file').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
+$('#cam').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
+$('#restart').onclick = () => { $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; };
 
-function formatValue(v) {
-  if (typeof v !== "number") return String(v);
-  return Number.isInteger(v) ? String(v) : String(Math.round(v * 100) / 100);
-}
+['dragenter','dragover'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.add('over'); }));
+['dragleave','drop'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.remove('over'); }));
+document.addEventListener('drop', e => { const f = [...(e.dataTransfer?.files || [])].find(f => f.type.startsWith('image/')); if (f) setImage(f); });
+document.addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith('image/')); if (f) setImage(f); });
 
-function el(tag, cls, text) {
-  const node = document.createElement(tag);
-  if (cls) node.className = cls;
-  if (text !== undefined && text !== null) node.textContent = text;   // text only: server strings are never parsed as HTML
-  return node;
-}
-
-function render(item) {
-  let li = document.querySelector(`li[data-id="${item.id}"]`);
-  if (!li) { li = el("li"); li.dataset.id = item.id; $("items").append(li); }
-  li.className = item.id === highlighted ? "hi" : "";
-  li.replaceChildren(el("div", "q", item.question));
-  if (item.state === "loading") {
-    const w = el("div", "hint"); w.append(el("span", "spin"), "Working… (the first question can take ~15 s)"); li.append(w);
-  } else if (item.state === "error") {
-    li.append(el("div", "err", item.error));
-    const retry = el("button", "link", "Try again");
-    retry.type = "button";
-    retry.onclick = () => { item.state = "loading"; render(item); send(item, generation); };
-    li.append(retry);
-  } else {
-    const a = item.answer;
-    if (a.type === "text" || String(a.answer).length > 12) {
-      li.append(el("div", "text", formatValue(a.answer)));
-    } else {
-      const big = el("div", "big", formatValue(a.answer));
-      if (a.unit && a.unit !== "count") big.append(el("span", "unit", a.unit));
-      li.append(big);
-    }
-    if (a.working) li.append(el("div", "working", a.working));
-    if (a.evidence && a.evidence.length && $("stage").style.display !== "none") {
-      const b = el("button", "link",
-        `${item.id === highlighted ? "Marked on the drawing" : "Show on the drawing"} (${a.evidence.length})`);
-      b.type = "button";
-      b.onclick = () => { highlighted = item.id; renderAll(); };
-      li.append(b);
-    }
-  }
-}
-
-function renderAll() { items.forEach(render); drawEvidence(); }
-
-function drawEvidence() {
-  const stage = $("stage");
-  stage.querySelectorAll(".box").forEach((b) => b.remove());
-  const item = items.get(highlighted);
-  const boxes = (item && item.answer && item.answer.evidence) || [];
-  boxes.forEach((box, i) => {
-    const div = el("div", "box");
-    Object.assign(div.style, { left: `${box.x * 100}%`, top: `${box.y * 100}%`, width: `${box.w * 100}%`, height: `${box.h * 100}%` });
-    div.title = box.label;
-    div.append(el("span", null, `${i + 1} ${box.label}`));
-    stage.append(div);
-  });
-}
-
-// Wiring: picking, drag and drop, asking.
-const drop = $("drop"), input = $("file");
-drop.onclick = () => input.click();
-drop.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") input.click(); };
-$("change").onclick = () => input.click();
-input.onchange = () => { choose(input.files[0]); input.value = ""; };
-["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
-["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
-drop.addEventListener("drop", (e) => choose(e.dataTransfer.files[0]));
-$("ask").onsubmit = (e) => {
-  e.preventDefault();
-  const q = $("question").value.trim();
-  if (!q || !file) return;
-  $("question").value = "";
-  ask(q);
+$('#samples').innerHTML = SAMPLES.map(([f, label]) =>
+  `<button data-f="${f}"><img src="/samples/${f}" alt="${esc(label)}"><span>${esc(label)}</span></button>`).join('');
+$('#samples').onclick = async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const r = await fetch('/samples/' + b.dataset.f); const blob = await r.blob();
+  setImage(new File([blob], b.dataset.f, {type: blob.type || 'image/png'}));
 };
+
+function setImage(f) {
+  if (imgUrl) URL.revokeObjectURL(imgUrl);
+  file = f; imgUrl = URL.createObjectURL(f); items = []; hi = null; resetView();
+  $('#img').src = imgUrl; $('#fname').textContent = f.name || 'photo';
+  $('#welcome').hidden = true; $('#work').hidden = false; $('#restart').hidden = false;
+  render(); $('#q').focus({preventScroll: true});
+}
+
+/* ---------- asking ---------- */
+$('#chips').innerHTML = SUGGESTIONS.map(s => `<button type="button">${esc(s)}</button>`).join('');
+$('#chips').onclick = e => { if (e.target.tagName === 'BUTTON') ask(e.target.textContent); };
+$('#form').onsubmit = e => { e.preventDefault(); const v = $('#q').value; $('#q').value = ''; ask(v); };
+
+/* The server reads PNG and JPEG pictures. Others the browser can decode (WebP, HEIC in Safari, ...) are
+   re-encoded as JPEG once per picture, with the EXIF rotation applied, so the evidence boxes still fit. */
+const converted = new WeakMap();
+async function uploadable(f) {
+  if (f.type === 'image/png' || f.type === 'image/jpeg') return f;
+  if (converted.has(f)) return converted.get(f);
+  let blob = null;
+  try {
+    const bmp = await createImageBitmap(f, {imageOrientation: 'from-image'});
+    const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+    c.getContext('2d').drawImage(bmp, 0, 0);
+    blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.92));
+  } catch (_) { blob = null; }
+  if (!blob) throw new Error('This picture format is not supported. Please use a PNG or JPEG picture.');
+  const out = new File([blob], (f.name || 'photo').replace(/\.[^.]*$/, '') + '.jpg', {type: 'image/jpeg'});
+  converted.set(f, out);
+  return out;
+}
+
+function ask(q) {
+  q = q.trim(); if (!q || !file) return;
+  const it = {id: nextId++, q, status: 'wait', file}; items.push(it); render(); run(it);
+}
+async function run(it) {
+  it.status = 'wait'; it.err = null; it.t0 = Date.now(); render();
+  try {
+    const up = await uploadable(it.file);
+    const fd = new FormData(); fd.append('image', up, up.name || 'plan.jpg'); fd.append('question', it.q);
+    if (navigator.language) fd.append('locale', navigator.language);
+    const r = await fetch('/ask', {method: 'POST', body: fd});
+    let j = {}; try { j = await r.json(); } catch (_) {}
+    if (!r.ok || j.error) throw new Error(j.error || ('Server returned ' + r.status));
+    it.a = j; it.status = 'ok'; it.secs = Math.round((Date.now() - it.t0) / 1000);
+    if (items.includes(it) && j.evidence && j.evidence.length) hi = it.id;
+  } catch (e) { it.status = 'err'; it.err = e.message || String(e); }
+  if (items.includes(it)) render();
+}
+
+/* ---------- drawing the answers ---------- */
+function render() {
+  const log = $('#log');
+  log.innerHTML = items.length ? items.map(row).join('') :
+    '<div class="empty">Type a question below or pick one of the suggestions.</div>';
+  log.scrollTop = log.scrollHeight;
+  drawOverlay();
+}
+function row(it) {
+  let a;
+  if (it.status === 'wait') a = `<span class="spin"></span><span data-t0="${it.t0}">Reading the drawing…</span>`;
+  else if (it.status === 'err') a = `<div class="err"><b>Couldn't get an answer</b></div><div>${esc(it.err)}</div>
+       <button class="link" data-retry="${it.id}">Try again</button>`;
+  else {
+    const j = it.a, text = j.type === 'text' || String(j.answer).length > 12;
+    const n = (j.evidence || []).length;
+    a = text ? `<div>${esc(j.answer)}</div>`
+             : `<div class="num">${esc(j.answer)}${j.unit && j.unit !== 'count' ? `<small>${esc(j.unit)}</small>` : ''}</div>`;
+    if (j.working) a += `<div class="work">${esc(j.working)}</div>`;
+    if (n) a += `<button class="link" data-show="${it.id}">${hi === it.id ? 'Marked on the drawing' : 'Show on the drawing'} (${n})</button>`;
+    a += `<div class="meta">${it.secs}s</div>`;
+  }
+  return `<div class="q">${esc(it.q)}</div><div class="a">${a}</div>`;
+}
+$('#log').onclick = e => {
+  const s = e.target.closest('[data-show]'); if (s) { hi = +s.dataset.show; render(); return; }
+  const r = e.target.closest('[data-retry]'); if (r) { const it = items.find(x => x.id === +r.dataset.retry); if (it) run(it); }
+};
+setInterval(() => document.querySelectorAll('[data-t0]').forEach(el => {
+  el.textContent = `Reading the drawing… ${Math.round((Date.now() - el.dataset.t0) / 1000)} s`; }), 1000);
+
+/* The overlay sits exactly over the fitted picture, so evidence fractions (0..1) map straight to percentages. */
+function drawOverlay() {
+  const img = $('#img'), ov = $('#overlay'), vp = $('#vp');
+  const nw = img.naturalWidth, nh = img.naturalHeight; if (!nw) return;
+  const vw = vp.clientWidth, vh = vp.clientHeight, s = Math.min(vw / nw, vh / nh), w = nw * s, h = nh * s;
+  Object.assign(ov.style, {left: (vw - w) / 2 + 'px', top: (vh - h) / 2 + 'px', width: w + 'px', height: h + 'px'});
+  const it = items.find(x => x.id === hi), ev = (it && it.a && it.a.evidence) || [];
+  ov.innerHTML = ev.map((e, i) =>
+    `<div class="box" title="${esc(e.label || '')}" style="left:${e.x * 100}%;top:${e.y * 100}%;width:${e.w * 100}%;height:${e.h * 100}%"><span class="badge">${i + 1}</span></div>`).join('');
+}
+$('#img').onload = drawOverlay;
+addEventListener('resize', drawOverlay);
+
+/* ---------- zoom and pan ---------- */
+const vp = $('#vp');
+function apply() {
+  const w = vp.clientWidth, h = vp.clientHeight;
+  tx = Math.min(0, Math.max(w - w * scale, tx)); ty = Math.min(0, Math.max(h - h * scale, ty));
+  $('#zoom').style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  $('#hint').textContent = scale > 1 ? `Zoom ${scale.toFixed(1)}× · drag to move` : 'Scroll to zoom · drag to move';
+}
+function zoomAt(px, py, f) {
+  const ns = Math.min(8, Math.max(1, scale * f)); tx = px - (px - tx) * (ns / scale); ty = py - (py - ty) * (ns / scale); scale = ns; apply();
+}
+function resetView() { scale = 1; tx = ty = 0; apply(); }
+vp.addEventListener('wheel', e => { e.preventDefault(); const r = vp.getBoundingClientRect();
+  zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, {passive: false});
+$('#zin').onclick = () => zoomAt(vp.clientWidth / 2, vp.clientHeight / 2, 1.4);
+$('#zout').onclick = () => zoomAt(vp.clientWidth / 2, vp.clientHeight / 2, 1 / 1.4);
+$('#zreset').onclick = resetView;
+
+const pts = new Map(); let last = null, pinch = 0;
+vp.addEventListener('pointerdown', e => { vp.setPointerCapture(e.pointerId); pts.set(e.pointerId, e); last = {x: e.clientX, y: e.clientY}; vp.classList.add('drag'); });
+vp.addEventListener('pointermove', e => {
+  if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e);
+  if (pts.size === 2) {                       // two fingers: pinch to zoom
+    const [a, b] = [...pts.values()], d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), r = vp.getBoundingClientRect();
+    if (pinch) zoomAt((a.clientX + b.clientX) / 2 - r.left, (a.clientY + b.clientY) / 2 - r.top, d / pinch);
+    pinch = d;
+  } else if (scale > 1 && last) { tx += e.clientX - last.x; ty += e.clientY - last.y; apply(); }
+  last = {x: e.clientX, y: e.clientY};
+});
+const up = e => { pts.delete(e.pointerId); pinch = 0; last = pts.size ? last : null; if (!pts.size) vp.classList.remove('drag'); };
+vp.addEventListener('pointerup', up); vp.addEventListener('pointercancel', up);
 </script>
 </body>
 </html>

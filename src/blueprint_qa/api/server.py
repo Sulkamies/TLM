@@ -5,7 +5,8 @@
 * ``POST /ask`` (multipart/form-data): ``image`` (PNG, JPEG, PDF or IFC file), ``question``
   (text), optional ``locale`` (BCP-47; else the first ``Accept-Language`` tag). Response format:
   :mod:`blueprint_qa.api.ask`; spec ``docs/API.md``. Used by the Android app and the web page.
-* ``GET /``: the browser UI (``api/web/index.html``), a client of ``POST /ask`` like the app.
+* ``GET /``: the browser UI (``api/web/index.html``, design by at), a client of ``POST /ask``.
+* ``GET /samples/<file>``: the sample plans the page offers (``api/web/samples/``, CC BY-NC-SA 4.0).
 * ``GET /health``: ``{"status": "ok"}``, to check the address from a browser or the phone.
 
 It only builds a ``PipelineRequest`` and calls the orchestrator; it has no pipeline logic.
@@ -23,6 +24,7 @@ from typing import Annotated, Any
 from fastapi import FastAPI, File, Form, Header, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from blueprint_qa.api import ask as ask_format
 from blueprint_qa.api.cli import EXTENSIONS
@@ -38,7 +40,9 @@ CONTENT_TYPES: dict[str, InputFormat] = {
     "image/jpg": InputFormat.JPEG,
     "application/pdf": InputFormat.PDF,
 }
-WEB_PAGE = Path(__file__).resolve().parent / "web" / "index.html"
+WEB_DIR = Path(__file__).resolve().parent / "web"
+WEB_PAGE = WEB_DIR / "index.html"
+SAMPLES_DIR = WEB_DIR / "samples"
 
 
 def create_app() -> FastAPI:
@@ -61,6 +65,9 @@ def create_app() -> FastAPI:
     def web_page() -> HTMLResponse:
         # The browser client; read per request so an edited page shows without a restart.
         return HTMLResponse(WEB_PAGE.read_text(encoding="utf-8"))
+
+    # Sample plans for the page's "Try a sample drawing" (read-only static files).
+    app.mount("/samples", StaticFiles(directory=SAMPLES_DIR), name="samples")
 
     @app.post("/ask")
     def ask(

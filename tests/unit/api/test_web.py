@@ -37,15 +37,22 @@ def test_the_page_is_served_at_the_root(client: TestClient) -> None:
 
 
 def test_the_page_calls_the_shared_endpoint() -> None:
-    assert 'fetch("ask", { method: "POST"' in PAGE  # relative: works at any host and port
-    for field in ('"image"', '"question"', '"locale"'):
-        assert f"body.append({field}" in PAGE
+    assert "fetch('/ask', {method: 'POST'" in PAGE
+    for field in ("'image'", "'question'", "'locale'"):
+        assert f"fd.append({field}" in PAGE
+
+
+def _function(name: str) -> str:
+    start = PAGE.index(f"function {name}(")
+    return PAGE[start : PAGE.index("\n}\n", start)]
 
 
 def test_the_page_reads_only_contract_fields() -> None:
-    read = set(re.findall(r"\b(?:a|json)\.(\w+)", PAGE)) - {"length"}
+    # The page calls a /ask response `j` (and keeps it as `it.a`).
+    read = set(re.findall(r"\bj\.(\w+)", PAGE)) | set(re.findall(r"\bit\.a\.(\w+)", PAGE))
     assert read <= ANSWER_FIELDS | ERROR_FIELDS, read - (ANSWER_FIELDS | ERROR_FIELDS)
-    box = set(re.findall(r"\bbox\.(\w+)", PAGE))  # the page names each evidence box `box`
+    # Evidence boxes are drawn in drawOverlay(), where each box is `e`.
+    box = set(re.findall(r"\be\.(\w+)", _function("drawOverlay")))
     assert box == BOX_FIELDS, box ^ BOX_FIELDS
 
 
@@ -54,10 +61,35 @@ def test_the_android_app_reads_only_contract_fields() -> None:
     assert ANDROID_EVIDENCE == BOX_FIELDS
 
 
-def test_the_page_is_self_contained_and_safe() -> None:
+def test_server_text_is_always_escaped_before_it_becomes_html() -> None:
+    # The page builds HTML strings; every value that comes from the server (or the user) must go
+    # through esc(), which escapes & < > " ' (so it is safe in text and in attributes).
+    assert "const esc = s => String(s).replace(/[&<>\"']/g" in PAGE
+    untrusted = re.compile(r"\b(j\.(answer|unit|working|error)|e\.label|it\.(err|q))\b")
+    # Innermost interpolations (no nested template), i.e. the ones whose value becomes text.
+    exprs = re.findall(r"\$\{([^{}`]*)\}", PAGE)
+    assert len(exprs) > 10
+    for expr in exprs:
+        if untrusted.search(expr):
+            assert expr.strip().startswith("esc("), expr
+
+
+def test_the_page_is_self_contained() -> None:
     assert not re.search(r'(src|href)="(https?:)?//', PAGE)  # no CDN: works offline on a LAN
-    assert "innerHTML" not in PAGE and "outerHTML" not in PAGE  # server text is inserted as text
-    assert "eval(" not in PAGE
+    assert "eval(" not in PAGE and "outerHTML" not in PAGE
+
+
+def test_sample_plans_are_served_with_their_licence(client: TestClient) -> None:
+    for name in ("colorful-11397.png", "colorful-12200.png", "colorful-2002.png"):
+        assert f'"{name}"' in PAGE
+        r = client.get(f"/samples/{name}")
+        assert r.status_code == 200 and r.headers["content-type"] == "image/png"
+        assert r.content[:8] == b"\x89PNG\r\n\x1a\n"
+    licence = (ROOT / "src" / "blueprint_qa" / "api" / "web" / "samples" / "LICENSE.md").read_text(
+        encoding="utf-8"
+    )
+    assert "CC BY-NC-SA 4.0" in licence
+    assert client.get("/samples/../server.py").status_code == 404  # no path traversal
 
 
 def test_the_spec_lists_every_field() -> None:

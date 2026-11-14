@@ -96,3 +96,7 @@ directory (R2.4)**; one human must still approve before it is merged, and not it
 (`api/web/index.html`) that uses the same `POST /ask`. The contract is written once: `docs/API.md`, backed by the
 Pydantic models in `api/ask.py`; a unit test checks that both clients read only those fields and that the spec lists
 them all. Changes stay additive; breaking ones need a new endpoint. The Android app is unchanged.
+**Update (ry, same day):** the served page now matches at's web design (`web-app/index.html`, commit `ca8a9da`),
+with at's three sample plans at `/samples/`. Two adaptations only: non-PNG/JPEG pictures are converted to JPEG in
+the browser, and the browser locale is sent. There should be **one** maintained copy of the page: proposal in
+`docs/requests/UI-android-app.md` §4.
