@@ -41,6 +41,12 @@ def test_fetch_covers_the_configured_files() -> None:
     assert {"easyocr/craft_mlt_25k.pth", "easyocr/english_g2.pth"} <= paths
     weights = next(f for f in fetch.FILES if f.path == "cubicasa_v2/best.pt")
     assert weights.sha256 == "2093bef2b2322dbc23c402d7e7beafe00245d6e9144905b1cd54ed0eaef3337d"
+    assert weights.size == 40_587_180
+
+
+def test_every_model_file_has_a_download_url() -> None:
+    for f in _fetch().FILES:
+        assert f.url is not None and f.url.startswith("https://"), f.path
 
 
 def test_fetch_verifies_checksums(tmp_path: Path) -> None:
