@@ -48,3 +48,4 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 26 | Browser UI: no badge, no "Take a photo" button, no sample plans, smaller answer (ry) | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-landing-tweaks`, awaiting review) |
 | 27 | Browser UI on phones: at's phone layout and touch handling (d0256e2), laptop view unchanged; both: smaller answers, title "Chat with your blueprint" (ry) | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-phone-layout`, awaiting review) |
 | 28 | Browser UI: remove the 1-2-3 steps on the landing page and the top bar ("New drawing" moved to the Questions heading) (ry), laptop and phone | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-no-steps`, awaiting review) |
+| 29 | Browser UI: crop tool, laptop and phone; only the cropped picture is analysed (ry) | A0 | ry | 2026-11-14 | Done (branch `a0/ry/web-crop`, awaiting review) |

@@ -187,3 +187,23 @@ def test_no_top_bar_but_new_drawing_still_works() -> None:
     heading = body[body.index("<h3>Questions") : body.index("</h3>", body.index("<h3>Questions"))]
     assert '<button class="btn ghost small" id="restart" hidden>New drawing</button>' in heading
     assert "$('#restart').onclick" in body  # same button, same behaviour
+
+
+def test_crop_tool_replaces_the_picture_for_analysis() -> None:
+    # ry, 2026-11-14: crop on laptop and phone; only the cropped picture is analysed.
+    body = PAGE.split("-->", 1)[1]
+    tools = body[
+        body.index('<div class="zoomtools">') : body.index(
+            "</div>", body.index('class="zoomtools"')
+        )
+    ]
+    assert (
+        'id="zcrop"' in tools and 'id="zcrop" class=' not in tools
+    )  # in the zoom bar, on both screens
+    for el in ('id="cropui"', 'id="cropbox"', 'id="capply"', 'id="ccancel"', 'id="corig"'):
+        assert el in body, el
+    assert (
+        "createImageBitmap(src, {imageOrientation: 'from-image'})" in body
+    )  # crop as shown on screen
+    assert "setImage(new File([blob]" in body  # the cut-out becomes the picture that is sent
+    assert ".cropbox i[data-h=se]{right:2px;bottom:2px;" in body  # handles inside the frame

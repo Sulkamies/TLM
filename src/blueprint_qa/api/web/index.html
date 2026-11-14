@@ -15,7 +15,8 @@
      the title "Chat with your blueprint", the line "Ask anything, the blueprint talks!", no 1-2-3 steps
      and no top bar ("Blueprint Q&A"); its "New drawing" button sits in the Questions heading
      (ry, 2026-11-14); (6) the phone layout and touch handling of at's commit d0256e2 (ui/at/webpage), limited to
-     phones: phone-width CSS, touch-only gestures; the laptop view is unchanged (ry, 2026-11-14). -->
+     phones: phone-width CSS, touch-only gestures; the laptop view is unchanged (ry, 2026-11-14); (7) a crop tool
+     (laptop and phone): the cropped picture replaces the original, so only it is analysed (ry, 2026-11-14). -->
 <style>
 :root{
   --bg:#f4f6fb; --panel:rgba(255,255,255,.80); --solid:#ffffff; --ink:#0e1522; --muted:#5b6578;
@@ -103,6 +104,18 @@ button{font:inherit;color:inherit;cursor:pointer}
 .zoomtools button:hover{background:var(--soft)}
 .zoomtools .lvl{font-size:12px;font-weight:600;min-width:52px;color:var(--muted)}
 .fsbtn{display:none}                                               /* full-screen button: phones only */
+/* ---------- crop (laptop and phone) ---------- */
+#cropui{position:absolute;inset:0;z-index:6;display:none}
+#vp.cropping #cropui{display:block}
+#vp.cropping #overlay,#vp.cropping .hint{visibility:hidden}
+#vp.cropping{cursor:default}
+.cropbox{position:absolute;border:2px solid #fff;outline:1px solid var(--accent);box-shadow:0 0 0 9999px rgba(0,0,0,.5);
+  cursor:move;touch-action:none}
+.cropbox i{position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid var(--accent)}
+/* handles sit inside the frame's corners, so they stay grabbable when the frame touches the drawing area's edge */
+.cropbox i[data-h=nw]{left:2px;top:2px;cursor:nwse-resize}.cropbox i[data-h=ne]{right:2px;top:2px;cursor:nesw-resize}
+.cropbox i[data-h=sw]{left:2px;bottom:2px;cursor:nesw-resize}.cropbox i[data-h=se]{right:2px;bottom:2px;cursor:nwse-resize}
+.cropbar{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 
 /* ---------- chat ---------- */
 .chat{min-width:0;min-height:0;display:flex;flex-direction:column;border-radius:var(--r);background:var(--panel);border:1px solid var(--line);
@@ -171,6 +184,7 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
   .row input{padding:11px 52px 11px 16px}
   .zoomtools{left:auto;right:8px;bottom:8px;transform:none}              /* small corner bar: don't cover the drawing */
   .zoomtools button{min-width:38px;height:34px;font-size:16px}           /* bigger touch targets */
+  .cropbox i{width:26px;height:26px}                                     /* crop handles: finger-sized */
   .zoomtools .lvl{display:none}
   .fsbtn{display:inline-block}
   .hint{font-size:11px;padding:3px 9px;left:8px;top:8px;transition:opacity .6s}
@@ -217,11 +231,14 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
         <div id="overlay"></div>
       </div>
       <div class="tooltip" id="tip" hidden></div>
+      <div id="cropui"><div class="cropbox" id="cropbox"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div>
+        <div class="cropbar"><button class="btn small" id="capply" type="button">Use selection</button><button class="btn ghost small" id="corig" type="button" hidden>Original picture</button><button class="btn ghost small" id="ccancel" type="button">Cancel</button></div></div>
       <div class="hint" id="hint">Scroll to zoom · drag to move</div>
       <div class="zoomtools">
         <button id="zout" title="Zoom out" aria-label="Zoom out">−</button>
         <button class="lvl" id="zreset" title="Reset view" aria-label="Reset view">100%</button>
         <button id="zin" title="Zoom in" aria-label="Zoom in">+</button>
+        <button id="zcrop" title="Crop the picture" aria-label="Crop the picture"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 002 2h14M2 6h14a2 2 0 012 2v14"/></svg></button>
         <button id="zfs" class="fsbtn" title="Full screen" aria-label="Full screen drawing"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
     </div>
@@ -259,7 +276,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 /* ---------- picking a picture ---------- */
 $('#choose').onclick = () => $('#file').click();
 $('#file').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
-$('#restart').onclick = () => { document.body.classList.remove('working', 'fs'); $('#zfs').innerHTML = ICON_FS; if (SMALL.matches) scrollTo(0, 0); $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; };
+$('#restart').onclick = () => { endCrop(); original = null; document.body.classList.remove('working', 'fs'); $('#zfs').innerHTML = ICON_FS; if (SMALL.matches) scrollTo(0, 0); $('#work').hidden = true; $('#welcome').hidden = false; $('#restart').hidden = true; file = null; items = []; hi = null; };
 
 ['dragenter','dragover'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.add('over'); }));
 ['dragleave','drop'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); $('#drop').classList.remove('over'); }));
@@ -269,6 +286,7 @@ document.addEventListener('paste', e => { const f = [...(e.clipboardData?.files 
 
 function setImage(f) {
   if (imgUrl) URL.revokeObjectURL(imgUrl);
+  endCrop(); original = null;   // a new picture; applyCrop() sets `original` again afterwards
   file = f; imgUrl = URL.createObjectURL(f); items = []; hi = null; overlayKey = ''; resetView();
   $('#img').src = imgUrl; $('#fname').textContent = f.name || 'photo';
   $('#welcome').hidden = true; $('#work').hidden = false; $('#restart').hidden = false; document.body.classList.add('working');
@@ -303,6 +321,7 @@ async function uploadable(f) {
 }
 
 function ask(q) {
+  if ($('#vp').classList.contains('cropping')) return;   // finish or cancel the crop first
   q = q.trim(); if (!q || !file) return;
   const it = {id: nextId++, q, status: 'wait', file}; items.push(it); render(); run(it);
 }
@@ -424,11 +443,12 @@ function apply() {
   $('#hint').textContent = scale > 1 ? 'Drag to move' : (touch ? 'Pinch or double-tap to zoom' : 'Scroll to zoom · drag to move');
 }
 function zoomAt(px, py, f) {
+  if ($('#vp').classList.contains('cropping')) return;   // the crop frame is drawn for the unzoomed picture
   const ns = Math.min(8, Math.max(1, scale * f)); tx = px - (px - tx) * (ns / scale); ty = py - (py - ty) * (ns / scale); scale = ns; apply();
 }
 let vx = 0, vy = 0, raf = 0;                  // finger drag speed (px per frame) for the momentum glide
 function resetView() { cancelAnimationFrame(raf); vx = vy = 0; scale = 1; tx = ty = 0; apply(); }
-vp.addEventListener('wheel', e => { e.preventDefault(); const r = vp.getBoundingClientRect();
+vp.addEventListener('wheel', e => { e.preventDefault(); if (vp.classList.contains('cropping')) return; const r = vp.getBoundingClientRect();
   zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.15 : 1 / 1.15); }, {passive: false});
 $('#zin').onclick = () => zoomAt(vp.clientWidth / 2, vp.clientHeight / 2, 1.4);
 $('#zout').onclick = () => zoomAt(vp.clientWidth / 2, vp.clientHeight / 2, 1 / 1.4);
@@ -440,7 +460,7 @@ $('#zfs').onclick = () => {                    // phones: let the drawing fill t
 
 const pts = new Map(); let last = null, down = null, lastT = 0, pinch = 0, pc = null, lastTap = null;
 vp.addEventListener('pointerdown', e => {
-  if (e.target.closest('.zoomtools')) return;
+  if (e.target.closest('.zoomtools, #cropui')) return;
   cancelAnimationFrame(raf); try { vp.setPointerCapture(e.pointerId); } catch (_) {} pts.set(e.pointerId, e);
   last = {x: e.clientX, y: e.clientY}; down = {x: e.clientX, y: e.clientY}; lastT = performance.now(); vx = vy = 0; vp.classList.add('drag');
 });
@@ -483,6 +503,66 @@ const up = e => {
   else { last = null; vp.classList.remove('drag'); }
 };
 vp.addEventListener('pointerup', up); vp.addEventListener('pointercancel', up);
+
+/* ---------- crop (laptop and phone) ----------
+   The chosen rectangle is cut out of the picture in the browser; the cut-out replaces the picture, so only it is
+   shown, sent to the server and analysed (a new chat: earlier answers were about the whole picture). */
+let original = null, crop = null, cdrag = null;
+function fitBox() {                            // where the picture is drawn inside #vp (px), as in drawOverlay()
+  const img = $('#img'), nw = img.naturalWidth, nh = img.naturalHeight, vw = vp.clientWidth, vh = vp.clientHeight;
+  const sc = Math.min(vw / nw, vh / nh);
+  return {x: (vw - nw * sc) / 2, y: (vh - nh * sc) / 2, w: nw * sc, h: nh * sc, s: sc};
+}
+function drawCrop() { Object.assign($('#cropbox').style, {left: crop.x + 'px', top: crop.y + 'px', width: crop.w + 'px', height: crop.h + 'px'}); }
+function startCrop() {
+  if (!file || !$('#img').naturalWidth) return;
+  resetView(); hideTip(); crop = fitBox(); $('#corig').hidden = !original; vp.classList.add('cropping'); drawCrop();
+}
+function endCrop() { vp.classList.remove('cropping'); crop = null; cdrag = null; }
+$('#zcrop').onclick = startCrop;
+$('#ccancel').onclick = endCrop;
+$('#corig').onclick = () => { const o = original; if (o) setImage(o); };
+addEventListener('resize', () => { if (crop) startCrop(); });
+
+$('#cropbox').addEventListener('pointerdown', e => {
+  e.preventDefault(); e.stopPropagation();
+  try { $('#cropbox').setPointerCapture(e.pointerId); } catch (_) {}
+  cdrag = {h: e.target.dataset.h || 'move', x: e.clientX, y: e.clientY, c: {...crop}};
+});
+$('#cropbox').addEventListener('pointermove', e => {
+  if (!cdrag) return;
+  const b = fitBox(), min = 24, dx = e.clientX - cdrag.x, dy = e.clientY - cdrag.y, c = cdrag.c;
+  let x0 = c.x, y0 = c.y, x1 = c.x + c.w, y1 = c.y + c.h;
+  if (cdrag.h === 'move') {
+    const mx = Math.min(Math.max(dx, b.x - x0), b.x + b.w - x1), my = Math.min(Math.max(dy, b.y - y0), b.y + b.h - y1);
+    x0 += mx; x1 += mx; y0 += my; y1 += my;
+  } else {
+    if (cdrag.h.includes('w')) x0 = Math.min(Math.max(b.x, x0 + dx), x1 - min);
+    if (cdrag.h.includes('e')) x1 = Math.max(Math.min(b.x + b.w, x1 + dx), x0 + min);
+    if (cdrag.h.includes('n')) y0 = Math.min(Math.max(b.y, y0 + dy), y1 - min);
+    if (cdrag.h.includes('s')) y1 = Math.max(Math.min(b.y + b.h, y1 + dy), y0 + min);
+  }
+  crop = {x: x0, y: y0, w: x1 - x0, h: y1 - y0}; drawCrop();
+});
+['pointerup', 'pointercancel'].forEach(t => $('#cropbox').addEventListener(t, () => { cdrag = null; }));
+
+$('#capply').onclick = async () => {
+  if (!crop) return;
+  const b = fitBox(), src = file;
+  const sx = Math.round((crop.x - b.x) / b.s), sy = Math.round((crop.y - b.y) / b.s);
+  const sw = Math.max(1, Math.round(crop.w / b.s)), sh = Math.max(1, Math.round(crop.h / b.s));
+  let blob = null, type = src.type === 'image/png' ? 'image/png' : 'image/jpeg';
+  try {
+    const bmp = await createImageBitmap(src, {imageOrientation: 'from-image'});   // same orientation as on screen
+    const c = document.createElement('canvas'); c.width = sw; c.height = sh;
+    c.getContext('2d').drawImage(bmp, sx, sy, sw, sh, 0, 0, sw, sh);
+    blob = await new Promise(res => c.toBlob(res, type, 0.92));
+  } catch (_) { blob = null; }
+  if (!blob) { endCrop(); $('#hint').textContent = 'This picture could not be cropped.'; return; }
+  const keep = original || src, base = (keep.name || 'picture').replace(/\.[^.]*$/, '');
+  setImage(new File([blob], `${base}-cropped.${type === 'image/png' ? 'png' : 'jpg'}`, {type}));
+  original = keep;                             // "Original picture" can undo the crop
+};
 </script>
 </body>
 </html>

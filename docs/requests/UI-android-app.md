@@ -111,3 +111,8 @@ merge `main` so the Android app can be merged.
 
 The "1 Add a drawing / 2 Ask in plain words / 3 Check the red boxes" steps are removed (laptop and phone). A test checks it.
 The top bar ("Blueprint Q&A") is removed too; its "New drawing" button now sits in the "Questions" heading.
+
+## 11. Update: crop tool on the served page (ry, 2026-11-14)
+
+The served page has a crop tool (laptop and phone): the cut-out replaces the picture, so only it is analysed. For the
+native Android app this would be a similar client-side crop before upload; the API needs no change.
