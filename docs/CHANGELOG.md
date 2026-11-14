@@ -230,6 +230,22 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - **Not done:** no live run with real weights (this environment has no weights, torch or package index), so no timing
   is reported. `--debug-overlay` not implemented (D5). No contract, config, prompt or shared-file change.
 
+### 2026-11-14 · A4 · ry · Answer Reasoner (`reasoning/`)
+- `src/blueprint_qa/reasoning/reasoner.py :: answer(question, analysis) -> Answer | ErrorEnvelope`, exported only via
+  `reasoning/__init__.py`. Never raises: wrong input types or a `request_id` mismatch → `INVALID_INPUT`, unexpected
+  exception → `REASONING_FAILED` (exception class in `details`). Guards: UNSUPPORTED → `UNSUPPORTED_QUESTION`;
+  `clarification_needed` → `NEEDS_CLARIFICATION` with that text.
+- Deterministic computation per A0's binding decisions (`compute.py`, `resolve.py`, `geometry.py`): all intents,
+  categories ROOM/DOOR/WINDOW/FIXTURE/STOREY/WHOLE_PLAN (WALL/STAIR → CANNOT_ANSWER), resolution storey → type → label →
+  ordinal (UPPER, level None), SINGLE/SUM/MAX/MIN/MEAN, zero-evidence rule via `ROOM_TYPES_DETECTED`,
+  `FIXTURE_TYPES_DETECTED`, `OPENING_KINDS_DETECTED`, unit by intent also without a value (Q9 option c), ft conversion,
+  no rounding, confidence = min, evidence = element ids, multi-storey note.
+- **No LLM**: explanations from fixed en/de/fi templates (`explanations.py`), English fallback.
+- No config keys needed (no tunable limits); unit conversion factors are the constants from AGENTS.md §6 A4.
+- Tests: `tests/unit/reasoning/` (150 tests, hand-built analyses shaped like A3's raster spec, incl. the CubiCasa-style
+  regression); `reasoning/` coverage 99 %. Edge cases decided provisionally: OPEN_QUESTIONS Q10.
+- No contract or prompt change. Not wired into the orchestrator (A0's job).
+
 ### 2026-11-14 · A3 · SS · Host the cubicasa_v2 weights; `models/fetch.py` URL set
 - Hosting choice (SS): **GitHub Release** on the public repo, tag `models-cubicasa-v2`, asset `best.pt`:
   https://github.com/Sulkamies/TLM/releases/download/models-cubicasa-v2/best.pt. Release notes state the licence
