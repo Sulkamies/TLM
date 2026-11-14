@@ -24,3 +24,8 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 9 | Input Validator (`validation/`) ported onto `main`: uses `common.llm` (Gemini) per `docs/requests/A1-use-shared-llm-wrapper.md`; config keys and image libraries requested from A0 (`docs/requests/A0-validation-config-and-deps.md`) | A1 | OT | 2026-11-14 | Done (branch `a1/ot/validator-gemini`; needs A0 branch `a0/ot/validation-config-deps`) |
 | 10 | A1 re-records cassettes for `gemini-3.5-flash-lite` and checks A1 end to end with A0's speed config (D-009) | A1 | OT | 2026-11-14 | Done (branch `a1/ot/validator-gemini`; needs A0 branch `a0/ot/validation-config-deps` 1abbc37) |
 | 11 | Merge plan for integrating A0, A1 and A2 (orchestrator + CLI; A3/A4 out of scope): `docs/MERGE_PLAN.md` | A0 | ry | 2026-11-14 | Done (branch `a0/ry/merge-plan`) |
+| 3 | Claim (partial): orchestrator + CLI for A1→A2 per `docs/MERGE_PLAN.md` | A0 | ry | 2026-11-14 | In progress (branch `a0/ry/integration-a1-a2`) |
+| 7 | Status: merged to `main` (PR #4, `c8e8127`) | A0 | ry | 2026-11-14 | Merged (noted by A0 · ry) |
+| 8 | Status: merged to `main` (PR #4, `c8e8127`) | A0 | ry | 2026-11-14 | Merged (noted by A0 · ry) |
+| 9 | Status: merged to `main` (PR #3, `d8a6fc6`) | A1 | ry | 2026-11-14 | Merged (noted by A0 · ry) |
+| 10 | Status: merged to `main` (PR #3, `d8a6fc6`) | A1 | ry | 2026-11-14 | Merged (noted by A0 · ry) |
