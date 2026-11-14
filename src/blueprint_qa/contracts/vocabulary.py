@@ -1,4 +1,4 @@
-"""Plan-element vocabulary (AGENTS.md §4.2, v1.0.1). Custodian: A0.
+"""Plan-element vocabulary (AGENTS.md §4.2, v1.1.0). Custodian: A0.
 
 THE SINGLE PLACE that defines what a floor plan can contain, as seen by both sides
 of the pipeline:
@@ -9,7 +9,7 @@ of the pipeline:
 * A4 (Answer Reasoner) matches questions to plan elements by these values.
 
 To change what the analyzer can report (e.g. contract change 001, fixtures), edit
-this module through the AGENTS.md §4.3 process:
+this module through the AGENTS.md §4.3 process (001 and 004 were applied this way in v1.1.0):
 
 1. Add or remove the value in the type below.
 2. Add or remove its entry in ``DESCRIPTIONS`` (a unit test enforces 1:1 coverage).
@@ -46,8 +46,29 @@ class RoomType(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
+class FixtureType(str, Enum):  # since v1.1.0 (contract change 001)
+    TOILET = "TOILET"
+    SINK = "SINK"
+    SHOWER = "SHOWER"
+    BATHTUB = "BATHTUB"
+    SAUNA_BENCH = "SAUNA_BENCH"
+    OTHER = "OTHER"
+
+
+class StoreyLevel(str, Enum):  # since v1.1.0 (contract change 004)
+    BASEMENT = "BASEMENT"
+    GROUND = "GROUND"
+    UPPER = "UPPER"
+    UPPER_1 = "UPPER_1"
+    UPPER_2 = "UPPER_2"
+    UPPER_3 = "UPPER_3"
+    ATTIC = "ATTIC"
+
+
 # Kinds of plan element a question can target (EntityRef.category).
-EntityCategory = Literal["ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN"]
+EntityCategory = Literal[
+    "ROOM", "DOOR", "WINDOW", "WALL", "STAIR", "STOREY", "WHOLE_PLAN", "FIXTURE"
+]
 
 # Kinds of opening the analyzer reports (Opening.kind).
 OpeningKind = Literal["DOOR", "WINDOW", "OPENING"]
@@ -85,11 +106,32 @@ DESCRIPTIONS: Mapping[str, Mapping[str, str]] = {
         "STAIR": "A staircase.",
         "STOREY": "A whole floor level of the building.",
         "WHOLE_PLAN": "The whole plan or building (e.g. total floor area).",
+        "FIXTURE": "A sanitary fixture (toilet bowl, sink, shower, bathtub, sauna bench); "
+        "narrow it down with fixture_type.",
     },
     "OpeningKind": {
         "DOOR": "A door.",
         "WINDOW": "A window.",
         "OPENING": "An opening without a door or window leaf.",
+    },
+    "FixtureType": {
+        "TOILET": "A toilet bowl (WC fixture). Not the TOILET room type.",
+        "SINK": "A washbasin or kitchen sink.",
+        "SHOWER": "A shower.",
+        "BATHTUB": "A bathtub.",
+        "SAUNA_BENCH": "A sauna bench (lauteet).",
+        "OTHER": "A sanitary fixture not covered by the other values.",
+    },
+    "StoreyLevel": {
+        "BASEMENT": "Floor below ground level (cellar, basement).",
+        "GROUND": "Floor at ground or entrance level. Finnish '1. kerros' and US English "
+        "'first floor' mean this level.",
+        "UPPER": "A floor above ground named without a number ('upstairs', 'the upper floor').",
+        "UPPER_1": "First floor above ground level (British/European 'first floor', "
+        "German '1. OG', Finnish '2. kerros').",
+        "UPPER_2": "Second floor above ground level (German '2. OG', Finnish '3. kerros').",
+        "UPPER_3": "Third floor above ground level (German '3. OG', Finnish '4. kerros').",
+        "ATTIC": "Attic or loft floor directly under the roof.",
     },
 }
 
@@ -106,4 +148,6 @@ VOCABULARIES: Mapping[str, tuple[str, ...]] = {
     "RoomType": _values(RoomType),
     "EntityCategory": _values(EntityCategory),
     "OpeningKind": _values(OpeningKind),
+    "FixtureType": _values(FixtureType),
+    "StoreyLevel": _values(StoreyLevel),
 }

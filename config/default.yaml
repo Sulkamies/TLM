@@ -15,3 +15,44 @@ validation:                    # A1
   llm_image_max_side_px: 1024  # LLM copy only; Gemini bills the same tokens at any size (measured), so smaller = faster upload
   llm_image_max_bytes: 7500000 # LLM copy only: larger PNGs are shrunk until they fit; null = no limit
   supported_ifc_schemas: [IFC2X3, IFC4, IFC4X3]   # as reported by ifcopenshell (IFC4X3_ADD2 -> IFC4X3)
+
+analysis:                      # A3. Values from A3's eval/thresholds_vision_v2.json at 35597e2
+                               # (spec: docs/requests/A3-analysis-adapter.md, phase 0 §D; confirmed A3-Q22)
+  detector:
+    weights_path: models/cubicasa_v2/best.pt   # fetched by models/fetch.py (sha256 in A3-Q1); never in git
+    weights_env: BP_WEIGHTS    # name of the env var that overrides weights_path
+    conf: 0.15                 # detector pre-filter; per-class thresholds below are applied after it
+    imgsz: 1280                # must match the training size of the weights (v2: 1280)
+    max_det: 1000
+    device: auto               # auto | cpu | cuda
+  ocr:
+    enabled: true
+    languages: [en]            # English model only (A3-Q10)
+    rotation_info: [90, 270]
+    min_confidence: 0.0        # the tuned rules use no OCR filter
+    model_dir: models/easyocr  # EasyOCR model files, fetched by models/fetch.py (A3-Q20)
+    download_enabled: false    # never download at request time; a missing model -> MODEL_LOAD_FAILED
+  default_threshold: 0.35      # for classes without an entry
+  thresholds:                  # per class, applied before any element is emitted
+    window: 0.4
+    door: 0.25
+    toilet: 0.3
+    sink: 0.2
+    bathtub: 0.75
+    shower: 0.25
+    sauna_bench: 0.35
+    room_kitchen: 0.3
+    room_bedroom: 0.15
+    room_bath: 0.15
+    room_balcony: 0.45
+    room_sauna: 0.35
+    floor: 0.45
+  duplicate_iou:               # greedy per-class duplicate removal; 1.0 = off
+    window: 0.4
+    door: 0.3
+    toilet: 1.0
+    sink: 1.0
+    shower: 1.0
+    bathtub: 1.0
+  sauna_cluster_grow: 0.5      # bench boxes grown by this x their size before grouping
+  bounds_tolerance_px: 1.0     # clamp boxes this far outside the image; drop anything further

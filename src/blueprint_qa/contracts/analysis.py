@@ -1,19 +1,22 @@
-"""Blueprint analysis contract (AGENTS.md §4.2, v1.0.1). Custodian: A0."""
+"""Blueprint analysis contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
 
 from typing import Literal
 
 from pydantic import BaseModel
 
 from blueprint_qa.contracts.common import Confidence, InputFormat
-from blueprint_qa.contracts.vocabulary import OpeningKind, RoomType
+from blueprint_qa.contracts.vocabulary import FixtureType, OpeningKind, RoomType, StoreyLevel
 
 __all__ = [
     "BlueprintAnalysis",
+    "Fixture",
+    "FixtureType",  # re-exported; defined in vocabulary.py
     "Opening",
     "Room",
     "RoomType",  # re-exported; defined in vocabulary.py
     "Scale",
     "Storey",
+    "StoreyLevel",  # re-exported; defined in vocabulary.py
     "TextAnnotation",
 ]
 
@@ -28,6 +31,7 @@ class Storey(BaseModel):
     id: str
     name: str | None
     elevation_m: float | None
+    level: StoreyLevel | None = None  # A3 maps the plan's storey label / elevation; since v1.1.0
 
 
 class Room(BaseModel):
@@ -54,6 +58,16 @@ class Opening(BaseModel):
     confidence: Confidence
 
 
+class Fixture(BaseModel):  # since v1.1.0 (contract change 001)
+    id: str  # "fixture_<n>"
+    storey_id: str | None
+    room_id: str | None  # containing room if determined
+    fixture_type: FixtureType
+    position: tuple[float, float]  # box centre, in coordinate_space
+    source_ref: str | None
+    confidence: Confidence
+
+
 class TextAnnotation(BaseModel):
     text: str
     bbox: tuple[float, float, float, float]  # x_min, y_min, x_max, y_max
@@ -61,7 +75,7 @@ class TextAnnotation(BaseModel):
 
 
 class BlueprintAnalysis(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     source_format: InputFormat
     coordinate_space: Literal["PIXEL", "METRIC"]
@@ -74,3 +88,4 @@ class BlueprintAnalysis(BaseModel):
     texts: list[TextAnnotation]
     analyzer_version: str  # model/parser version, matches its model card
     warnings: list[str]
+    fixtures: list[Fixture] = []  # since v1.1.0

@@ -1,4 +1,4 @@
-"""Shared contract types (AGENTS.md §4.2, v1.0.1). Custodian: A0."""
+"""Shared contract types (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
 
 from enum import Enum
 from typing import Annotated
@@ -25,7 +25,7 @@ class InputFormat(str, Enum):
 
 
 class ErrorEnvelope(BaseModel):
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     stage: Stage
     code: str  # from the registry in §5

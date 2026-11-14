@@ -1,5 +1,92 @@
 {
   "$defs": {
+    "Fixture": {
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "fixture_type": {
+          "$ref": "#/$defs/FixtureType"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "position": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Position",
+          "type": "array"
+        },
+        "room_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Room Id"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Ref"
+        },
+        "storey_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Storey Id"
+        }
+      },
+      "required": [
+        "id",
+        "storey_id",
+        "room_id",
+        "fixture_type",
+        "position",
+        "source_ref",
+        "confidence"
+      ],
+      "title": "Fixture",
+      "type": "object"
+    },
+    "FixtureType": {
+      "enum": [
+        "TOILET",
+        "SINK",
+        "SHOWER",
+        "BATHTUB",
+        "SAUNA_BENCH",
+        "OTHER"
+      ],
+      "title": "FixtureType",
+      "type": "string"
+    },
     "InputFormat": {
       "enum": [
         "PNG",
@@ -297,6 +384,17 @@
           "title": "Id",
           "type": "string"
         },
+        "level": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StoreyLevel"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "name": {
           "anyOf": [
             {
@@ -316,6 +414,19 @@
       ],
       "title": "Storey",
       "type": "object"
+    },
+    "StoreyLevel": {
+      "enum": [
+        "BASEMENT",
+        "GROUND",
+        "UPPER",
+        "UPPER_1",
+        "UPPER_2",
+        "UPPER_3",
+        "ATTIC"
+      ],
+      "title": "StoreyLevel",
+      "type": "string"
     },
     "TextAnnotation": {
       "properties": {
@@ -389,6 +500,14 @@
       "title": "Coordinate Space",
       "type": "string"
     },
+    "fixtures": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Fixture"
+      },
+      "title": "Fixtures",
+      "type": "array"
+    },
     "metric_available": {
       "title": "Metric Available",
       "type": "boolean"
@@ -415,7 +534,7 @@
       "$ref": "#/$defs/Scale"
     },
     "schema_version": {
-      "default": "1.0.1",
+      "default": "1.1.0",
       "title": "Schema Version",
       "type": "string"
     },

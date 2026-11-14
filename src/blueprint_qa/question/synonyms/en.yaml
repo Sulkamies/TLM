@@ -27,6 +27,7 @@ EntityCategory:
   STAIR: [stair, stairs, staircase, stairway]
   STOREY: [floor, storey, story, level]
   WHOLE_PLAN: [house, apartment, flat, home, dwelling, building, whole plan, total]
+  FIXTURE: [fixture, fixtures, sanitary fixture, plumbing fixture, sanitary ware]
 StoreyLevel:
   BASEMENT: [basement, cellar, lower level, downstairs basement]
   GROUND: [ground floor, ground level, main floor, entrance level, first floor (US)]
@@ -35,6 +36,13 @@ StoreyLevel:
   UPPER_2: [second floor (UK), 2nd floor, third floor (US)]
   UPPER_3: [third floor (UK), 3rd floor, fourth floor (US)]
   ATTIC: [attic, loft, attic floor]
+FixtureType:
+  TOILET: [toilet bowl, toilet seat, WC pan, toilet fixture]
+  SINK: [sink, washbasin, wash basin, basin, hand basin, vanity, kitchen sink]
+  SHOWER: [shower, shower stall, shower cubicle, shower tray]
+  BATHTUB: [bathtub, tub, bath tub]
+  SAUNA_BENCH: [sauna bench, sauna benches, sauna platform]
+  OTHER: [other fixture, bidet, urinal]
 OpeningKind:
   DOOR: [door]
   WINDOW: [window]
@@ -80,3 +88,9 @@ examples:
       intent: UNSUPPORTED
       aggregation: SINGLE
       targets: [{category: ROOM, room_type: BEDROOM}]
+  - id: count_showers_bathtubs
+    question: "How many showers and bathtubs?"
+    expect:
+      intent: COUNT
+      aggregation: SUM
+      targets: [{category: FIXTURE, fixture_type: SHOWER}, {category: FIXTURE, fixture_type: BATHTUB}]

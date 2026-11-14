@@ -110,3 +110,8 @@ BATHTUB stay separate values ("showers and bathtubs" = two targets with SUM). Ap
 coverage test fail until A2 adds en/de/fi words (MERGE_PLAN phase 2b, merged together per R4.5).
 
 _Approval (2026-11-14):_ revision 2 **APPROVED** by human ry and by A0 (R4.3, MINOR). To be applied in MERGE_PLAN phase 2.
+
+_Applied (A0 · ry · 2026-11-14):_ revision 2 **APPLIED** on branch `a0/ry/contracts-1.1` (MERGE_PLAN phase 2), together
+with 004: `FixtureType` and `"FIXTURE"` in `vocabulary.py` (with `DESCRIPTIONS`), `Fixture` + `BlueprintAnalysis.fixtures`
+in `analysis.py`, `EntityRef.fixture_type` in `question.py`. Contracts **1.1.0**, schemas regenerated, AGENTS.md §4.2
+updated. Merged together with A2's phase 2b PR (R4.5).

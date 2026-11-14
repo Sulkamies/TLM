@@ -27,6 +27,7 @@ EntityCategory:
   STAIR: [porras, portaat, porraskäytävä]
   STOREY: [kerros, kerrokset, alakerta, yläkerta, kellarikerros]
   WHOLE_PLAN: [talo, asunto, rakennus, koti, koko asunto, kokonaispinta-ala]
+  FIXTURE: [kaluste, kalusteet, saniteettikaluste, vesikaluste]
 StoreyLevel:
   BASEMENT: [kellari, kellarikerros, kjr, pohjakerros]
   GROUND: [alakerta, 1. kerros, ensimmäinen kerros, maantasokerros, katutaso]
@@ -35,6 +36,13 @@ StoreyLevel:
   UPPER_2: [3. kerros, kolmas kerros]
   UPPER_3: [4. kerros, neljäs kerros]
   ATTIC: [ullakko, ullakkokerros, vintti, parvi]
+FixtureType:
+  TOILET: [wc-istuin, wc-pönttö, pönttö, vessanpönttö]
+  SINK: [pesuallas, lavuaari, käsienpesuallas, allas, tiskiallas]
+  SHOWER: [suihku, suihkunurkka, suihkukaappi]
+  BATHTUB: [kylpyamme, amme]
+  SAUNA_BENCH: [lauteet, laude, saunan lauteet]
+  OTHER: [muu kaluste, bidee, pisuaari]
 OpeningKind:
   DOOR: [ovi]
   WINDOW: [ikkuna]
@@ -71,3 +79,9 @@ examples:
       aggregation: SINGLE
       targets: [{category: ROOM, room_type: BEDROOM, ordinal: 2}]
       requested_unit: ft2
+  - id: count_showers_bathtubs
+    question: "Montako suihkua ja kylpyammetta asunnossa on?"
+    expect:
+      intent: COUNT
+      aggregation: SUM
+      targets: [{category: FIXTURE, fixture_type: SHOWER}, {category: FIXTURE, fixture_type: BATHTUB}]

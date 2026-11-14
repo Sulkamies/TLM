@@ -18,7 +18,7 @@ from blueprint_qa.question.vocabulary_view import (
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 PROMPT_NAME = "interpret"
-PROMPT_VERSION = 1  # bump together with a new prompts/interpret.v<N>.md (R7.7)
+PROMPT_VERSION = 2  # bump together with a new prompts/interpret.v<N>.md (R7.7)
 LLM_COMPONENT = "question"
 
 

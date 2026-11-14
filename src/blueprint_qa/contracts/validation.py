@@ -1,4 +1,4 @@
-"""Input validation contract (AGENTS.md §4.2, v1.0.1). Custodian: A0."""
+"""Input validation contract (AGENTS.md §4.2, v1.1.0). Custodian: A0."""
 
 from enum import Enum
 
@@ -28,7 +28,7 @@ class PlanImage(BaseModel):
 class ValidationResult(BaseModel):
     model_config = ConfigDict(ser_json_bytes="base64", val_json_bytes="base64")
 
-    schema_version: str = "1.0.1"
+    schema_version: str = "1.1.0"
     request_id: str
     is_valid: bool
     reason: ValidationReason

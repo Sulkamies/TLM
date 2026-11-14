@@ -8,10 +8,11 @@ are deliberately absent.
 The LLM reports a comparison threshold *as written* plus its unit (``threshold_unit``);
 ``mapping.py`` converts it to SI (rule Q5). A measured threshold written without a unit
 must come with ``clarification_needed`` (ry, OPEN_QUESTIONS Q6). Free-text ``EntityRef``
-fields with interim fixed values (storey levels, OPEN_QUESTIONS Q5) are checked against
-them. The cross-field invariants of §4.2 are checked in a model validator. The wrapper
-validates every reply with this model, so a violation makes it re-ask the LLM with the
-error message (R7.8).
+fields with fixed values (storey levels, OPEN_QUESTIONS Q5) are checked against them, and
+category-specific fields (``field_rules.yaml``, e.g. the fixture type) against their
+category (OPEN_QUESTIONS Q3). The other cross-field invariants of §4.2 are checked in a
+model validator too. The wrapper validates every reply with this model, so a violation
+makes it re-ask the LLM with the error message (R7.8).
 """
 
 from __future__ import annotations
@@ -108,6 +109,7 @@ class LlmParse(BaseModel):
         if self.intent is Intent.RATIO and len(self.targets) != 2:
             raise ValueError("intent RATIO requires exactly 2 targets (numerator, denominator)")
         self._check_interim_values()
+        self._check_category_fields()
         if self.comparison is not None:
             self._check_comparison(self.comparison)
         elif self.threshold_unit is not None:
@@ -131,6 +133,20 @@ class LlmParse(BaseModel):
                 if value is not None and value not in allowed:
                     raise ValueError(
                         f"targets[].{field_name} must be null or one of {', '.join(allowed)}"
+                    )
+
+    def _check_category_fields(self) -> None:
+        # Lazy import: vocabulary_view imports this module.
+        from blueprint_qa.question.vocabulary_view import category_fields
+
+        for field_name, category in category_fields().items():
+            for target in self.targets:
+                is_set = getattr(target, field_name) is not None
+                if target.category == category and not is_set:
+                    raise ValueError(f"a target with category {category} requires {field_name}")
+                if target.category != category and is_set:
+                    raise ValueError(
+                        f"targets[].{field_name} must be null unless category is {category}"
                     )
 
     def _check_comparison(self, comparison: Comparison) -> None:

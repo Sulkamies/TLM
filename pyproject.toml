@@ -25,6 +25,13 @@ dev = [
     "pytest-cov>=7.1,<7.2",
     "types-PyYAML>=6.0,<6.1",
 ]
+# A3 raster detector (CubiCasa YOLO + OCR). Heavy: never installed in CI; the analyzer
+# imports these lazily and its unit tests use recorded detector output.
+vision = [
+    "torch>=2.15,<2.16",
+    "ultralytics>=8.4,<8.5",   # AGPL-3.0
+    "easyocr>=1.7,<1.8",       # Apache-2.0
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -55,6 +62,10 @@ files = ["src"]
 [[tool.mypy.overrides]]
 module = ["google.*"]
 follow_untyped_imports = true
+
+[[tool.mypy.overrides]]
+module = ["torch", "torch.*", "ultralytics", "ultralytics.*", "easyocr", "easyocr.*"]
+ignore_missing_imports = true   # optional `vision` extra, not installed in CI
 
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
