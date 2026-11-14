@@ -12,7 +12,7 @@
      (3) no explanation of how an answer was reached: neither "How it was counted" (the API's `working`)
      nor the "Counted on the drawing" legend; (4) no suggested questions; (5) no "Every answer shows where
      it came from" badge, no "Take a photo" button, no sample plans, a smaller answer (28px numbers, 14px sentences),
-     the title "Chat with your blueprint" and the line "Ask anything, the blueprint talks!"
+     the title "Chat with your blueprint", the line "Ask anything, the blueprint talks!" and no 1-2-3 steps
      (ry, 2026-11-14); (6) the phone layout and touch handling of at's commit d0256e2 (ui/at/webpage), limited to
      phones: phone-width CSS, touch-only gestures; the laptop view is unchanged (ry, 2026-11-14). -->
 <style>
@@ -77,9 +77,6 @@ header h1 span{color:var(--muted);font-weight:500}
   background:var(--panel);backdrop-filter:blur(8px);transition:.2s}
 .drop svg{width:26px;height:26px;display:block;margin:0 auto 6px;opacity:.7}
 .drop.over{border-color:var(--accent);background:var(--soft);transform:scale(1.01)}
-.steps{list-style:none;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:0;margin:34px 0 8px;color:var(--muted);font-size:13px}
-.steps li{display:flex;align-items:center;gap:8px}
-.steps b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--accent);font-size:12px}
 .tip{font-size:12px;color:var(--muted);margin-top:18px}
 
 /* ---------- workspace ---------- */
@@ -217,7 +214,6 @@ footer{font-size:11.5px;color:var(--muted);padding:6px 20px 10px;text-align:cent
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
       Drag a picture here, or paste one with Ctrl+V
     </div>
-    <ol class="steps"><li><b>1</b>Add a drawing</li><li><b>2</b>Ask in plain words</li><li><b>3</b>Check the red boxes</li></ol>
     <div class="tip">Pictures are sent to the server and to Google Gemini to be read. Don't upload anything confidential.</div>
   </div>
 </section>

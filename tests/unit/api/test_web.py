@@ -172,3 +172,9 @@ def test_landing_title_and_no_explanation_on_any_screen() -> None:
     phone = _phone_css()
     for text in ("How it was counted", "How this count", "j.working", "Counted on"):
         assert text not in body and text not in phone, text
+
+
+def test_landing_page_has_no_steps() -> None:
+    # ry, 2026-11-14: no 1-2-3 steps ("Add a drawing" ...) on laptop or phone.
+    body = PAGE.split("-->", 1)[1]
+    assert "steps" not in body and "Add a drawing" not in body and "Ask in plain words" not in body
