@@ -72,3 +72,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   dropped only if a contract types the field. Before this, the lighter option would have silently disabled the
   storey constraint.
 - Tests for both cases. Prompt text unchanged (`interpret@v1`), cassettes still valid.
+### 2026-11-14 · A0 · OT · Validation config keys and image libraries for A1
+- `pyproject.toml`: new runtime dependencies `pillow>=13.0,<13.1`, `pypdfium2>=5.15,<5.16`, `ifcopenshell>=0.9,<0.10`
+  (A1 request `docs/requests/A0-validation-config-and-deps.md`). No mypy override: A1 keeps its scoped
+  `# type: ignore[import-untyped]` for `pypdfium2`.
+- `config/default.yaml → validation`: new keys `max_image_pixels: null`, `llm_image_max_side_px: null`,
+  `llm_image_max_bytes: 7500000`, `supported_ifc_schemas: [IFC2X3, IFC4, IFC4X3]`. Existing keys unchanged.
+- No test pinned the `validation` section, so no test changed. Response: `docs/requests/A0-validation-config-and-deps.response.md`.
+- No contract or prompt versions touched.
