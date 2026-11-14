@@ -1,0 +1,17 @@
+# Field vocabularies: free-text EntityRef fields whose values are fixed by convention.
+# Contract change 004 (docs/contract-changes/004-storey-levels.md), lighter option chosen by ry
+# (2026-11-14): EntityRef.storey stays `str` in the contract and must hold a StoreyLevel value.
+#
+# `field` links the vocabulary to the EntityRef field. Keep it permanently.
+# `values` are INTERIM: once A0 adds StoreyLevel to contracts/vocabulary.py, the contract values and
+# descriptions are used instead (no A2 code change). Then delete the `values:` block here.
+StoreyLevel:
+  field: storey
+  values:
+    BASEMENT: "Floor below ground level (cellar, basement)."
+    GROUND: "Floor at ground or entrance level. Finnish '1. kerros' and US English 'first floor' mean this level."
+    UPPER: "A floor above ground named without a number ('upstairs', 'the upper floor')."
+    UPPER_1: "First floor above ground level (British/European 'first floor', German '1. OG', Finnish '2. kerros')."
+    UPPER_2: "Second floor above ground level (German '2. OG', Finnish '3. kerros')."
+    UPPER_3: "Third floor above ground level (German '3. OG', Finnish '4. kerros')."
+    ATTIC: "Attic or loft floor directly under the roof."

@@ -1,0 +1,82 @@
+# English words for the plan vocabulary (design rule Q4).
+# Keys MUST be names/values from blueprint_qa.contracts.VOCABULARIES; validated at load time.
+# `examples` are few-shot examples rendered into the prompt ({{EXAMPLES}}) and test cases.
+RoomType:
+  BEDROOM: [bedroom, master bedroom, guest room, kids' room, nursery, BR]
+  BATHROOM: [bathroom, bath, shower room, en suite, BA]
+  TOILET: [toilet, WC, restroom, powder room, half bath, lavatory, loo]
+  KITCHEN: [kitchen, kitchenette, galley, KIT]
+  LIVING_ROOM: [living room, lounge, family room, sitting room, LR]
+  DINING_ROOM: [dining room, dining area, DR]
+  HALLWAY: [hallway, hall, corridor, entrance, entry, foyer, lobby]
+  GARAGE: [garage, carport]
+  STORAGE: [storage, storeroom, pantry, store]
+  CLOSET: [closet, wardrobe, walk-in closet, WIC]
+  LAUNDRY: [laundry, utility room, laundry room]
+  SAUNA: [sauna, steam room]
+  BALCONY: [balcony, terrace, patio, loggia, deck]
+  OFFICE: [office, study, home office, workroom, den]
+  TECHNICAL: [technical room, boiler room, plant room, mechanical room, utility closet]
+  OTHER: [other room, multipurpose room, hobby room]
+  UNKNOWN: [unknown room, unlabelled room, unnamed room]
+EntityCategory:
+  ROOM: [room, rooms, space]
+  DOOR: [door, doors, doorway, entrance door, front door]
+  WINDOW: [window, windows]
+  WALL: [wall, walls]
+  STAIR: [stair, stairs, staircase, stairway]
+  STOREY: [floor, storey, story, level]
+  WHOLE_PLAN: [house, apartment, flat, home, dwelling, building, whole plan, total]
+StoreyLevel:
+  BASEMENT: [basement, cellar, lower level, downstairs basement]
+  GROUND: [ground floor, ground level, main floor, entrance level, first floor (US)]
+  UPPER: [upstairs, upper floor, upper level, top floor]
+  UPPER_1: [first floor (UK), 1st floor, second floor (US)]
+  UPPER_2: [second floor (UK), 2nd floor, third floor (US)]
+  UPPER_3: [third floor (UK), 3rd floor, fourth floor (US)]
+  ATTIC: [attic, loft, attic floor]
+OpeningKind:
+  DOOR: [door]
+  WINDOW: [window]
+  OPENING: [opening, doorless opening, passage, archway]
+examples:
+  - id: compare_unitless
+    question: "Is the bedroom wider than 4?"
+    expect:
+      intent: COMPARISON
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: BEDROOM}]
+      comparison: {measure: LENGTH, operator: GT, threshold: 4}
+      clarification_needed: "Which unit do you mean: metres, feet or something else?"
+  - id: count_bathrooms
+    question: "How many bathrooms does the apartment have?"
+    expect:
+      intent: COUNT
+      aggregation: SUM
+      targets: [{category: ROOM, room_type: BATHROOM}]
+  - id: length_hallway
+    question: "How long is the hallway?"
+    expect:
+      intent: LENGTH
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: HALLWAY}]
+  - id: compare_garage_m2
+    question: "Is the garage smaller than 30 m²?"
+    expect:
+      intent: COMPARISON
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: GARAGE}]
+      comparison: {measure: AREA, operator: LT, threshold: 30}
+      threshold_unit: m2
+  - id: distance_kitchen_living
+    question: "What is the distance between the kitchen and the living room?"
+    expect:
+      intent: DISTANCE
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: KITCHEN}, {category: ROOM, room_type: LIVING_ROOM}]
+  - id: unsupported_colour
+    question: "What colour is the bedroom?"
+    expect:
+      intent: UNSUPPORTED
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: BEDROOM}]

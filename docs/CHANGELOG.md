@@ -42,3 +42,33 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - New `tests/unit/common/test_llm_boundary.py`: CI fails if any module outside `common/` imports a vendor LLM SDK (R7.5).
 - Brief and merge checklist for A1: `docs/requests/A1-use-shared-llm-wrapper.md`. Plan images still need R7.4 approval.
 - Tests: 63 passing.
+
+### 2026-11-14 · A2 · ry · Question Interpreter (prompt `interpret@v1`)
+- New `src/blueprint_qa/question/` per the binding design: `interpret()` entry point (never raises), `QuestionProvider`
+  protocol, `LlmQuestionProvider` (default, `get_llm_client("question")`, `gemini-3.8-flash` from config) and
+  `MockQuestionProvider`. `LlmParse` is composed from contract types; its validator enforces the §4.2 invariants so the
+  wrapper re-asks on violations. `mapping.py` converts comparison thresholds to SI in code (e.g. 120 sq ft → 11.148 m²).
+- Prompt `prompts/interpret.v1.md` with `{{PLAN_VOCABULARY}}`, `{{SYNONYMS}}`, `{{EXAMPLES}}`, rendered from
+  `contracts.VOCABULARIES`/`DESCRIPTIONS` and `synonyms/{en,de,fi}.yaml` (validated against the vocabulary; Finnish and
+  German plan abbreviations included).
+- Terminal chat REPL: `python -m blueprint_qa.question` (also reads piped stdin).
+- Tests: 105 offline in `tests/unit/question/` on 45 recorded cassettes (`cassettes/interpret@v1.json`); EN/DE/FI
+  equality for 8 held-out questions; Q1 guard; opt-in live test passed. Re-record with
+  `tests/unit/question/record_cassettes.py`. Full suite: 168 passed, coverage 98 % (question/ ≥ 82 % per file).
+- No contract, config or `pyproject.toml` change. Open questions Q5 (storey text) and Q6 (unitless thresholds).
+
+### 2026-11-14 · A2 · ry · Fixed storey levels (Q5) and unitless thresholds (Q6), prompt `interpret@v1`
+- Storeys: interim `StoreyLevel` values in `question/interim_vocabulary.yaml`, rendered into the prompt, covered by
+  EN/DE/FI synonyms and validated on every LLM reply. Proposal 004 and a request to A0 make them official.
+  Deviation recorded.
+- A measured comparison threshold without a unit now requires `clarification_needed` (validator, so the wrapper re-asks).
+- `interpret.v1.md` edited in place: it was not merged yet, so R7.7 still allows that. Cassettes re-recorded (53, all
+  valid on the first ask). New EN/DE/FI cases: upper-floor area, and "bigger than 10" without a unit.
+- No contract, config or `pyproject.toml` change.
+
+### 2026-11-14 · A2 · ry · Storey levels: support the lighter option of contract change 004
+- ry chose the lighter option (`EntityRef.storey` stays `str`). `vocabulary_view.py` now uses the contract's
+  `StoreyLevel` values and descriptions once they exist, and keeps the `storey` link and its validation. The entry is
+  dropped only if a contract types the field. Before this, the lighter option would have silently disabled the
+  storey constraint.
+- Tests for both cases. Prompt text unchanged (`interpret@v1`), cassettes still valid.

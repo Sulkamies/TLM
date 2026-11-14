@@ -31,3 +31,24 @@ showers and sauna benches, but v1.0.0 cannot represent them. Approve, change or 
 - **Q3:** Yes, confidence must be in [0, 1]. Applied as contract change 002 (v1.0.1). The other invariants (value iff ANSWERED, comparison iff COMPARISON, target counts) stay unenforced in the models for now.
 - **Q4:** Pending. ry asked what proposal 001 is; A0 explained it and is awaiting a decision.
 - **Q4 (update, ry, 2026-11-14):** Proposal 001 is **on hold** until the Blueprint Analyzer's output is final. Meanwhile the vocabulary was centralised (change 003) so that 001 becomes a single-module edit.
+
+### Q5 · A2 · ry · 2026-11-14 · Storey names in `EntityRef.storey`
+`EntityRef.storey` is free text, but A2 must output language-independent data. A2 currently tells the LLM to
+write the storey as a short **English** phrase ("ground floor", "first floor", "basement", ...), so
+"alakerta" / "Erdgeschoss" / "ground floor" give the same `ParsedQuestion`. A4 then has to match that phrase
+against `Storey.name` (plan text in any language, e.g. "1. krs", "EG"). Is that the agreed convention, or
+should storeys become a canonical value (e.g. a storey index or level enum) through §4.3?
+
+### Q6 · A2 · ry · 2026-11-14 · Comparison threshold with no unit
+For "Is the kitchen bigger than 10?" A2 assumes the SI unit of the measure (10 m²) and does not ask for
+clarification. Confirm, or should a missing unit set `clarification_needed`?
+
+---
+**Answers (ry, 2026-11-14, recorded by A2):**
+- **Q5:** "For now, create fixed values." A2 now emits only `BASEMENT`, `GROUND`, `UPPER`, `UPPER_1`, `UPPER_2`,
+  `UPPER_3` or `ATTIC` in `EntityRef.storey` (interim, see `docs/DEVIATIONS.md`). Contract change
+  `docs/contract-changes/004-storey-levels.md` and request `docs/requests/A0-storey-levels.md` ask A0 to make the
+  values official.
+- **Q6:** A measured comparison threshold with no unit sets `clarification_needed` (in the user's language). The
+  threshold is still passed through, taken as SI, as a best guess. Count thresholds need no unit. Enforced in A2's LLM
+  output validator.
