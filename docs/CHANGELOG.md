@@ -192,6 +192,44 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   invalid text without an A2 call.
 - README: CLI usage, layout status. OPEN_QUESTIONS Q9 (`Answer.unit` without a value). No contract or prompt change.
 
+### 2026-11-14 · A3 · SS · Answers to A3-Q1 … A3-Q22
+- Appended the answers to `docs/requests/A3-open-points.md`, checked on real data: v2 weights checksum, all 241 recorded
+  detector outputs (sizes, bounds, class names), and 84.5 % test re-measured with the code at `35597e2` and
+  `thresholds_vision_v2.json`. Disagreements: none. Two corrections: the storey regex (A3-Q14), and the EasyOCR model
+  download mapping to `MODEL_LOAD_FAILED` and fetched by `models/fetch.py` (A3-Q20).
+- Added three recorded detector outputs under `tests/unit/analysis/data/` (with a README on source and licence).
+- No contract, prompt or code change.
+
+### 2026-11-14 · A3 · SS · Phase 3: analysis adapter `analyze()` (raster, contracts 1.1.0)
+- **Entry point** `src/blueprint_qa/analysis/analyzer.py :: analyze(validation) -> BlueprintAnalysis | ErrorEnvelope`,
+  exported only through `analysis/__init__.py`. Never raises. Logic ported from `35597e2` (not from `cubicasa-v3`),
+  implemented per `docs/requests/A3-analysis-adapter.md` §C/§D/§H and A0's addendum.
+- `analysis/raster/detector.py`: YOLO + EasyOCR, torch/ultralytics/easyocr/numpy imported lazily, loaded once per
+  process; EasyOCR gets `ocr.model_dir` and `ocr.download_enabled`. Same detector input as when the thresholds were
+  tuned (an RGB array).
+- `analysis/raster/rules.py`: the tuned rules as element selection (thresholds, duplicate IoU, bench clusters,
+  bathroom/WC rule) plus the bounds check. `analysis/raster/mapping.py`: §C field by field (IDs in reading order,
+  storeys + `Storey.level` from the §H regex, rooms, openings, fixtures, texts, warning codes).
+- Warnings include `ROOM_TYPES_DETECTED:BALCONY,BATHROOM,BEDROOM,KITCHEN,SAUNA,TOILET`,
+  `FIXTURE_TYPES_DETECTED:BATHTUB,SAUNA_BENCH,SHOWER,SINK,TOILET` and `OPENING_KINDS_DETECTED:DOOR,WINDOW` (A0 addendum).
+- Label tables `analysis/labels/fi.yaml` (room codes, storey word, storey levels) and `analysis/labels/cubicasa_v2.yaml`
+  (detector class -> room type / opening kind / fixture type), validated against `contracts.VOCABULARIES` at load time.
+  No vocabulary value is written in the code. All thresholds come from `config/default.yaml -> analysis`.
+- Errors: missing/corrupt weights, missing vision packages or OCR model -> `MODEL_LOAD_FAILED`; detector exception,
+  malformed output, size mismatch or contract violation -> `ANALYSIS_FAILED`; no `plan_image` -> `INVALID_INPUT`;
+  IFC -> `ANALYSIS_FAILED` "IFC plans are not supported yet."; anything else -> `INTERNAL_ERROR` (exception class in
+  `details`).
+- `models/cubicasa_v2/MODEL_CARD.md` (version `cubicasa-yolo11m-v2+rules-v2`), `models/fetch.py` (sha256 checks;
+  EasyOCR files from the official releases, checksums verified on download), `models/.gitignore`.
+  **Placeholder:** the hosting URL for `best.pt` does not exist yet (`url=None` in `fetch.py`); copy the file by hand
+  and run `python models/fetch.py --check`.
+- Tests `tests/unit/analysis/` (68): the required regression test reproduces A0's counts for all three recordings
+  exactly; contract checks (bounds, confidences, unique IDs, request_id), every error path, rules, mapping, label
+  tables, the detector wrapper with stand-in modules, model card and fetch checksums. Recorded output only: no weights,
+  torch or network.
+- **Not done:** no live run with real weights (this environment has no weights, torch or package index), so no timing
+  is reported. `--debug-overlay` not implemented (D5). No contract, config, prompt or shared-file change.
+
 ### 2026-11-14 · A4 · ry · Answer Reasoner (`reasoning/`)
 - `src/blueprint_qa/reasoning/reasoner.py :: answer(question, analysis) -> Answer | ErrorEnvelope`, exported only via
   `reasoning/__init__.py`. Never raises: wrong input types or a `request_id` mismatch → `INVALID_INPUT`, unexpected
