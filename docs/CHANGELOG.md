@@ -110,3 +110,13 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Earlier work on `a1/ot/input-validator` used Claude through an A0 branch that PR #1 superseded. Its measurements (22 real
   Junction drawings: Opus 5.5 22/22, Haiku 5.5 21/22) are not Gemini results.
 - Recorded OT's approval of plan images for Gemini in `docs/EXTERNAL_SERVICES.md` (OPEN_QUESTIONS Q2).
+
+### 2026-11-14 · A1 · OT · Faster validation: re-recorded with gemini-3.5-flash-lite, end-to-end check with A0
+- Requested from A0 `docs/requests/A0-validation-speed.md`: LLM copy limited to 1024 px, validation model `gemini-3.5-flash-lite`
+  with `thinking_budget: null`. A0 implemented it in 1abbc37 (D-009) on `a0/ot/validation-config-deps`.
+- Re-recorded the cassettes `floor_plan_classifier@v1.json` with `gemini-3.5-flash-lite`: 6/6 correct, 17–25 output tokens each.
+  The prompt is unchanged (v1).
+- End-to-end check on A0 1abbc37 combined with A1, using CI's commands offline: ruff and mypy clean, schemas OK, 158 passed, coverage 98.27 %.
+- Live, real config, 22 Junction drawings, 8 in parallel: 21/22 correct in 10.0 s (median 1.7 s per picture, slowest 3.0 s),
+  33,705 input and 426 output tokens. The miss is the borderline "Kremsier Wohnhaus Parterre", which also flips between runs on
+  `gemini-3.8-flash`. Before this change, sequential calls with full-size images took 177 s.
