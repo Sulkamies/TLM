@@ -109,6 +109,13 @@ def test_the_page_does_not_show_the_explanation() -> None:
     body = PAGE.split("-->", 1)[1]  # skip the provenance comment, which mentions the removal
     assert "j.working" not in PAGE and "it.a.working" not in PAGE
     assert "How it was counted" not in body
+    assert "Counted on the drawing" not in body and "legend" not in body
+
+
+def test_the_page_has_no_suggested_questions() -> None:
+    # ry, 2026-11-14: no suggestion chips; the user types the question.
+    body = PAGE.split("-->", 1)[1]
+    assert "SUGGESTIONS" not in body and "chips" not in body and "suggestion" not in body
 
 
 def test_the_page_sends_the_receipt_back_for_the_same_picture_only() -> None:
