@@ -45,7 +45,7 @@ _No deviations recorded._
   `<role>/<initials>/<description>`; no role owns a user interface).
 - **Instruction:** at (the human who launched this session), who asked for the Android user interface to be pushed to a new
   branch of this repository.
-- **Done instead:** branch `ui/at/android-app` adds `android-app/` (Kotlin + Jetpack Compose) and this entry. Nothing under
+- **Done instead:** branch `ui/at/webpage` adds `android-app/` (Kotlin + Jetpack Compose) and this entry. Nothing under
   `src/`, `config/`, `tests/` or `blueprints-starter/` is touched. The app contains no recognition code: it runs in demo mode
   until a server address is set, then calls `POST /ask` (see `android-app/README.md`).
 - **Why / exit:** the UI is a separate Android project that does not fit the Python `src` layout. It needs A0 plus one human
