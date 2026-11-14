@@ -178,3 +178,16 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - Checks (MERGE_PLAN §6) green on this branch: ruff format/check, mypy, schema check, 297 passed, coverage 98.41 %
   (`question/` 98 %). Live: `pytest -m live tests/unit/question` passed; REPL live check of A0's four acceptance questions
   gave the expected `ParsedQuestion`s.
+
+### 2026-11-14 · A0 · ry · Phase 1: orchestrator and CLI for A1 → A2
+- `src/blueprint_qa/orchestrator/pipeline.py`: `run(request) -> Answer | ErrorEnvelope` (plus `run_traced()` for
+  `--debug` and `new_request()`, which creates the UUID4 `request_id` and `received_at`). A1 first; on `is_valid=False`
+  the answer is exactly "This picture is invalid for our program" and A2 is not called (R5.2). Every component output is
+  re-validated against its contract and its `request_id` checked (violation → `INVALID_INPUT`, `details.producer`). No
+  exception escapes (R5.1), one log event per stage, never a number. Interim answers in `INTERIM_TEXTS`. Ordered
+  `STAGE_ORDER` with an empty A3 slot (concurrent with A2) and A4 slot.
+- `src/blueprint_qa/api/`: CLI `python -m blueprint_qa.api <file> "<question>" [--format] [--locale] [--json] [--debug]`.
+- Tests: `tests/unit/orchestrator/`, `tests/unit/api/` (37 tests; pipeline.py 100 % covered). Live demo with Gemini:
+  `house_plan_fi.png` in fi/en/de gives the same `ParsedQuestion`; `bar_chart.png` and `prompt_injection.png` give the
+  invalid text without an A2 call.
+- README: CLI usage, layout status. OPEN_QUESTIONS Q9 (`Answer.unit` without a value). No contract or prompt change.
