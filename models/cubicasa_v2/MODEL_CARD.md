@@ -4,7 +4,7 @@
 |---|---|
 | **analyzer_version** | `cubicasa-yolo11m-v2+rules-v2` (must equal `ANALYZER_VERSION` in `src/blueprint_qa/analysis/analyzer.py`) |
 | **Used by** | A3 raster path, `src/blueprint_qa/analysis/` (PNG, JPEG, single-page PDF) |
-| **Weights** | `models/cubicasa_v2/best.pt`, sha256 `2093bef2b2322dbc23c402d7e7beafe00245d6e9144905b1cd54ed0eaef3337d`, 40,587,180 bytes. Not in git; `python models/fetch.py` (hosting URL still a placeholder, see `fetch.py`) |
+| **Weights** | `models/cubicasa_v2/best.pt`, sha256 `2093bef2b2322dbc23c402d7e7beafe00245d6e9144905b1cd54ed0eaef3337d`, 40,587,180 bytes. Not in git. Hosted as the GitHub Release asset [`models-cubicasa-v2/best.pt`](https://github.com/Sulkamies/TLM/releases/download/models-cubicasa-v2/best.pt) (same licence); download and verify with `python models/fetch.py` |
 | **OCR** | EasyOCR 1.7, English model (`craft_mlt_25k.pth` + `english_g2.pth`, fetched by `models/fetch.py`, Apache-2.0) |
 | **Owner** | A3 (Blueprint Analyzer), SS |
 
