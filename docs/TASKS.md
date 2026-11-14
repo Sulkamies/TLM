@@ -30,3 +30,4 @@ Mark completion by appending a line. Never rewrite someone else's entry.
 | 9 | Status: merged to `main` (PR #3, `d8a6fc6`) | A1 | ry | 2026-11-14 | Merged (noted by A0 · ry) |
 | 10 | Status: merged to `main` (PR #3, `d8a6fc6`) | A1 | ry | 2026-11-14 | Merged (noted by A0 · ry) |
 | 12 | Integration plan v2 (A0+A1+A2+A3, A4 out of scope) replaces v1: `docs/MERGE_PLAN.md`; A3 brief `docs/requests/A3-analysis-adapter.md`; proposal 001 revision 2 | A0 | ry | 2026-11-14 | Done |
+| 3 | Done (phase 1): `orchestrator/pipeline.py :: run()` A1 → A2 with contract checks, interim answers, marked A3/A4 slots; CLI `python -m blueprint_qa.api` | A0 | ry | 2026-11-14 | Done (branch `a0/ry/orchestrator`, awaiting review) |

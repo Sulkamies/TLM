@@ -33,6 +33,27 @@ pytest --cov=blueprint_qa                                # mocks only, no networ
 pytest -m live                                           # opt-in: real Gemini calls, needs GEMINI_API_KEY
 ```
 
+## Ask a question (CLI)
+
+```bash
+python -m blueprint_qa.api <file> "<question>" [--format PNG|JPEG|PDF|IFC] [--locale fi-FI] [--json] [--debug]
+
+python -m blueprint_qa.api tests/unit/validation/data/house_plan_fi.png "Montako makuuhuonetta?"
+# Plan analysis is not available yet.
+# [CANNOT_ANSWER]
+python -m blueprint_qa.api tests/unit/validation/data/bar_chart.png "How many bedrooms?"
+# This picture is invalid for our program
+# [CANNOT_ANSWER]
+```
+
+- The format comes from the file extension unless `--format` is given. A1 still checks the real format from the bytes.
+- `--json` prints the `Answer` (or the `ErrorEnvelope` without its internal `details`) as JSON.
+- `--debug` prints every stage output to stderr (file bytes are shown as `<N bytes>`) and logs at INFO.
+- Exit code 0 = an `Answer` (any status), 1 = an error, 2 = usage error.
+- Needs `GEMINI_API_KEY` (A1 and A2 call Gemini). Offline: `BP_LLM_PROVIDER=mock` with a cassette directory.
+- Pipeline today: A1 → A2 (MERGE_PLAN phase 1). A3 (plan analysis) and A4 (the number) are empty slots, so
+  every answer is an interim answer **without a number** until they are integrated.
+
 ## Layout status
 
 | Path | Owner | Status |
@@ -40,9 +61,10 @@ pytest -m live                                           # opt-in: real Gemini c
 | `src/blueprint_qa/contracts/` + `schema/*.json` | A0 | v1.0.1, matches AGENTS.md §4.2. Plan vocabulary lives only in `vocabulary.py` |
 | `src/blueprint_qa/common/` (`config`, `log`, `llm`) | A0 | Done: Gemini wrapper with structured output, retries and cassettes |
 | `config/default.yaml`, `config/llm.yaml` | A0 | Done (question → `gemini-3.8-flash`) |
-| `src/blueprint_qa/orchestrator/`, `api/` | A0 | Not started |
-| `src/blueprint_qa/question/` | A2 | Not started. Binding design: `docs/requests/A2-question-interpreter-design.md` |
-| `validation/`, `analysis/`, `reasoning/` | A1, A3, A4 | Not started |
+| `src/blueprint_qa/orchestrator/`, `api/` | A0 | Phase 1: `run()` A1 → A2 with interim answers; CLI `python -m blueprint_qa.api`. A3/A4 slots empty |
+| `src/blueprint_qa/question/` | A2 | Done (`interpret()`, Gemini + mock providers, en/de/fi) |
+| `src/blueprint_qa/validation/` | A1 | Done (`validate()`, PNG/JPEG/PDF via Gemini, IFC locally) |
+| `analysis/`, `reasoning/` | A3, A4 | A3 in progress (`docs/requests/A3-analysis-adapter.md`); A4 not started |
 
 ## Using the LLM wrapper (A1, A2, A3)
 
