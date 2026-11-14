@@ -133,3 +133,9 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   Gates G1–G5. A4 out of scope. Architecture basis: AGENTS.md (A3 question-agnostic), pending ry's confirmation (Q8).
 - New `docs/requests/A3-analysis-adapter.md` (answers A3's questions, acceptance criteria).
 - Proposal 001 revision 2: final fixture diff, awaiting approval. A3's source-file passthrough goes to proposal 005 (team decision, not in this integration).
+
+### 2026-11-14 · A0 · ry · Integration plan v3
+- `docs/MERGE_PLAN.md` v3: decisions D1–D6 (AGENTS.md architecture; 001 + 004 approved; A3 writes its adapter from A0's
+  spec; the integration agent opens PRs but never merges; visualisation and proposal 005 out of scope). New phase 0: the
+  integration agent determines A3's real output from `origin/a3/SS/cubicasa-detector` and publishes a verified mapping spec.
+- Approvals recorded in proposals 001 and 004; D-010 in DECISIONS; status note in the A3 brief.

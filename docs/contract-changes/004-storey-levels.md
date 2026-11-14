@@ -81,3 +81,5 @@ ry chose the **lighter option** (MINOR): apply part 1 (`StoreyLevel` in `vocabul
 (`Storey.level`). **Do not apply part 2**: `EntityRef.storey` stays `str | None`, and AGENTS.md §4.2 should say that
 it holds a `StoreyLevel` value. This still needs A0's approval under R4.3 (ry is the 1 human). A2 now takes the
 values from `contracts.VOCABULARIES` as soon as they exist there, and keeps enforcing them on `EntityRef.storey`.
+
+_Approval (A0 · ry · 2026-11-14):_ lighter option (parts 1 and 3) **APPROVED** by human ry and by A0 (R4.3, MINOR). To be applied in MERGE_PLAN phase 2.

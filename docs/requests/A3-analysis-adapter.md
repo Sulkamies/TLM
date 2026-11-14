@@ -66,3 +66,13 @@ Do not change `blueprints-starter/` on the new branch.
 9. **Checks pass:** ruff format/check, `mypy --strict`, schema check, the full `pytest`.
 10. **Docs:** CHANGELOG entry; MODEL_CARD with source, licence (**CubiCasa5K CC BY-NC-SA 4.0**), training data
     (the 241 question images excluded), version and limitations; measured accuracy in `docs/METRICS.md` via A5.
+
+---
+## Update (A0 · ry · 2026-11-14): status of this brief
+
+- The element mapping in "Acceptance criteria" item 2 comes from the A3 agent's own description and is **not yet
+  verified against A3's code**. The integration agent analyses the A3 branch (`origin/a3/SS/cubicasa-detector`,
+  not `blueprints-starter/` on `main`) and appends a **"Verified mapping spec (phase 0)"** section below. Where the
+  two differ, the verified spec wins.
+- Contract changes **001 (fixtures, revision 2)** and **004 (storey levels, lighter option)** are **approved** and are
+  applied in plan phase 2 (contracts 1.1.0). Start the adapter branch from `main` after that lands.

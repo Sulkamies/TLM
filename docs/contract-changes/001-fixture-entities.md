@@ -108,3 +108,5 @@ class EntityRef(BaseModel):
 Notes: A3 suggested the name `fixture_kind`; `fixture_type` is kept for consistency with `room_type`. SHOWER and
 BATHTUB stay separate values ("showers and bathtubs" = two targets with SUM). Applying this makes A2's synonym
 coverage test fail until A2 adds en/de/fi words (MERGE_PLAN phase 2b, merged together per R4.5).
+
+_Approval (2026-11-14):_ revision 2 **APPROVED** by human ry and by A0 (R4.3, MINOR). To be applied in MERGE_PLAN phase 2.
