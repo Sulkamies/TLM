@@ -35,7 +35,8 @@ def normalize_language(tag: str) -> str:
 def threshold_to_si(comparison: Comparison, unit: str | None) -> Comparison:
     """Return ``comparison`` with its threshold in SI units.
 
-    A threshold written without a unit is taken to be in the SI unit of the measure.
+    A threshold written without a unit is taken to be in the SI unit of the measure as a
+    best guess; ``LlmParse`` guarantees that ``clarification_needed`` is set in that case.
     """
     if comparison.threshold is None:
         return comparison

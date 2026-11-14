@@ -42,3 +42,13 @@ should storeys become a canonical value (e.g. a storey index or level enum) thro
 ### Q6 · A2 · ry · 2026-11-14 · Comparison threshold with no unit
 For "Is the kitchen bigger than 10?" A2 assumes the SI unit of the measure (10 m²) and does not ask for
 clarification. Confirm, or should a missing unit set `clarification_needed`?
+
+---
+**Answers (ry, 2026-11-14, recorded by A2):**
+- **Q5:** "For now, create fixed values." A2 now emits only `BASEMENT`, `GROUND`, `UPPER`, `UPPER_1`, `UPPER_2`,
+  `UPPER_3` or `ATTIC` in `EntityRef.storey` (interim, see `docs/DEVIATIONS.md`). Contract change
+  `docs/contract-changes/004-storey-levels.md` and request `docs/requests/A0-storey-levels.md` ask A0 to make the
+  values official.
+- **Q6:** A measured comparison threshold with no unit sets `clarification_needed` (in the user's language). The
+  threshold is still passed through, taken as SI, as a best guess. Count thresholds need no unit. Enforced in A2's LLM
+  output validator.

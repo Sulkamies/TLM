@@ -6,9 +6,12 @@ edit here. Fields that code owns (``request_id``, ``provider``, ``original_quest
 are deliberately absent.
 
 The LLM reports a comparison threshold *as written* plus its unit (``threshold_unit``);
-``mapping.py`` converts it to SI (rule Q5). The cross-field invariants of §4.2 are
-checked in a model validator. The wrapper validates every reply with this model, so a
-violation makes it re-ask the LLM with the error message (R7.8).
+``mapping.py`` converts it to SI (rule Q5). A measured threshold written without a unit
+must come with ``clarification_needed`` (ry, OPEN_QUESTIONS Q6). Free-text ``EntityRef``
+fields with interim fixed values (storey levels, OPEN_QUESTIONS Q5) are checked against
+them. The cross-field invariants of §4.2 are checked in a model validator. The wrapper
+validates every reply with this model, so a violation makes it re-ask the LLM with the
+error message (R7.8).
 """
 
 from __future__ import annotations
@@ -104,6 +107,7 @@ class LlmParse(BaseModel):
             raise ValueError("intent DISTANCE requires exactly 2 targets")
         if self.intent is Intent.RATIO and len(self.targets) != 2:
             raise ValueError("intent RATIO requires exactly 2 targets (numerator, denominator)")
+        self._check_interim_values()
         if self.comparison is not None:
             self._check_comparison(self.comparison)
         elif self.threshold_unit is not None:
@@ -117,6 +121,18 @@ class LlmParse(BaseModel):
             raise ValueError(f"requested_unit {self.requested_unit} is not a {dim} unit")
         return self
 
+    def _check_interim_values(self) -> None:
+        # Lazy import: vocabulary_view imports this module.
+        from blueprint_qa.question.vocabulary_view import constrained_text_fields
+
+        for field_name, allowed in constrained_text_fields().items():
+            for target in self.targets:
+                value = getattr(target, field_name)
+                if value is not None and value not in allowed:
+                    raise ValueError(
+                        f"targets[].{field_name} must be null or one of {', '.join(allowed)}"
+                    )
+
     def _check_comparison(self, comparison: Comparison) -> None:
         if comparison.threshold is None:
             if len(self.targets) != 2:
@@ -124,10 +140,15 @@ class LlmParse(BaseModel):
             if self.threshold_unit is not None:
                 raise ValueError("threshold_unit must be null when threshold is null")
             return
-        if self.threshold_unit is not None:
-            dim = MEASURE_DIMENSION[comparison.measure]
-            if UNITS[self.threshold_unit][0] != dim:
+        dim = MEASURE_DIMENSION[comparison.measure]
+        if self.threshold_unit is None:
+            if dim != "count" and not (self.clarification_needed or "").strip():
                 raise ValueError(
-                    f"threshold_unit {self.threshold_unit} does not fit measure "
-                    f"{comparison.measure} ({dim})"
+                    "the threshold has no unit: set clarification_needed to a short question "
+                    "in the user's language asking which unit is meant"
                 )
+        elif UNITS[self.threshold_unit][0] != dim:
+            raise ValueError(
+                f"threshold_unit {self.threshold_unit} does not fit measure "
+                f"{comparison.measure} ({dim})"
+            )

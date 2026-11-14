@@ -139,6 +139,40 @@ MULTILINGUAL: tuple[Case, ...] = (
     ),
 )
 
+# Q5 (ry, 2026-11-14): storeys use fixed values, so storey questions are language-independent.
+STOREY_CASE = Case(
+    "area_upper_floor",
+    {
+        "en": "What is the floor area of the upper floor?",
+        "de": "Wie groß ist die Fläche des Obergeschosses?",
+        "fi": "Mikä on yläkerran pinta-ala?",
+    },
+    {
+        "intent": "AREA",
+        "aggregation": "SUM",
+        "targets": [{"category": "STOREY", "storey": "UPPER"}],
+    },
+)
+
+# Q6 (ry, 2026-11-14): a measured threshold without a unit asks for clarification.
+UNITLESS_CASE = Case(
+    "compare_kitchen_unitless",
+    {
+        "en": "Is the kitchen bigger than 10?",
+        "de": "Ist die Küche größer als 10?",
+        "fi": "Onko keittiö suurempi kuin 10?",
+    },
+    {
+        "intent": "COMPARISON",
+        "aggregation": "SINGLE",
+        "targets": [{"category": ROOM, "room_type": "KITCHEN"}],
+        "comparison": {"measure": "AREA", "operator": "GT", "threshold": 10.0},
+    },
+    clarification=True,
+)
+
+MULTILINGUAL = (*MULTILINGUAL, STOREY_CASE, UNITLESS_CASE)
+
 AMBIGUOUS = Case(
     "ambiguous_it",
     {"en": "How big is it?", "de": "Wie groß ist das?", "fi": "Kuinka iso se on?"},

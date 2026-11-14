@@ -35,8 +35,11 @@ question is UNSUPPORTED.
   - `label`: only when the question quotes a literal room name or number as it would be written on
     the plan (e.g. "MH 2", "Bedroom 2"); copy it verbatim. Otherwise null.
   - `ordinal`: "the second bedroom" -> 2. Otherwise null.
-  - `storey`: only when the question names a floor level. Write it as a short English phrase such as
-    "ground floor", "first floor", "second floor", "basement", "attic", "upper floor". Otherwise null.
+  - `storey`: only when the question names a floor level; then use one of the values listed for
+    `targets[].storey` below. Otherwise null. Floor numbering differs by language: Finnish counts the
+    ground floor as "1. kerros"; German "1. OG" and British "first floor" are one floor above ground; in
+    US English (`locale_hint` en-US) "first floor" is the ground floor. A floor named without a number
+    ("upstairs", "yläkerta", "Obergeschoss") is the unnumbered upper value.
   - For the whole house or apartment (e.g. total floor area) use the whole-plan category.
   - For UNSUPPORTED questions still give the element the question mentions, or the whole plan.
   - DISTANCE needs exactly two targets. RATIO needs exactly two: [numerator, denominator].
@@ -48,13 +51,16 @@ question is UNSUPPORTED.
     elements are compared with each other (then give exactly two targets).
 - `threshold_unit`: the unit the threshold was written in (m2 for "m²", "sq m", "Quadratmeter",
   "neliömetriä", "neliötä"; ft2 for "sq ft", "square feet", "Quadratfuß", "neliöjalkaa"; m, cm, mm, ft,
-  in, m3, ft3, l; count for plain counts). Null if the question gives no unit.
+  in, m3, ft3, l; count for plain counts). Null if the question gives no unit. If a measured threshold
+  (anything but COUNT) has no unit, you MUST set `clarification_needed` asking which unit is meant,
+  and still give the number as written in `threshold`.
 - `requested_unit`: only when the question explicitly asks for the answer in a unit ("in square feet"),
   and only for AREA, LENGTH, PERIMETER, HEIGHT, DISTANCE or VOLUME. Otherwise null.
 - `confidence`: your confidence in this interpretation, from 0.0 to 1.0.
 - `clarification_needed`: null in almost all cases. Set it to a short question (in the user's
   language) ONLY when the question itself is ambiguous: it has no identifiable subject ("how big is
-  it?"), or it could mean different measures and none is more natural. Do NOT set it because the plan
+  it?"), it could mean different measures and none is more natural, or a comparison threshold for a
+  measured quantity has no unit ("is the kitchen bigger than 10?"). Do NOT set it because the plan
   might contain several matching rooms ("how big is the bedroom" is SINGLE, not ambiguous). When you
   set it, still fill the other fields with your best guess.
 

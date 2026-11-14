@@ -56,3 +56,12 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   equality for 8 held-out questions; Q1 guard; opt-in live test passed. Re-record with
   `tests/unit/question/record_cassettes.py`. Full suite: 168 passed, coverage 98 % (question/ ≥ 82 % per file).
 - No contract, config or `pyproject.toml` change. Open questions Q5 (storey text) and Q6 (unitless thresholds).
+
+### 2026-11-14 · A2 · ry · Fixed storey levels (Q5) and unitless thresholds (Q6), prompt `interpret@v1`
+- Storeys: interim `StoreyLevel` values in `question/interim_vocabulary.yaml`, rendered into the prompt, covered by
+  EN/DE/FI synonyms and validated on every LLM reply. Proposal 004 and a request to A0 make them official.
+  Deviation recorded.
+- A measured comparison threshold without a unit now requires `clarification_needed` (validator, so the wrapper re-asks).
+- `interpret.v1.md` edited in place: it was not merged yet, so R7.7 still allows that. Cassettes re-recorded (53, all
+  valid on the first ask). New EN/DE/FI cases: upper-floor area, and "bigger than 10" without a unit.
+- No contract, config or `pyproject.toml` change.

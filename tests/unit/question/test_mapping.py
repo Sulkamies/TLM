@@ -46,7 +46,7 @@ def test_code_owned_fields_are_filled() -> None:
     [
         (120, "ft2", 11.1483648),
         (12, "m2", 12.0),
-        (12, None, 12.0),  # no unit written -> SI unit of the measure
+        (12, None, 12.0),  # no unit written -> SI best guess, with clarification
     ],
 )
 def test_area_threshold_converted_to_si(value: float, unit: str | None, expected: float) -> None:
@@ -56,6 +56,7 @@ def test_area_threshold_converted_to_si(value: float, unit: str | None, expected
             aggregation="SINGLE",
             comparison=comparison(threshold=value),
             threshold_unit=unit,
+            clarification_needed=None if unit else "Which unit?",
         )
     )
     assert pq.comparison is not None
@@ -78,6 +79,31 @@ def test_other_units(measure: str, unit: str, expected: float) -> None:
     pq = run(parse(intent="COMPARISON", comparison=comparison(measure, 100.0), threshold_unit=unit))
     assert pq.comparison is not None
     assert pq.comparison.threshold == pytest.approx(expected)
+
+
+def test_unitless_count_threshold_needs_no_clarification() -> None:
+    pq = run(parse(intent="COMPARISON", comparison=comparison("COUNT", 3.0)))
+    assert pq.comparison is not None and pq.comparison.threshold == 3.0
+    assert pq.clarification_needed is None
+
+
+@pytest.mark.parametrize("clarification", [None, "  "])
+def test_unitless_measured_threshold_requires_clarification(clarification: str | None) -> None:
+    """Q6 (ry): 'bigger than 10' without a unit must ask which unit is meant."""
+    with pytest.raises(ValidationError, match="threshold has no unit"):
+        parse(
+            intent="COMPARISON",
+            comparison=comparison("AREA", 10.0),
+            clarification_needed=clarification,
+        )
+
+
+def test_storey_must_be_a_fixed_value() -> None:
+    """Q5 (ry): storeys take fixed values (interim vocabulary until contract change 004)."""
+    ok = run(parse(targets=[{"category": "STOREY", "storey": "GROUND"}]))
+    assert ok.targets[0].storey == "GROUND"
+    with pytest.raises(ValidationError, match="storey must be null or one of"):
+        parse(targets=[{"category": "STOREY", "storey": "ground floor"}])
 
 
 def test_threshold_none_compares_two_targets() -> None:

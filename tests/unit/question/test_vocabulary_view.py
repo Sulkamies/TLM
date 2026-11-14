@@ -11,6 +11,9 @@ from blueprint_qa.contracts import DESCRIPTIONS, VOCABULARIES
 from blueprint_qa.question import vocabulary_view
 from blueprint_qa.question.providers.llm import PROMPT_VERSION, PROMPTS_DIR, build_prompt
 from blueprint_qa.question.vocabulary_view import (
+    constrained_text_fields,
+    plan_descriptions,
+    plan_vocabularies,
     question_fields,
     render_examples,
     render_plan_vocabulary,
@@ -23,7 +26,8 @@ VOCAB_ENUM_NAMES = ("RoomType", "EntityCategory", "OpeningKind")
 
 def test_q1_no_plan_vocabulary_values_in_question_code() -> None:
     """Rule Q1: values live in contracts, words in synonyms/*.yaml, never in question/*.py."""
-    values = sorted({v for vals in VOCABULARIES.values() for v in vals}, key=len, reverse=True)
+    vocab = plan_vocabularies()
+    values = sorted({v for vals in vocab.values() for v in vals}, key=len, reverse=True)
     quoted = re.compile(r"""["'](""" + "|".join(map(re.escape, values)) + r""")["']""")
     member = re.compile(r"\b(" + "|".join(VOCAB_ENUM_NAMES) + r")\.[A-Z_]+\b")
     offenders = []
@@ -41,14 +45,61 @@ def test_q1_guard_detects_violations() -> None:
 
 
 def test_question_fields_found_from_entity_ref() -> None:
-    assert question_fields() == {"RoomType": "room_type", "EntityCategory": "category"}
+    assert question_fields() == {
+        "RoomType": "room_type",
+        "EntityCategory": "category",
+        "StoreyLevel": "storey",  # interim, contract change 004
+    }
 
 
 def test_plan_vocabulary_lists_every_value_with_its_meaning() -> None:
     text = render_plan_vocabulary()
+    vocab, desc = plan_vocabularies(), plan_descriptions()
     for name in question_fields():
-        for value in VOCABULARIES[name]:
-            assert f"- {value}: {DESCRIPTIONS[name][value]}" in text
+        for value in vocab[name]:
+            assert f"- {value}: {desc[name][value]}" in text
+    assert "### StoreyLevel (field `targets[].storey`)" in text
+
+
+def test_interim_storey_levels_are_active_until_the_contract_has_them() -> None:
+    assert "GROUND" in constrained_text_fields()["storey"]
+    assert set(VOCABULARIES) < set(plan_vocabularies())
+
+
+def test_interim_entry_is_dropped_once_contracts_define_it(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Applying contract change 004 needs no A2 code change."""
+    contract = {**VOCABULARIES, "StoreyLevel": ("GROUND",)}
+    monkeypatch.setattr(vocabulary_view, "VOCABULARIES", contract)
+    assert vocabulary_view.interim_vocabularies() == {}
+    assert constrained_text_fields() == {}
+    assert plan_vocabularies()["StoreyLevel"] == ("GROUND",)
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        ("- a\n", "top level must be a mapping"),
+        ("X:\n  field: not_a_field\n  values: {A: a}\n", "is not an EntityRef field"),
+        ("X:\n  field: storey\n  values: {}\n", "at least 1"),
+    ],
+)
+def test_invalid_interim_file_is_rejected(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, text: str, message: str
+) -> None:
+    path = tmp_path / "interim.yaml"
+    path.write_text(text, encoding="utf-8")
+    monkeypatch.setattr(vocabulary_view, "INTERIM_FILE", path)
+    with pytest.raises(ValueError, match=message):
+        vocabulary_view.interim_vocabularies()
+
+
+def test_missing_interim_file_means_no_interim_vocabulary(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(vocabulary_view, "INTERIM_FILE", tmp_path / "absent.yaml")
+    assert vocabulary_view.interim_vocabularies() == {}
 
 
 def test_prompt_follows_a_vocabulary_change(monkeypatch: pytest.MonkeyPatch) -> None:

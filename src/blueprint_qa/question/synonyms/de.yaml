@@ -27,11 +27,25 @@ EntityCategory:
   STAIR: [Treppe, Treppen, Treppenhaus]
   STOREY: [Geschoss, Stockwerk, Etage, Ebene, EG, OG, KG, DG]
   WHOLE_PLAN: [Haus, Wohnung, Gebäude, gesamt, Gesamtfläche, Wohnfläche]
+StoreyLevel:
+  BASEMENT: [Keller, Kellergeschoss, KG, Untergeschoss, UG, Souterrain]
+  GROUND: [Erdgeschoss, EG, Parterre]
+  UPPER: [Obergeschoss, OG, oben, obere Etage]
+  UPPER_1: [1. Obergeschoss, 1. OG, erster Stock, 1. Stock]
+  UPPER_2: [2. Obergeschoss, 2. OG, zweiter Stock, 2. Stock]
+  UPPER_3: [3. Obergeschoss, 3. OG, dritter Stock, 3. Stock]
+  ATTIC: [Dachgeschoss, DG, Dachboden, Spitzboden]
 OpeningKind:
   DOOR: [Tür]
   WINDOW: [Fenster]
   OPENING: [Öffnung, Durchgang, Wanddurchbruch]
 examples:
+  - id: count_rooms_upper
+    question: "Wie viele Zimmer gibt es im 1. OG?"
+    expect:
+      intent: COUNT
+      aggregation: SUM
+      targets: [{category: ROOM, storey: UPPER_1}]
   - id: count_windows
     question: "Wie viele Fenster hat die Wohnung?"
     expect:

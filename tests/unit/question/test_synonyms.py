@@ -6,19 +6,19 @@ from pathlib import Path
 
 import pytest
 
-from blueprint_qa.contracts import VOCABULARIES
 from blueprint_qa.question import vocabulary_view
 from blueprint_qa.question.vocabulary_view import (
     REQUIRED_LANGUAGES,
     available_languages,
     load_synonyms,
+    plan_vocabularies,
 )
 
 
 @pytest.mark.parametrize("lang", REQUIRED_LANGUAGES)
 def test_every_vocabulary_value_has_words(lang: str) -> None:
     syn = load_synonyms(lang)
-    for vocab, values in VOCABULARIES.items():
+    for vocab, values in plan_vocabularies().items():
         missing = [v for v in values if not syn.words.get(vocab, {}).get(v)]
         assert missing == [], f"synonyms/{lang}.yaml: add words for {vocab} {missing}"
 

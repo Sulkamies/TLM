@@ -27,11 +27,27 @@ EntityCategory:
   STAIR: [stair, stairs, staircase, stairway]
   STOREY: [floor, storey, story, level]
   WHOLE_PLAN: [house, apartment, flat, home, dwelling, building, whole plan, total]
+StoreyLevel:
+  BASEMENT: [basement, cellar, lower level, downstairs basement]
+  GROUND: [ground floor, ground level, main floor, entrance level, first floor (US)]
+  UPPER: [upstairs, upper floor, upper level, top floor]
+  UPPER_1: [first floor (UK), 1st floor, second floor (US)]
+  UPPER_2: [second floor (UK), 2nd floor, third floor (US)]
+  UPPER_3: [third floor (UK), 3rd floor, fourth floor (US)]
+  ATTIC: [attic, loft, attic floor]
 OpeningKind:
   DOOR: [door]
   WINDOW: [window]
   OPENING: [opening, doorless opening, passage, archway]
 examples:
+  - id: compare_unitless
+    question: "Is the bedroom wider than 4?"
+    expect:
+      intent: COMPARISON
+      aggregation: SINGLE
+      targets: [{category: ROOM, room_type: BEDROOM}]
+      comparison: {measure: LENGTH, operator: GT, threshold: 4}
+      clarification_needed: "Which unit do you mean: metres, feet or something else?"
   - id: count_bathrooms
     question: "How many bathrooms does the apartment have?"
     expect:

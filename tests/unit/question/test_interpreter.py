@@ -54,7 +54,7 @@ def test_same_question_in_en_de_fi_gives_same_parse(
         assert pq.original_question == question
         assert pq.request_id == RID
         assert pq.provider == "llm:gemini-3.8-flash:interpret@v1"
-        assert pq.clarification_needed is None
+        assert (pq.clarification_needed is not None) == case.clarification
         assert 0.0 <= pq.confidence <= 1.0
         results[lang] = pq
     assert set(results) == {"en", "de", "fi"}

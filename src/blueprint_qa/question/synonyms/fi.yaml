@@ -27,6 +27,14 @@ EntityCategory:
   STAIR: [porras, portaat, porraskäytävä]
   STOREY: [kerros, kerrokset, alakerta, yläkerta, kellarikerros]
   WHOLE_PLAN: [talo, asunto, rakennus, koti, koko asunto, kokonaispinta-ala]
+StoreyLevel:
+  BASEMENT: [kellari, kellarikerros, kjr, pohjakerros]
+  GROUND: [alakerta, 1. kerros, ensimmäinen kerros, maantasokerros, katutaso]
+  UPPER: [yläkerta, ylempi kerros]
+  UPPER_1: [2. kerros, toinen kerros]
+  UPPER_2: [3. kerros, kolmas kerros]
+  UPPER_3: [4. kerros, neljäs kerros]
+  ATTIC: [ullakko, ullakkokerros, vintti, parvi]
 OpeningKind:
   DOOR: [ovi]
   WINDOW: [ikkuna]
@@ -55,7 +63,7 @@ examples:
     expect:
       intent: AREA
       aggregation: SUM
-      targets: [{category: STOREY, storey: "ground floor"}]
+      targets: [{category: STOREY, storey: GROUND}]
   - id: area_second_bedroom
     question: "Kuinka suuri on toinen makuuhuone neliöjalkoina?"
     expect:
