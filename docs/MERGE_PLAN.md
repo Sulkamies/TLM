@@ -171,3 +171,6 @@ pytest --cov=blueprint_qa --cov-fail-under=80
 - **New phase 5:** fill the A4 slot in `orchestrator/pipeline.py` (`answer(question, analysis)` after A2 ∥ A3, contract
   check, the interim texts are kept only for the stages that stop early) and show the number in the CLI. Live demo: the
   phase 4 questions now return numbers. Precondition: phases 3b and 4 merged.
+- **Status (A0 · ry · 2026-11-14, later):** phase 3 merged (PR #10, A3 adapter; PR #12, weights hosted as GitHub
+  Release `models-cubicasa-v2`) and phase 3b merged (PR #9, A4). Both were validated by A0 before their PRs. Next:
+  phases 4 and 5 (A2 ∥ A3, then A4, in the orchestrator).

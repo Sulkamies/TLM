@@ -81,6 +81,38 @@ placeholder for now (`orchestrator/pipeline.py: PLACEHOLDER_UNIT`). Options: (a)
 change, so MAJOR under R4.3 (2 of 4 humans); (c) A4 sets the unit the intent would have had (e.g. `m2` for AREA) even
 without a value. A0 suggests (c) once A4 exists, (a) until then.
 
+### Q10 · A4 · ry · 2026-11-14 · Answer Reasoner edge cases decided provisionally
+A0's binding decisions for A4 leave these cases open. A4 implemented the behaviour below (`src/blueprint_qa/reasoning/`);
+please confirm or change.
+(a) **`requested_unit` with the wrong dimension** (e.g. `ft` for AREA): ignored, and the SI unit is kept. For COUNT,
+RATIO, EXISTENCE and COMPARISON, `requested_unit` is always ignored.
+(b) **Unit of `UNSUPPORTED_QUESTION`**: `count`, the same placeholder as the orchestrator (Q9 has no intent unit for it).
+`Answer.unit` reflects `requested_unit` also when `value` is None.
+(c) **`Answer.language`** is the primary subtag (`de-AT` → `de`) for en/de/fi, otherwise `en`. With
+`clarification_needed`, it is `ParsedQuestion.language` unchanged, as decided.
+(d) **AREA/VOLUME of a `STOREY` target** = sum over the rooms on that storey; **WHOLE_PLAN with a storey** = sum over the
+rooms of that storey. WHOLE_PLAN supports only AREA and VOLUME; COUNT/EXISTENCE of WHOLE_PLAN → CANNOT_ANSWER.
+Explanation says "sum over N rooms". A storey with no rooms → CANNOT_ANSWER, never 0.
+(e) **AREA does not need `metric_available`**: it uses `Room.area_m2` (e.g. from a printed label). Only geometry
+(LENGTH, PERIMETER, DISTANCE) needs a scale, as decided.
+(f) **Storey check on candidates** (`storey_id` None → CANNOT_ANSWER) applies only to elements of the asked category
+*after* the type filter, so an unassigned sink does not block "bedrooms upstairs".
+(g) **COUNT over several targets**: every target with zero matches must be covered by the `*_DETECTED` warnings, even if
+the total is positive (otherwise the sum may be an undercount). **EXISTENCE**: any positive match gives 1.0; a 0.0 needs
+every target covered.
+(h) **Label or ordinal with no match** → CANNOT_ANSWER, never a covered zero. A label on DOOR/WINDOW/FIXTURE matches
+nothing (those elements have no label); a label on STOREY matches `Storey.name`; label/ordinal on WHOLE_PLAN are ignored.
+(i) **Untyped FIXTURE target** is covered if `FIXTURE_TYPES_DETECTED` lists every FixtureType except OTHER (analogous to
+the ROOM rule).
+(j) **STOREY count with an empty `storeys` list** → CANNOT_ANSWER (the "always covered" rule assumes at least 1 storey).
+(k) **DISTANCE** needs exactly one element per target (several → NEEDS_CLARIFICATION) and is CANNOT_ANSWER if both
+elements have different `storey_id`s. Not defined for STOREY/WHOLE_PLAN targets.
+(l) **RATIO** sums each target's areas regardless of `aggregation` (so "share of bedrooms" works with SINGLE too).
+(m) **LENGTH of a door/window** (`Opening.width_m`) is not used this round → CANNOT_ANSWER ("not applicable").
+(n) **Overflow**: a non-finite result → CANNOT_ANSWER.
+(o) **For A3 (FYI)**: the IFC path should also emit the three `*_DETECTED` warnings, otherwise every IFC zero count is
+CANNOT_ANSWER.
+
 - **Q9 (answer, ry, 2026-11-14, recorded by A0):** option (c). A4 sets the unit the intent would have had (e.g. `m2` for
   AREA) even when `value` is None (`docs/requests/A4-answer-reasoner.md`, decision 3). The orchestrator's placeholder
   `count` remains only for its own interim answers until A4 is wired in.

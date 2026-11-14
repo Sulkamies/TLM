@@ -64,7 +64,8 @@ python -m blueprint_qa.api tests/unit/validation/data/bar_chart.png "How many be
 | `src/blueprint_qa/orchestrator/`, `api/` | A0 | Phase 1: `run()` A1 → A2 with interim answers; CLI `python -m blueprint_qa.api`. A3/A4 slots empty |
 | `src/blueprint_qa/question/` | A2 | Done (`interpret()`, Gemini + mock providers, en/de/fi) |
 | `src/blueprint_qa/validation/` | A1 | Done (`validate()`, PNG/JPEG/PDF via Gemini, IFC locally) |
-| `analysis/`, `reasoning/` | A3, A4 | A3 in progress (`docs/requests/A3-analysis-adapter.md`); A4 in progress (`docs/requests/A4-answer-reasoner.md`) |
+| `src/blueprint_qa/analysis/`, `models/` | A3 | Done for raster plans (`analyze()`, CubiCasa YOLO + OCR; weights via `python models/fetch.py`); IFC not yet |
+| `src/blueprint_qa/reasoning/` | A4 | Done (`answer()`, deterministic, en/de/fi explanations). Not yet called by the orchestrator (MERGE_PLAN phase 5) |
 
 ## Using the LLM wrapper (A1, A2, A3)
 

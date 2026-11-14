@@ -1,0 +1,5 @@
+# Fetched by models/fetch.py, never committed (AGENTS.md §6 A3).
+easyocr/
+*.pth
+*.pt
+*.part
