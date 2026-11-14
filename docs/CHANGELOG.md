@@ -150,3 +150,5 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
 - OPEN_QUESTIONS Q8 answered (D1). Proposal `docs/contract-changes/005-original-file.md` (for team decision, D6).
   Deviation recorded: no `--debug-overlay` in this integration (D5).
 - No contract, prompt or code change.
+- Added `docs/requests/A3-open-points.md`: all questions to A3/SS (A3-Q1 … A3-Q22: weights, real detector output,
+  confirmations of A0's reading of the code, and A0 decisions SS may object to). The spec's §F points to it.

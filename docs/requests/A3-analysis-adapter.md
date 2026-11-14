@@ -275,6 +275,9 @@ element-selection rules (documented in `analysis/raster/rules.py`). Changing the
 
 ### F. Open points (A3 / SS to answer in the phase 3 PR)
 
+**All questions to A3 are collected in `docs/requests/A3-open-points.md` (A3-Q1 … A3-Q22). Answer them there.**
+The points below are a summary.
+
 1. **Which weights** belong to `thresholds_vision_v2.json`: the v2 run at imgsz 1280? Name the model card directory,
    the file name and `analyzer_version` to match, and put the checksum in `models/fetch.py`.
 2. Real detector output was not observed by A0 (see the top of this section). Confirm §A against the recorded JSON.
