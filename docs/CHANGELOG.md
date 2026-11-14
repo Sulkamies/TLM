@@ -191,3 +191,11 @@ Append-only (R10.3): role, initials, date, what changed, and any contract or pro
   `house_plan_fi.png` in fi/en/de gives the same `ParsedQuestion`; `bar_chart.png` and `prompt_injection.png` give the
   invalid text without an A2 call.
 - README: CLI usage, layout status. OPEN_QUESTIONS Q9 (`Answer.unit` without a value). No contract or prompt change.
+
+### 2026-11-14 · A3 · SS · Answers to A3-Q1 … A3-Q22
+- Appended the answers to `docs/requests/A3-open-points.md`, checked on real data: v2 weights checksum, all 241 recorded
+  detector outputs (sizes, bounds, class names), and 84.5 % test re-measured with the code at `35597e2` and
+  `thresholds_vision_v2.json`. Disagreements: none. Two corrections: the storey regex (A3-Q14), and the EasyOCR model
+  download mapping to `MODEL_LOAD_FAILED` and fetched by `models/fetch.py` (A3-Q20).
+- Added three recorded detector outputs under `tests/unit/analysis/data/` (with a README on source and licence).
+- No contract, prompt or code change.
